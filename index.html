@@ -528,7 +528,7 @@ function findMatches() {
 // ─── Special tile activation ──────────────────────────────────────────────────
 function expandMatchesForSpecials(matches) {
   const extraKeys = new Set();
-  for (const [key, cell] of matches) {
+  for (const key of matches.keys()) {
     const [r, c] = key.split(',').map(Number);
     const tile = state.board[r][c];
     if (!tile) continue;
