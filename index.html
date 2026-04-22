@@ -378,7 +378,7 @@ async function loadManifest() {
 function getLevelConfig(level) {
   return {
     target: 1000 + (level - 1) * 500,
-    moves: Math.max(10, 20 - (level - 1)),
+    moves: Math.max(10, 20 - Math.floor((level - 1) / 2)),
   };
 }
 
@@ -789,7 +789,7 @@ function updateHUD() {
   const scoreEl = document.getElementById('score-display');
   scoreEl.textContent = state.score.toLocaleString();
   scoreEl.classList.remove('score-pulse');
-  void scoreEl.offsetWidth; // reflow
+  scoreEl.offsetWidth; // Force reflow to restart CSS animation
   scoreEl.classList.add('score-pulse');
   document.getElementById('moves-display').textContent = `${state.movesLeft} move${state.movesLeft !== 1 ? 's' : ''}`;
   document.getElementById('score-target-display').textContent = `Target: ${state.scoreTarget.toLocaleString()}`;
