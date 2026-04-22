@@ -513,9 +513,9 @@ function findMatches() {
 function expandMatchesForSpecials(matches) {
   const extraKeys = new Set();
   for (const [key, cell] of matches) {
-    const tile = state.board[parseInt(key)][parseInt(key.split(',')[1])];
-    if (!tile) continue;
     const [r, c] = key.split(',').map(Number);
+    const tile = state.board[r][c];
+    if (!tile) continue;
 
     if (tile.type === 'rowclear') {
       for (let cc = 0; cc < 8; cc++) {
@@ -880,12 +880,10 @@ function showGameOver() {
 function updatePersonalBests() {
   const hs = Math.max(state.score, parseInt(localStorage.getItem('logocrush_highscore') || '0'));
   const hl = Math.max(state.level, parseInt(localStorage.getItem('logocrush_highestlevel') || '1'));
-  const games = parseInt(localStorage.getItem('logocrush_totalgames') || '0') + (state.level === 1 ? 1 : 0);
   const logos = parseInt(localStorage.getItem('logocrush_totallogos') || '0') + state.totalClearedThisLevel;
 
   localStorage.setItem('logocrush_highscore', hs);
   localStorage.setItem('logocrush_highestlevel', hl);
-  localStorage.setItem('logocrush_totalgames', games);
   localStorage.setItem('logocrush_totallogos', logos);
 }
 
