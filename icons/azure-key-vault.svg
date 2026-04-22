@@ -1,4 +1,5 @@
-<svg data-slug-id="key-vault" xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 18 18">
+<svg data-slug-id="key-vault" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<svg viewBox="0 0 18 18" width="100" height="100" preserveAspectRatio="xMidYMid meet">
   <defs>
     <radialGradient id="key-vault_fb114c93-7c16-4540-899a-0796041629e6" cx="9" cy="9" r="8.5" gradientUnits="userSpaceOnUse">
       <stop offset="0.18" stop-color="#5ea0ef"/>
@@ -26,4 +27,5 @@
     <rect x="6.48" y="5.79" width="5.17" height="0.61" rx="0.28" fill="#ff9300" opacity="0.75"/>
     <rect  x="6.48" y="6.78" width="5.17" height="0.61" rx="0.28" fill="#ff9300" opacity="0.75"/>
   
+</svg>
 </svg>

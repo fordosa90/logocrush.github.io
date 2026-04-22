@@ -1,4 +1,5 @@
-<svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 96 96" width="100" height="100" preserveAspectRatio="xMidYMid meet">
 <g clip-path="url(#clip0)">
 <defs>
 <filter id="filter0_f">
@@ -44,4 +45,5 @@
 <path opacity="0.5" d="M62.0013 45.3202L45.9922 51.1768L45.9923 74.6349C45.9923 76.0323 47.389 76.9989 48.6968 76.5066L55.5241 73.9368C59.4211 72.4699 62.0013 68.7418 62.0013 64.5779V45.3202Z" fill="#B0ADFF"/>
 </g>
 </g>
+</svg>
 </svg>

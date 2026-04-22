@@ -1,4 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="48" height="49" fill="currentColor" viewBox="0 0 48 49">
+<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 100 100">
+<svg viewBox="0 0 48 49" width="100" height="100" preserveAspectRatio="xMidYMid meet">
   <mask id="a" width="40" height="41" x="4" y="4" maskUnits="userSpaceOnUse" style="mask-type:luminance">
     <path fill="#fff" d="M43.481 4.5H4.52v39.985h38.96V4.5Z"/>
   </mask>
@@ -39,4 +40,5 @@
       <stop offset="1" stop-color="#0B315B"/>
     </linearGradient>
   </defs>
+</svg>
 </svg>

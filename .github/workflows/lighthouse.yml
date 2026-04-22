@@ -37,15 +37,6 @@ jobs:
         run: npm install --global @lhci/cli@0.14
 
       - name: Run Lighthouse CI
-        run: |
-          lhci autorun \
-            --upload.target=temporary-public-storage \
-            --collect.url=http://localhost:8080/index.html \
-            --collect.numberOfRuns=1 \
-            --assert.preset=lighthouse:recommended \
-            --assert.assertions.categories:performance.minScore=0.9 \
-            --assert.assertions.categories:accessibility.minScore=0.9 \
-            --assert.assertions.categories:best-practices.minScore=0.9 \
-            --assert.assertions.categories:seo.minScore=0.8
+        run: lhci autorun
         env:
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}

@@ -1,4 +1,5 @@
-<svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 96 96" width="100" height="100" preserveAspectRatio="xMidYMid meet">
 <g clip-path="url(#clip0_4303_1230)">
 <g clip-path="url(#clip1_4303_1230)">
 <path d="M0 48C0 41.3726 5.37258 36 12 36H16V60H12C5.37258 60 0 54.6274 0 48Z" fill="url(#paint0_linear_4303_1230)"/>
@@ -61,4 +62,5 @@
 <rect width="96" height="96" fill="white"/>
 </clipPath>
 </defs>
+</svg>
 </svg>

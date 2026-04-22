@@ -1,4 +1,5 @@
-<svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 96 96" width="100" height="100" preserveAspectRatio="xMidYMid meet">
 <defs>
 <filter id="filter0_f_84_430">
 <feFlood flood-opacity="0" result="BackgroundImageFix"/>
@@ -52,4 +53,5 @@
 <path d="M62.7295 58H10.4213C7.71219 58 5.23554 59.5303 4.02347 61.9531L17.0227 35.9545C18.2345 33.5309 20.7116 32 23.4213 32H75.7264C81.4004 32 86.5887 28.7985 89.1333 23.7272L90 22L76.1459 49.7082C73.605 54.79 68.4111 58 62.7295 58Z" fill="url(#paint3_linear_84_430)"/>
 <path opacity="0.7" d="M62.7004 58H10.4598C7.75011 58 5.27299 59.5309 4.06119 61.9546L17.0612 35.9545C18.273 33.5309 20.7501 32 23.4598 32H76C81.4957 32 86.5234 28.9061 89 24L76.1107 49.7203C73.5675 54.7954 68.3771 58 62.7004 58Z" fill="url(#paint4_linear_84_430)"/>
 </g>
+</svg>
 </svg>

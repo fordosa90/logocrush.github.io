@@ -1,4 +1,5 @@
-<svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 96 96" width="100" height="100" preserveAspectRatio="xMidYMid meet">
 <g clip-path="url(#clip0)">
 <mask id="mask0" mask-type="alpha" maskUnits="userSpaceOnUse" x="6" y="6" width="84" height="84">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M7.27752 12.8268C4.75997 10.3062 6.54515 6 10.1076 6H85.9997C88.2089 6 89.9997 7.79086 89.9997 10V85.9822C89.9997 89.5469 85.6888 91.3311 83.1696 88.8089L72.0674 77.6935V85.9251C72.0674 89.4892 67.7579 91.2737 65.2383 88.7529L53.9997 77.5093V85.9577C53.9997 89.524 49.6854 91.3075 47.1672 88.7821L7.3232 48.8244C4.80887 46.3029 6.59478 42 10.1557 42H18.5061L7.33883 30.8278C4.81983 28.3077 6.60468 24 10.1679 24H18.4375L7.27752 12.8268Z" fill="url(#paint0_linear)"/>
@@ -62,4 +63,5 @@
 <rect width="96" height="96" fill="white"/>
 </clipPath>
 </defs>
+</svg>
 </svg>
