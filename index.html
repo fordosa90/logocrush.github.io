@@ -786,7 +786,9 @@ function updateHUD() {
   document.getElementById('moves-display').textContent = `${state.movesLeft} move${state.movesLeft !== 1 ? 's' : ''}`;
   document.getElementById('score-target-display').textContent = `Target: ${state.scoreTarget.toLocaleString()}`;
   const tagEl = document.getElementById('tag-badge');
-  tagEl.textContent = state.activeTag === 'all' ? '🌐 All Products' : `🏷️ ${state.activeTag}`;
+  const tagLabel = state.activeTag === 'all' ? 'All Products' :
+    state.activeTag.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  tagEl.textContent = state.activeTag === 'all' ? `🌐 ${tagLabel}` : `🏷️ ${tagLabel}`;
 }
 
 // ─── Screens ──────────────────────────────────────────────────────────────────
