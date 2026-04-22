@@ -1,0 +1,51 @@
+name: Lighthouse CI
+
+on:
+  pull_request:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+jobs:
+  lighthouse:
+    name: Lighthouse audit (performance / accessibility / best practices / SEO)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # Serve the static site on a local port so Lighthouse can audit it.
+      - name: Install static file server
+        run: npm install --global @web/dev-server@0
+
+      - name: Start local server
+        run: |
+          npx wds --root-dir . --port 8080 &
+          # Wait for the server to be ready
+          for i in $(seq 1 15); do
+            curl -sf http://localhost:8080/index.html > /dev/null && break
+            sleep 1
+          done
+          echo "Server ready"
+
+      - name: Install Lighthouse CI
+        run: npm install --global @lhci/cli@0.14
+
+      - name: Run Lighthouse CI
+        run: |
+          lhci autorun \
+            --upload.target=temporary-public-storage \
+            --collect.url=http://localhost:8080/index.html \
+            --collect.numberOfRuns=1 \
+            --assert.preset=lighthouse:recommended \
+            --assert.assertions.categories:performance.minScore=0.9 \
+            --assert.assertions.categories:accessibility.minScore=0.9 \
+            --assert.assertions.categories:best-practices.minScore=0.9 \
+            --assert.assertions.categories:seo.minScore=0.8
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
