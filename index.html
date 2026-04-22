@@ -295,6 +295,22 @@
 </div>
 
 <script>
+// ─── Constants ────────────────────────────────────────────────────────────────
+const GOATCOUNTER_CODE = '';
+const LS_HIGHSCORE   = 'logocrush_highscore';
+const LS_HIGHESTLEVEL = 'logocrush_highestlevel';
+const LS_TOTALGAMES  = 'logocrush_totalgames';
+const LS_TOTALLOGOS  = 'logocrush_totallogos';
+const LS_ACTIVETAG   = 'logocrush_activetag';
+
+// ─── Analytics ───────────────────────────────────────────────────────────────
+function trackEvent(path, title) {
+  if (!GOATCOUNTER_CODE) return;
+  if (window.goatcounter && window.goatcounter.count) {
+    window.goatcounter.count({ path, title, event: true });
+  }
+}
+
 // ─── State ───────────────────────────────────────────────────────────────────
 let allIcons = []; // loaded from manifest.json
 
@@ -621,21 +637,13 @@ async function processMatches(matches) {
 
   renderBoard();
 
-  // Animate new tiles
-  for (let r = 0; r < 8; r++) {
-    for (let c = 0; c < 8; c++) {
-      const key = `${r},${c}`;
-      if (!matches.has(key) || matches.get(key).createSpecial) continue;
-      // top rows that were newly filled
-    }
-  }
-  // Mark newly dropped tiles
+  // Mark newly dropped tiles (top rows per column that were filled from matches)
   const newTileEls = document.querySelectorAll('.tile');
   for (let c = 0; c < 8; c++) {
     let nullCount = 0;
     for (const [key] of matches) {
-      const [, mc] = key.split(',').map(Number);
-      if (mc === c) nullCount++;
+      const [, matchedCol] = key.split(',').map(Number);
+      if (matchedCol === c) nullCount++;
     }
     for (let r = 0; r < nullCount; r++) {
       const idx = r * 8 + c;
@@ -765,7 +773,7 @@ function renderBoard() {
         if (cell.type === 'bomb') tile.classList.add('special-bomb');
       } else {
         img.src = '';
-        tile.setAttribute('aria-label', '');
+        tile.setAttribute('aria-label', 'Empty');
       }
 
       if (state.selectedCell && state.selectedCell[0] === r && state.selectedCell[1] === c) {
@@ -815,6 +823,7 @@ function showLevelSummary(won) {
     nextBtn.style.display = '';
 
     updatePersonalBests();
+    trackEvent('level-complete/' + state.level, 'Level Complete');
 
     stats.innerHTML = `
       <div class="summary-stat"><span>Level</span><strong>${state.level}</strong></div>
@@ -848,6 +857,7 @@ function showLevelSummary(won) {
       <div class="summary-stat"><span>Logos Cleared</span><strong>${state.totalClearedThisLevel}</strong></div>
     `;
     updatePersonalBests();
+    trackEvent('game-over/' + state.level, 'Game Over');
     showGameOver();
     return;
   }
@@ -864,9 +874,9 @@ function startNextLevel() {
 
 function showGameOver() {
   const stats = document.getElementById('gameover-stats');
-  const highscore = parseInt(localStorage.getItem('logocrush_highscore') || '0');
-  const games = parseInt(localStorage.getItem('logocrush_totalgames') || '0');
-  const totalLogos = parseInt(localStorage.getItem('logocrush_totallogos') || '0');
+  const highscore = parseInt(localStorage.getItem(LS_HIGHSCORE) || '0');
+  const games = parseInt(localStorage.getItem(LS_TOTALGAMES) || '0');
+  const totalLogos = parseInt(localStorage.getItem(LS_TOTALLOGOS) || '0');
 
   stats.innerHTML = `
     <div class="summary-stat"><span>Final Score</span><strong>${state.score.toLocaleString()}</strong></div>
@@ -880,20 +890,20 @@ function showGameOver() {
 
 // ─── Personal bests ───────────────────────────────────────────────────────────
 function updatePersonalBests() {
-  const hs = Math.max(state.score, parseInt(localStorage.getItem('logocrush_highscore') || '0'));
-  const hl = Math.max(state.level, parseInt(localStorage.getItem('logocrush_highestlevel') || '1'));
-  const logos = parseInt(localStorage.getItem('logocrush_totallogos') || '0') + state.totalClearedThisLevel;
+  const hs = Math.max(state.score, parseInt(localStorage.getItem(LS_HIGHSCORE) || '0'));
+  const hl = Math.max(state.level, parseInt(localStorage.getItem(LS_HIGHESTLEVEL) || '1'));
+  const logos = parseInt(localStorage.getItem(LS_TOTALLOGOS) || '0') + state.totalClearedThisLevel;
 
-  localStorage.setItem('logocrush_highscore', hs);
-  localStorage.setItem('logocrush_highestlevel', hl);
-  localStorage.setItem('logocrush_totallogos', logos);
+  localStorage.setItem(LS_HIGHSCORE, hs);
+  localStorage.setItem(LS_HIGHESTLEVEL, hl);
+  localStorage.setItem(LS_TOTALLOGOS, logos);
 }
 
 function loadPersonalBests() {
-  document.getElementById('pb-highscore').textContent = parseInt(localStorage.getItem('logocrush_highscore') || '0').toLocaleString();
-  document.getElementById('pb-level').textContent = localStorage.getItem('logocrush_highestlevel') || '1';
-  document.getElementById('pb-games').textContent = localStorage.getItem('logocrush_totalgames') || '0';
-  document.getElementById('pb-logos').textContent = parseInt(localStorage.getItem('logocrush_totallogos') || '0').toLocaleString();
+  document.getElementById('pb-highscore').textContent = parseInt(localStorage.getItem(LS_HIGHSCORE) || '0').toLocaleString();
+  document.getElementById('pb-level').textContent = localStorage.getItem(LS_HIGHESTLEVEL) || '1';
+  document.getElementById('pb-games').textContent = localStorage.getItem(LS_TOTALGAMES) || '0';
+  document.getElementById('pb-logos').textContent = parseInt(localStorage.getItem(LS_TOTALLOGOS) || '0').toLocaleString();
 }
 
 // ─── Input handlers ───────────────────────────────────────────────────────────
@@ -995,15 +1005,29 @@ function setupModeSelector() {
     container.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', 'false'));
     btn.setAttribute('aria-pressed', 'true');
     state.activeTag = btn.dataset.tag;
+    localStorage.setItem(LS_ACTIVETAG, state.activeTag);
   });
+}
+
+function restoreSavedTag() {
+  const saved = localStorage.getItem(LS_ACTIVETAG);
+  if (!saved) return;
+  const container = document.getElementById('modeSelector');
+  const btn = container.querySelector(`button[data-tag="${CSS.escape(saved)}"]`);
+  if (!btn) return;
+  container.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', 'false'));
+  btn.setAttribute('aria-pressed', 'true');
+  state.activeTag = saved;
 }
 
 // ─── Play button ──────────────────────────────────────────────────────────────
 function setupPlayButton() {
   document.getElementById('btn-play').addEventListener('click', () => {
-    // Increment games count when starting a new game from start screen
-    const games = parseInt(localStorage.getItem('logocrush_totalgames') || '0') + 1;
-    localStorage.setItem('logocrush_totalgames', games);
+    // Persist tag selection and increment games count
+    localStorage.setItem(LS_ACTIVETAG, state.activeTag);
+    const games = parseInt(localStorage.getItem(LS_TOTALGAMES) || '0') + 1;
+    localStorage.setItem(LS_TOTALGAMES, games);
+    trackEvent('game-started/' + state.activeTag, 'Game Started');
     initLevel(1);
     showScreen('screen-playing');
   });
@@ -1024,6 +1048,7 @@ async function init() {
   await loadManifest();
   loadPersonalBests();
   setupModeSelector();
+  restoreSavedTag();
   setupBoardListeners();
   setupPlayButton();
   showScreen('screen-start');
