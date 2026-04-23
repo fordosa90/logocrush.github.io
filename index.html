@@ -518,7 +518,6 @@ function buildPool(tag, level) {
 
   // Hue-based diversity selection
   const withHue = filtered.filter(ic => ic.hue !== undefined);
-  const withoutHue = filtered.filter(ic => ic.hue === undefined);
 
   let chosen;
   if (withHue.length >= 6) {
