@@ -557,6 +557,9 @@
 
     /* Emoji decorations */
     .emoji-big { font-size: 3rem; }
+
+    /* hits.sh visit counter badge */
+    .hits-badge { height: 20px; border-radius: 4px; }
   </style>
 </head>
 <body>
@@ -597,6 +600,7 @@
   </div>
 
   <button id="btn-play" class="btn-primary">Play!</button>
+  <img src="https://hits.sh/fordosa90.github.io/logocrush.github.io.svg?label=Visits&color=0078D4&style=flat-square" alt="Visit counter" class="hits-badge">
 </div>
 <div id="screen-playing" class="screen hidden">
   <header>
@@ -669,7 +673,6 @@
 
 <script>
 // ─── Constants ────────────────────────────────────────────────────────────────
-const GOATCOUNTER_CODE = '';
 const LS_HIGHSCORE   = 'logocrush_highscore';
 const LS_HIGHESTLEVEL = 'logocrush_highestlevel';
 const LS_TOTALGAMES  = 'logocrush_totalgames';
@@ -682,14 +685,6 @@ const HINT_ANIMATION_MS        = 2500;  // how long hint tiles glow (~3.8 × 0.6
 const SWAP_ANIMATION_MS        = 180;   // tile swap slide duration (ms)
 const SPECIAL_SHAKE_INTERVAL_MS  = 1300; // how often to check for special-tile shakes
 const SPECIAL_SHAKE_PROBABILITY  = 0.28; // chance each eligible tile shakes per interval
-
-// ─── Analytics ───────────────────────────────────────────────────────────────
-function trackEvent(path, title) {
-  if (!GOATCOUNTER_CODE) return;
-  if (window.goatcounter && window.goatcounter.count) {
-    window.goatcounter.count({ path, title, event: true });
-  }
-}
 
 // ─── State ───────────────────────────────────────────────────────────────────
 let allIcons = []; // loaded from manifest.json
@@ -1502,7 +1497,6 @@ function showLevelSummary(won) {
     nextBtn.style.display = '';
 
     updatePersonalBests();
-    trackEvent('level-complete/' + state.level, 'Level Complete');
 
     stats.innerHTML = `
       <div class="summary-stat"><span>Level</span><strong>${state.level}</strong></div>
@@ -1536,7 +1530,6 @@ function showLevelSummary(won) {
       <div class="summary-stat"><span>Logos Cleared</span><strong>${state.totalClearedThisLevel}</strong></div>
     `;
     updatePersonalBests();
-    trackEvent('game-over/' + state.level, 'Game Over');
     showGameOver();
     return;
   }
@@ -1705,7 +1698,6 @@ function setupPlayButton() {
     localStorage.setItem(LS_ACTIVETAG, state.activeTag);
     const games = parseInt(localStorage.getItem(LS_TOTALGAMES) || '0') + 1;
     localStorage.setItem(LS_TOTALGAMES, games);
-    trackEvent('game-started/' + state.activeTag, 'Game Started');
     initLevel(1);
     showScreen('screen-playing');
   });

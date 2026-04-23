@@ -110,8 +110,8 @@ jobs:
           echo "✅  Page weight OK"
 
       - name: Verify no hard-coded external CDN scripts
-        # GoatCounter is conditionally loaded only when GOATCOUNTER_CODE is set;
-        # this check ensures no other always-on external script tags are present.
+        # hits.sh is loaded via <img>, not <script>; this check ensures no
+        # external <script src> or external stylesheet tags are present.
         run: |
           python3 - <<'PYEOF'
           import re, sys
@@ -124,9 +124,7 @@ jobs:
             r'<script[^>]+src=["\']https?://[^"\']+["\']',
             html, re.IGNORECASE
           )
-          # Allow conditional GoatCounter snippet patterns — they are injected
-          # dynamically from JS only when GOATCOUNTER_CODE is non-empty.
-          forbidden = [s for s in external_scripts if "goatcounter" not in s.lower()]
+          forbidden = list(external_scripts)
 
           if forbidden:
             print("❌  Hard-coded external <script src> found — remove CDN dependencies:")
