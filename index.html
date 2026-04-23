@@ -602,7 +602,7 @@ function initLevel(level) {
   state.isAnimating = false;
   state.comboCount = 0;
   state.totalClearedThisLevel = 0;
-  state.activePool = buildPool(state.activeTag, level);
+  state.activePool = buildPool(state.activeTag, state.level);
 
   stopGameTimer();
   timeRemaining = 240;
@@ -766,10 +766,12 @@ async function processMatches(matches) {
   const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // Show score popups on matched tiles before clearing
-  const baseScore = matches.size * 100 * (state.comboCount + 1);
+  // perTilePoints is the base value (100 pts) per tile; combo/special extras shown separately
+  const perTileBase = 100;
+  const comboBonus = matches.size * perTileBase * state.comboCount;
   const specialBonus = extraCount * 200;
+  const baseScore = matches.size * perTileBase * (state.comboCount + 1);
   const earned = baseScore + specialBonus;
-  const perTilePoints = Math.round(baseScore / matches.size);
 
   if (!prefersReduced) {
     const tileEls = document.querySelectorAll('.tile');
@@ -781,16 +783,16 @@ async function processMatches(matches) {
       if (tileEl) {
         const popup = document.createElement('div');
         popup.className = 'tile-score-popup';
-        popup.textContent = `+${perTilePoints}`;
+        popup.textContent = `+${perTileBase}`;
         tileEl.appendChild(popup);
         popups.push(popup);
       }
     }
-    if (state.comboCount > 0 || specialBonus > 0) {
+    const totalBonus = comboBonus + specialBonus;
+    if (totalBonus > 0) {
       const bonusEl = document.createElement('div');
       bonusEl.className = 'board-bonus-popup';
-      const bonusAmt = specialBonus + (state.comboCount > 0 ? matches.size * 100 * state.comboCount : 0);
-      bonusEl.textContent = `+${bonusAmt} BONUS!`;
+      bonusEl.textContent = `+${totalBonus} BONUS!`;
       document.body.appendChild(bonusEl);
       setTimeout(() => bonusEl.remove(), 900);
     }
@@ -841,21 +843,41 @@ async function processMatches(matches) {
   renderBoard();
 
   // Animate tiles that fell and new tiles
+  // For each column: a tile at pre-gravity row r falls by the number of nulls strictly below row r.
+  // New tiles (rows that were null before gravity) appear from above.
   if (!prefersReduced) {
     const newTileEls = document.querySelectorAll('.tile');
     for (let c = 0; c < 8; c++) {
+      // Precompute null-below counts for existing tiles so they can get a fall animation
       for (let r = 0; r < 8; r++) {
         const preCell = preGravity[r][c];
-        if (!preCell) {
-          // Count consecutive nulls above (including this cell) for fall distance
-          let fallRows = 1;
-          for (let pr = r - 1; pr >= 0; pr--) {
-            if (!preGravity[pr][c]) fallRows++;
+        if (preCell) {
+          // Count nulls strictly below this tile in preGravity (rows r+1..7)
+          let fallRows = 0;
+          for (let dr = r + 1; dr < 8; dr++) {
+            if (!preGravity[dr][c]) fallRows++;
+          }
+          if (fallRows > 0) {
+            // This tile ended up at row r + fallRows after gravity
+            const newRow = r + fallRows;
+            const idx = newRow * 8 + c;
+            const el = newTileEls[idx];
+            if (el) {
+              el.style.setProperty('--fall-rows', fallRows);
+              el.classList.add('anim-fall');
+            }
+          }
+        } else {
+          // Null cell before gravity → filled by a new tile or a tile from above
+          // Count nulls at rows 0..r (inclusive) to determine how far new tile "drops"
+          let nullsAbove = 0;
+          for (let pr = 0; pr <= r; pr++) {
+            if (!preGravity[pr][c]) nullsAbove++;
           }
           const idx = r * 8 + c;
           const el = newTileEls[idx];
-          if (el) {
-            el.style.setProperty('--fall-rows', fallRows);
+          if (el && !el.classList.contains('anim-fall')) {
+            el.style.setProperty('--fall-rows', nullsAbove);
             el.classList.add('anim-fall');
           }
         }
@@ -1344,7 +1366,7 @@ async function detectIconHues() {
       const counts = {};
       for (const f of fills) {
         const [h, s, l] = hexToHsl(f);
-        if (l < 0.1 || l > 0.9 || s < 0.15) continue; // skip near-black/white/grey
+        if (l < 0.1 || l > 0.9 || s < 0.15) continue; // skip near-black (l<0.1), near-white (l>0.9), and near-grey (s<0.15)
         counts[h] = (counts[h] || 0) + 1;
       }
       let bestHue = null, bestCount = 0;
@@ -1360,7 +1382,9 @@ async function detectIconHues() {
 // ─── Bootstrap ────────────────────────────────────────────────────────────────
 async function init() {
   await loadManifest();
-  detectIconHues(); // fire and forget - enhances pool building when complete
+  detectIconHues(); // fire-and-forget: hue data enhances colour-diversity pool building.
+                    // If the player starts a game before detection completes (level 1),
+                    // buildPool falls back to random selection; later levels benefit from hues.
   loadPersonalBests();
   setupModeSelector();
   restoreSavedTag();
