@@ -1,0 +1,167 @@
+name: Validate Assets
+
+on:
+  pull_request:
+    branches: [main, master]
+  push:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+jobs:
+  manifest-and-svg:
+    name: Manifest integrity & SVG compliance
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate manifest.json and SVG assets
+        run: |
+          python3 - <<'PYEOF'
+          import json, os, sys, re
+
+          ALLOWED_TAGS = {
+            "azure", "m365", "power-platform", "dynamics", "security",
+            "modern-workplace", "developer", "data", "copilot", "legacy",
+          }
+          MAX_SVG_BYTES  = 10 * 1024   # 10 KB
+          REQUIRED_VIEWBOX = "0 0 100 100"
+          errors = []
+
+          # ── Load manifest ────────────────────────────────────────────────────
+          try:
+            with open("manifest.json", encoding="utf-8") as f:
+              manifest = json.load(f)
+          except json.JSONDecodeError as e:
+            print(f"❌  manifest.json is not valid JSON: {e}")
+            sys.exit(1)
+
+          if not isinstance(manifest.get("icons"), list):
+            print("❌  manifest.json must have a top-level 'icons' array")
+            sys.exit(1)
+
+          icons = manifest["icons"]
+          if len(icons) < 6:
+            errors.append(f"Manifest has only {len(icons)} icon(s); minimum 6 required")
+
+          # ── Check each icon entry ────────────────────────────────────────────
+          seen_ids   = {}
+          seen_files = {}
+          kebab_re   = re.compile(r'^[a-z0-9]+(-[a-z0-9]+)*$')
+
+          for idx, icon in enumerate(icons):
+            prefix = f"icons[{idx}] (id={icon.get('id', '?')})"
+
+            for field in ("id", "name", "file", "tags"):
+              if field not in icon:
+                errors.append(f"{prefix}: missing required field '{field}'")
+
+            icon_id   = icon.get("id", "")
+            icon_file = icon.get("file", "")
+            icon_tags = icon.get("tags", [])
+
+            # id must be kebab-case
+            if icon_id and not kebab_re.match(icon_id):
+              errors.append(f"{prefix}: id '{icon_id}' is not kebab-case")
+
+            # duplicate id check
+            if icon_id in seen_ids:
+              errors.append(f"{prefix}: duplicate id '{icon_id}' (first at index {seen_ids[icon_id]})")
+            else:
+              seen_ids[icon_id] = idx
+
+            # file must be in icons/ and match id
+            expected_file = f"icons/{icon_id}.svg"
+            if icon_file != expected_file:
+              errors.append(f"{prefix}: file '{icon_file}' does not match expected '{expected_file}'")
+
+            # duplicate file check
+            if icon_file in seen_files:
+              errors.append(f"{prefix}: duplicate file '{icon_file}'")
+            else:
+              seen_files[icon_file] = idx
+
+            # tags must be non-empty list from allowed set
+            if not isinstance(icon_tags, list) or len(icon_tags) == 0:
+              errors.append(f"{prefix}: 'tags' must be a non-empty list")
+            else:
+              for tag in icon_tags:
+                if tag not in ALLOWED_TAGS:
+                  errors.append(f"{prefix}: unknown tag '{tag}' — allowed: {sorted(ALLOWED_TAGS)}")
+
+            # SVG file must exist
+            if icon_file and not os.path.isfile(icon_file):
+              errors.append(f"{prefix}: SVG file not found: {icon_file}")
+
+          # ── SVG compliance check ─────────────────────────────────────────────
+          manifest_files = {icon.get("file") for icon in icons if icon.get("file")}
+
+          # Find all SVGs on disk
+          disk_svgs = set()
+          for fname in os.listdir("icons"):
+            if fname.endswith(".svg"):
+              disk_svgs.add(f"icons/{fname}")
+
+          # Orphaned SVGs (on disk but not in manifest)
+          orphans = disk_svgs - manifest_files
+          for svg in sorted(orphans):
+            errors.append(f"Orphaned SVG not listed in manifest: {svg}")
+
+          # Per-file SVG rules
+          for svg_path in sorted(disk_svgs):
+            try:
+              stat_size = os.path.getsize(svg_path)
+            except OSError as e:
+              errors.append(f"{svg_path}: cannot stat file: {e}")
+              continue
+
+            if stat_size > MAX_SVG_BYTES:
+              errors.append(
+                f"{svg_path}: file size {stat_size} bytes exceeds {MAX_SVG_BYTES} byte limit"
+              )
+
+            try:
+              with open(svg_path, encoding="utf-8") as f:
+                svg_text = f.read()
+            except (OSError, UnicodeDecodeError) as e:
+              errors.append(f"{svg_path}: cannot read file: {e}")
+              continue
+
+            # Must declare correct viewBox
+            if REQUIRED_VIEWBOX not in svg_text:
+              errors.append(
+                f"{svg_path}: missing or incorrect viewBox — expected viewBox=\"{REQUIRED_VIEWBOX}\""
+              )
+
+            # No embedded fonts
+            if re.search(r'<font[\s>]|@font-face', svg_text, re.IGNORECASE):
+              errors.append(f"{svg_path}: contains embedded font (<font> or @font-face)")
+
+            # No raster image elements
+            if re.search(r'<image[\s>]', svg_text, re.IGNORECASE):
+              errors.append(f"{svg_path}: contains <image> element (raster images not allowed)")
+
+            # No external script or href that resolves off-site
+            if re.search(r'<script[\s>]', svg_text, re.IGNORECASE):
+              errors.append(f"{svg_path}: contains <script> element")
+
+            # Must have xmlns declaration
+            if 'xmlns="http://www.w3.org/2000/svg"' not in svg_text:
+              errors.append(f"{svg_path}: missing xmlns=\"http://www.w3.org/2000/svg\"")
+
+          # ── Summary ──────────────────────────────────────────────────────────
+          manifest_count = len(icons)
+          svg_count      = len(disk_svgs)
+          print(f"✅  Manifest icons : {manifest_count}")
+          print(f"✅  SVG files found: {svg_count}")
+
+          if errors:
+            print(f"\n❌  {len(errors)} error(s) found:\n")
+            for err in errors:
+              print(f"   • {err}")
+            sys.exit(1)
+          else:
+            print("\n✅  All asset checks passed")
+          PYEOF
