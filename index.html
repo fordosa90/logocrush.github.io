@@ -88,11 +88,12 @@
       border-color: var(--primary);
     }
 
-    /* Playing screen header */
+    /* Playing screen layout */
     #screen-playing {
       max-width: 100%;
       padding: 0;
       gap: 0;
+      align-items: stretch;
     }
     header {
       width: 100%;
@@ -103,11 +104,7 @@
       align-items: center;
       gap: 0.75rem;
     }
-    .game-title { font-weight: 700; font-size: 1rem; color: var(--primary); flex: 0 0 auto; }
-    #level-display { font-size: 0.9rem; color: #555; flex: 1; }
-    .header-stats { display: flex; flex-direction: column; align-items: flex-end; gap: 0.1rem; }
-    #score-display { font-size: 1rem; font-weight: 700; color: var(--primary); }
-    #moves-display { font-size: 0.8rem; color: #666; }
+    .game-title { font-weight: 700; font-size: 1rem; color: var(--primary); flex: 1; }
 
     #tag-badge {
       font-size: 0.75rem;
@@ -115,30 +112,72 @@
       color: var(--primary);
       border-radius: 12px;
       padding: 0.2rem 0.7rem;
-      margin: 0.4rem 0 0.1rem;
       font-weight: 600;
-      align-self: flex-start;
-      margin-left: 1rem;
+      flex: 0 0 auto;
+    }
+
+    /* Game area: board + sidebar */
+    #game-area {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 1rem;
+      padding: 1rem;
+      flex-wrap: wrap;
     }
 
     /* Board */
+    #board-area {
+      padding: 8px;
+      background: #162b45;
+      border-radius: 14px;
+      display: flex;
+      flex-shrink: 0;
+    }
     #board {
       display: grid;
       grid-template-columns: repeat(8, var(--tile-size));
       grid-template-rows: repeat(8, var(--tile-size));
       gap: var(--gap);
-      padding: 6px;
+      padding: 4px;
       background: #0f2744;
-      border-radius: 12px;
+      border-radius: 10px;
       touch-action: none;
       user-select: none;
     }
-    #board-area {
-      padding: 0.75rem;
-      background: #162b45;
-      width: 100%;
+
+    /* Sidebar stats */
+    #sidebar {
       display: flex;
-      justify-content: center;
+      flex-direction: column;
+      gap: 0.55rem;
+      min-width: 110px;
+      padding-top: 0.2rem;
+    }
+    .sidebar-stat {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.45rem 0.7rem;
+    }
+    .sidebar-label {
+      font-size: 0.62rem;
+      color: #888;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+    #level-display  { font-size: 1.05rem; font-weight: 700; color: #333; }
+    #score-display  { font-size: 1.05rem; font-weight: 700; color: var(--primary); }
+    #moves-display  { font-size: 1.05rem; font-weight: 700; color: #333; }
+    #timer-display  { font-size: 1.05rem; font-weight: 700; color: #333; }
+
+    @media (max-width: 600px) {
+      #game-area { flex-direction: column; align-items: center; padding: 0.5rem; }
+      #sidebar { flex-direction: row; flex-wrap: wrap; min-width: 0; width: 100%; justify-content: center; }
+      .sidebar-stat { min-width: 80px; text-align: center; }
+      .sidebar-label { text-align: center; }
     }
 
     .tile {
@@ -200,6 +239,12 @@
     .tile.anim-new { animation: tileNew 0.2s ease-out forwards; }
     .tile.anim-bounce { animation: tileBounce 0.25s ease-in-out; }
     .score-pulse { animation: scorePulse 0.4s ease-in-out; }
+
+    @keyframes tileHighlight {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0px rgba(255,140,0,0); }
+      50% { transform: scale(1.1); box-shadow: 0 0 0 3px rgba(255,140,0,0.9), 0 0 14px 5px rgba(255,140,0,0.45); }
+    }
+    .tile.anim-highlight { animation: tileHighlight 0.28s ease-in-out; z-index: 3; }
 
     @keyframes tileFall {
       0% { transform: translateY(calc(-1 * var(--tile-size) * var(--fall-rows, 1))); opacity: 0.7; }
@@ -264,15 +309,13 @@
     #progress-jar-fill { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, #0078D4, #50c0f0); transition: height 0.5s ease; height: 0%; }
     #progress-level-label { font-size: 0.65rem; font-weight: 700; color: var(--primary); text-align: center; }
 
-    /* Timer */
-    #timer-display { font-size: 0.9rem; font-weight: 700; color: #333; }
     #timer-display.timer-warning { color: #d83b01; }
 
     /* Menu button */
     .btn-menu { background: white; color: var(--primary); border: 1px solid var(--primary); border-radius: 6px; padding: 0.3rem 0.7rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
 
     @media (prefers-reduced-motion: reduce) {
-      .tile, .tile.anim-match, .tile.anim-new, .tile.anim-bounce, .tile.anim-fall, .score-pulse {
+      .tile, .tile.anim-match, .tile.anim-new, .tile.anim-bounce, .tile.anim-fall, .tile.anim-highlight, .score-pulse {
         animation: none !important;
         transition: none !important;
       }
@@ -334,22 +377,37 @@
 <div id="screen-playing" class="screen hidden">
   <header>
     <button id="btn-menu" class="btn-menu">⬅ Menu</button>
-    <span id="level-display">Level 1</span>
-    <div class="header-stats">
-      <span id="score-display">0</span>
-      <span id="moves-display">20 moves</span>
-      <span id="timer-display">4:00</span>
-    </div>
-    <div id="progress-jar-container">
-      <div id="progress-jar">
-        <div id="progress-jar-fill"></div>
-      </div>
-      <div id="progress-level-label">LVL <span id="progress-level-num">1</span></div>
-    </div>
+    <span class="game-title">LogoCrush 🎮</span>
+    <div id="tag-badge"></div>
   </header>
-  <div id="tag-badge"></div>
-  <div id="board-area">
-    <div id="board" role="grid" aria-label="Game board"></div>
+  <div id="game-area">
+    <div id="board-area">
+      <div id="board" role="grid" aria-label="Game board"></div>
+    </div>
+    <div id="sidebar">
+      <div class="sidebar-stat">
+        <div class="sidebar-label">Level</div>
+        <div id="level-display">1</div>
+      </div>
+      <div class="sidebar-stat">
+        <div class="sidebar-label">Score</div>
+        <div id="score-display">0</div>
+      </div>
+      <div class="sidebar-stat">
+        <div class="sidebar-label">Moves</div>
+        <div id="moves-display">20</div>
+      </div>
+      <div class="sidebar-stat">
+        <div class="sidebar-label">Time</div>
+        <div id="timer-display">4:00</div>
+      </div>
+      <div id="progress-jar-container">
+        <div id="progress-jar">
+          <div id="progress-jar-fill"></div>
+        </div>
+        <div id="progress-level-label">LVL <span id="progress-level-num">1</span></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -765,21 +823,33 @@ async function processMatches(matches) {
   const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // Scoring: each matched tile is worth PER_TILE_PTS, multiplied by (comboCount + 1).
-  // comboDisplayBonus is the extra earned from combos, used only for the visual popup (not added separately to score).
   const PER_TILE_PTS = 100;
   const specialBonus = extraCount * 200;
   const baseScore = matches.size * PER_TILE_PTS * (state.comboCount + 1);
   const earned = baseScore + specialBonus;
-  // Visual display only: extra points beyond the flat per-tile base
   const comboDisplayBonus = matches.size * PER_TILE_PTS * state.comboCount;
 
+  const tileEls = document.querySelectorAll('.tile');
+
   if (!prefersReduced) {
-    const tileEls = document.querySelectorAll('.tile');
+    // Phase 1: Highlight matched tiles so the player can see the combo
+    for (const key of matches.keys()) {
+      const [r, c] = key.split(',').map(Number);
+      const el = tileEls[r * 8 + c];
+      if (el) el.classList.add('anim-highlight');
+    }
+    await delay(280);
+    for (const key of matches.keys()) {
+      const [r, c] = key.split(',').map(Number);
+      const el = tileEls[r * 8 + c];
+      if (el) el.classList.remove('anim-highlight');
+    }
+
+    // Phase 2: Show score popups on the matched tiles while they are still visible
     const popups = [];
     for (const key of matches.keys()) {
       const [r, c] = key.split(',').map(Number);
-      const idx = r * 8 + c;
-      const tileEl = tileEls[idx];
+      const tileEl = tileEls[r * 8 + c];
       if (tileEl) {
         const popup = document.createElement('div');
         popup.className = 'tile-score-popup';
@@ -796,34 +866,29 @@ async function processMatches(matches) {
       document.body.appendChild(bonusEl);
       setTimeout(() => bonusEl.remove(), 900);
     }
-    await delay(500);
+
+    // Phase 3: Animate matched tiles shrinking/disappearing
+    const animPromises = [];
+    for (const key of matches.keys()) {
+      const [r, c] = key.split(',').map(Number);
+      const el = tileEls[r * 8 + c];
+      if (el) {
+        el.classList.add('anim-match');
+        animPromises.push(new Promise(res => {
+          el.addEventListener('animationend', res, { once: true });
+        }));
+      }
+    }
+    await Promise.race([Promise.all(animPromises), delay(350)]);
     popups.forEach(p => p.remove());
   }
 
-  // Animate clearing
-  const tileEls = document.querySelectorAll('.tile');
-  const animPromises = [];
-  for (const key of matches.keys()) {
-    const [r, c] = key.split(',').map(Number);
-    const idx = r * 8 + c;
-    if (tileEls[idx]) {
-      tileEls[idx].classList.add('anim-match');
-      animPromises.push(new Promise(res => {
-        tileEls[idx].addEventListener('animationend', res, { once: true });
-      }));
-    }
-  }
-
+  // Update score and stats
   state.score += earned;
   state.totalClearedThisLevel += matches.size;
+  updateHUD();
 
-  if (!prefersReduced && animPromises.length > 0) {
-    await Promise.race([Promise.all(animPromises), delay(350)]);
-  } else {
-    await delay(prefersReduced ? 0 : 300);
-  }
-
-  // Create special tiles at designated positions, clear matched
+  // Create special tiles at designated positions, clear matched cells from state
   for (const [key, cellInfo] of matches) {
     const [r, c] = key.split(',').map(Number);
     if (cellInfo.createSpecial) {
@@ -833,32 +898,27 @@ async function processMatches(matches) {
     }
   }
 
-  updateHUD();
-
-  // Track positions before gravity
+  // Capture pre-gravity layout so we can calculate fall distances
   const preGravity = state.board.map(row => row.map(cell => cell ? { ...cell } : null));
 
   applyGravity();
   fillNewTiles();
+  // renderBoard() resets all animation classes, so tiles are visible and clean
   renderBoard();
 
-  // Animate tiles that fell and new tiles
-  // For each column: a tile at pre-gravity row r falls by the number of nulls strictly below row r.
-  // New tiles (rows that were null before gravity) appear from above.
+  // Phase 4: Animate tiles falling into position
   if (!prefersReduced) {
     const newTileEls = document.querySelectorAll('.tile');
     for (let c = 0; c < 8; c++) {
-      // Precompute null-below counts for existing tiles so they can get a fall animation
       for (let r = 0; r < 8; r++) {
         const preCell = preGravity[r][c];
         if (preCell) {
-          // Count nulls strictly below this tile in preGravity (rows r+1..7)
+          // Tile existed before; count how many rows it drops
           let fallRows = 0;
           for (let dr = r + 1; dr < 8; dr++) {
             if (!preGravity[dr][c]) fallRows++;
           }
           if (fallRows > 0) {
-            // This tile ended up at row r + fallRows after gravity
             const newRow = r + fallRows;
             const idx = newRow * 8 + c;
             const el = newTileEls[idx];
@@ -868,8 +928,7 @@ async function processMatches(matches) {
             }
           }
         } else {
-          // Null cell before gravity → filled by a new tile or a tile from above
-          // Count nulls at rows 0..r (inclusive) to determine how far new tile "drops"
+          // Null position before gravity — new tile dropped in from above
           let nullsAbove = 0;
           for (let pr = 0; pr <= r; pr++) {
             if (!preGravity[pr][c]) nullsAbove++;
@@ -883,11 +942,16 @@ async function processMatches(matches) {
         }
       }
     }
-    await delay(280);
+    await delay(300);
   }
 
-  document.querySelectorAll('.tile.anim-fall').forEach(el => { el.classList.remove('anim-fall'); el.style.removeProperty('--fall-rows'); });
+  // Clean up fall animation classes so the board is in a neutral state
+  document.querySelectorAll('.tile.anim-fall').forEach(el => {
+    el.classList.remove('anim-fall');
+    el.style.removeProperty('--fall-rows');
+  });
 
+  // Check for cascade: if the reshuffle created new matches, process them automatically
   const newMatches = findMatches();
   if (newMatches.size > 0) {
     state.comboCount++;
@@ -1024,8 +1088,9 @@ function renderBoard() {
       const cell = state.board[r][c];
       const img = tile.querySelector('img');
 
-      // Reset special classes (but not animation classes)
-      tile.classList.remove('selected', 'special-rowclear', 'special-bomb');
+      // Reset special classes and any lingering animation classes
+      tile.classList.remove('selected', 'special-rowclear', 'special-bomb', 'anim-match', 'anim-fall', 'anim-new', 'anim-highlight');
+      tile.style.removeProperty('--fall-rows');
 
       if (cell) {
         const icon = iconById(cell.iconId);
@@ -1054,13 +1119,13 @@ function renderBoard() {
 
 // ─── HUD ──────────────────────────────────────────────────────────────────────
 function updateHUD() {
-  document.getElementById('level-display').textContent = `Level ${state.level}`;
+  document.getElementById('level-display').textContent = state.level;
   const scoreEl = document.getElementById('score-display');
   scoreEl.textContent = state.score.toLocaleString();
   scoreEl.classList.remove('score-pulse');
   scoreEl.offsetWidth;
   scoreEl.classList.add('score-pulse');
-  document.getElementById('moves-display').textContent = `${state.movesLeft} move${state.movesLeft !== 1 ? 's' : ''}`;
+  document.getElementById('moves-display').textContent = state.movesLeft;
 
   // Timer
   const timerEl = document.getElementById('timer-display');
