@@ -789,7 +789,7 @@ async function processMatches(matches) {
     if (state.comboCount > 0 || specialBonus > 0) {
       const bonusEl = document.createElement('div');
       bonusEl.className = 'board-bonus-popup';
-      const bonusAmt = specialBonus + (state.comboCount > 0 ? Math.round(baseScore * state.comboCount) : 0);
+      const bonusAmt = specialBonus + (state.comboCount > 0 ? matches.size * 100 * state.comboCount : 0);
       bonusEl.textContent = `+${bonusAmt} BONUS!`;
       document.body.appendChild(bonusEl);
       setTimeout(() => bonusEl.remove(), 900);
@@ -846,23 +846,17 @@ async function processMatches(matches) {
     for (let c = 0; c < 8; c++) {
       for (let r = 0; r < 8; r++) {
         const preCell = preGravity[r][c];
-        const postCell = state.board[r][c];
-        if (!postCell) continue;
         if (!preCell) {
-          // New tile filled in (either new random or fell from above)
-          // Find how many rows above were empty
-          let fallRows = 0;
+          // Count consecutive nulls above (including this cell) for fall distance
+          let fallRows = 1;
           for (let pr = r - 1; pr >= 0; pr--) {
             if (!preGravity[pr][c]) fallRows++;
           }
-          // Also count if this cell itself was null
-          if (!preGravity[r][c]) fallRows = Math.max(1, fallRows + 1);
           const idx = r * 8 + c;
           const el = newTileEls[idx];
           if (el) {
             el.style.setProperty('--fall-rows', fallRows);
             el.classList.add('anim-fall');
-            el.addEventListener('animationend', () => { el.classList.remove('anim-fall'); el.style.removeProperty('--fall-rows'); }, { once: true });
           }
         }
       }
@@ -870,7 +864,6 @@ async function processMatches(matches) {
     await delay(280);
   }
 
-  document.querySelectorAll('.tile.anim-new').forEach(el => el.classList.remove('anim-new'));
   document.querySelectorAll('.tile.anim-fall').forEach(el => { el.classList.remove('anim-fall'); el.style.removeProperty('--fall-rows'); });
 
   const newMatches = findMatches();
@@ -1329,15 +1322,15 @@ function hexToHsl(hex) {
   const g = parseInt(hex.slice(3,5), 16) / 255;
   const b = parseInt(hex.slice(5,7), 16) / 255;
   const max = Math.max(r,g,b), min = Math.min(r,g,b);
+  const d = max - min;
   let h = 0;
-  if (max !== min) {
-    const d = max - min;
+  if (d !== 0) {
     if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
     else if (max === g) h = ((b - r) / d + 2) / 6;
     else h = ((r - g) / d + 4) / 6;
   }
   const l = (max + min) / 2;
-  const s = max === min ? 0 : (l > 0.5 ? d / (2 - max - min) : (max - min) / (max + min));
+  const s = d === 0 ? 0 : (l > 0.5 ? d / (2 - max - min) : d / (max + min));
   return [h * 360, s, l];
 }
 
