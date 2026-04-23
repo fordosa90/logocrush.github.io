@@ -765,13 +765,14 @@ async function processMatches(matches) {
 
   const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // Show score popups on matched tiles before clearing
-  // perTilePoints is the base value (100 pts) per tile; combo/special extras shown separately
-  const perTileBase = 100;
-  const comboBonus = matches.size * perTileBase * state.comboCount;
+  // Scoring: each matched tile is worth PER_TILE_PTS, multiplied by (comboCount + 1).
+  // comboDisplayBonus is the extra earned from combos, used only for the visual popup (not added separately to score).
+  const PER_TILE_PTS = 100;
   const specialBonus = extraCount * 200;
-  const baseScore = matches.size * perTileBase * (state.comboCount + 1);
+  const baseScore = matches.size * PER_TILE_PTS * (state.comboCount + 1);
   const earned = baseScore + specialBonus;
+  // Visual display only: extra points beyond the flat per-tile base
+  const comboDisplayBonus = matches.size * PER_TILE_PTS * state.comboCount;
 
   if (!prefersReduced) {
     const tileEls = document.querySelectorAll('.tile');
@@ -783,12 +784,12 @@ async function processMatches(matches) {
       if (tileEl) {
         const popup = document.createElement('div');
         popup.className = 'tile-score-popup';
-        popup.textContent = `+${perTileBase}`;
+        popup.textContent = `+${PER_TILE_PTS}`;
         tileEl.appendChild(popup);
         popups.push(popup);
       }
     }
-    const totalBonus = comboBonus + specialBonus;
+    const totalBonus = comboDisplayBonus + specialBonus;
     if (totalBonus > 0) {
       const bonusEl = document.createElement('div');
       bonusEl.className = 'board-bonus-popup';
@@ -1357,6 +1358,11 @@ function hexToHsl(hex) {
 }
 
 async function detectIconHues() {
+  // Thresholds for filtering out near-achromatic colours when detecting dominant hue.
+  const MIN_LIGHTNESS  = 0.1;  // ignore near-black (lightness below 10%)
+  const MAX_LIGHTNESS  = 0.9;  // ignore near-white (lightness above 90%)
+  const MIN_SATURATION = 0.15; // ignore near-grey  (saturation below 15%)
+
   const fetchIcon = async (icon) => {
     try {
       const res = await fetch(icon.file);
@@ -1366,7 +1372,7 @@ async function detectIconHues() {
       const counts = {};
       for (const f of fills) {
         const [h, s, l] = hexToHsl(f);
-        if (l < 0.1 || l > 0.9 || s < 0.15) continue; // skip near-black (l<0.1), near-white (l>0.9), and near-grey (s<0.15)
+        if (l < MIN_LIGHTNESS || l > MAX_LIGHTNESS || s < MIN_SATURATION) continue;
         counts[h] = (counts[h] || 0) + 1;
       }
       let bestHue = null, bestCount = 0;
