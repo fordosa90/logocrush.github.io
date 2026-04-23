@@ -242,23 +242,22 @@
     }
     #progress-jar {
       flex: 2;
-      border: 2px solid rgba(255,255,255,0.2);
+      border: 2px solid rgba(255,255,255,0.3);
       border-radius: 6px 6px 12px 12px;
-      background: rgba(0,50,130,0.35);
+      background: rgba(255,255,255,0.08);
       position: relative;
       overflow: hidden;
     }
-    /* Full-height fill; scaleY from bottom produces blue→gold colour reveal */
+    /* Full-height fill; scaleY from bottom: transparent at 0%, golden at 100% */
     #progress-jar-fill {
       position: absolute;
       bottom: 0; left: 0; right: 0;
       height: 100%;
       background: linear-gradient(to top,
-        #002880 0%,
-        #0057c2 28%,
-        #1a90ff 46%,
-        #e09000 72%,
-        #ffd700 100%);
+        rgba(180, 120, 0, 0.85) 0%,
+        rgba(220, 160, 0, 0.9)  40%,
+        rgba(255, 200, 0, 0.95) 70%,
+        rgba(255, 215, 0, 1)    100%);
       transform: scaleY(0);
       transform-origin: bottom center;
       transition: transform 0.5s ease;
@@ -269,6 +268,11 @@
       flex: 1;
       position: relative;
       margin-left: 4px;
+    }
+    /* Invisible left spacer — mirrors the ruler so the jar is truly centred */
+    #jar-region::before {
+      content: '';
+      flex: 1;
     }
     /* Target mark — fixed at top */
     #jar-mark-target {
@@ -287,13 +291,13 @@
       transform: translateY(-50%);
       transition: top 0.5s ease;
     }
-    .mark-tick { width: 10px; height: 2px; flex-shrink: 0; }
+    .mark-tick { width: 18px; height: 3px; flex-shrink: 0; border-radius: 2px; }
     #jar-mark-target .mark-tick { background: #ffd700; }
     #jar-mark-current .mark-tick { background: #00e5ff; }
     .mark-label {
-      font-size: 0.44rem;
-      font-weight: 800;
-      padding-left: 3px;
+      font-size: 0.72rem;
+      font-weight: 900;
+      padding-left: 4px;
       white-space: nowrap;
       line-height: 1;
     }
@@ -372,10 +376,14 @@
       z-index: 2;
     }
     .tile.special-rowclear {
-      box-shadow: 0 0 0 2px gold, 0 0 8px 2px rgba(255, 200, 0, 0.6);
+      background: #ffd700;
+      border: 2px solid #ff8c00;
+      box-shadow: 0 0 10px 3px rgba(255, 165, 0, 0.55);
     }
     .tile.special-bomb {
-      box-shadow: 0 0 0 2px #ff4500, 0 0 10px 3px rgba(255, 69, 0, 0.5);
+      background: #ffd700;
+      border: 2px solid #ff4500;
+      box-shadow: 0 0 12px 4px rgba(255, 69, 0, 0.6);
     }
 
     /* Animations */
@@ -1301,7 +1309,7 @@ function renderBoard() {
       const img = tile.querySelector('img');
 
       // Reset special classes and any lingering animation classes
-      tile.classList.remove('selected', 'special-rowclear', 'special-bomb', 'anim-match', 'anim-fall', 'anim-new', 'anim-highlight');
+      tile.classList.remove('selected', 'special-rowclear', 'special-bomb', 'anim-match', 'anim-fall', 'anim-new', 'anim-highlight', 'anim-hint');
       tile.style.removeProperty('--fall-rows');
 
       if (cell) {
