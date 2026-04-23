@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LogoCrush</title>
+  <meta name="description" content="LogoCrush – match Microsoft cloud product logos in this browser-based match-3 puzzle game. Inspired by Candy Crush, runs entirely in your browser with no install needed.">
+  <link rel="icon" href="data:,">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -31,6 +33,7 @@
     h1 { font-size: 2rem; color: var(--primary); text-align: center; }
     h2 { font-size: 1.5rem; color: #333; text-align: center; }
     h3 { font-size: 1rem; color: #555; }
+    .section-label { font-size: 1rem; color: #555; }
     p { color: #666; text-align: center; }
 
     .btn-primary {
@@ -60,7 +63,7 @@
     }
     .pb-item { text-align: center; }
     .pb-value { font-size: 1.2rem; font-weight: 700; color: var(--primary); display: block; }
-    .pb-label { font-size: 0.7rem; color: #888; text-transform: uppercase; }
+    .pb-label { font-size: 0.7rem; color: #666; text-transform: uppercase; }
 
     /* Mode selector */
     #modeSelector {
@@ -212,7 +215,7 @@
     }
     .summary-stat { display: flex; justify-content: space-between; width: 100%; max-width: 300px; font-size: 0.95rem; padding: 0.3rem 0; border-bottom: 1px solid var(--border); }
     .summary-stat strong { color: var(--primary); }
-    #summary-timer { font-size: 0.8rem; color: #888; }
+    #summary-timer { font-size: 0.8rem; color: #666; }
 
     /* Emoji decorations */
     .emoji-big { font-size: 3rem; }
@@ -244,7 +247,7 @@
     </div>
   </div>
 
-  <h3>Your Cloud</h3>
+  <h2 class="section-label">Your Cloud</h2>
   <div id="modeSelector" role="group" aria-label="Your Cloud filter">
     <button data-tag="all" aria-pressed="true">All</button>
     <button data-tag="azure" aria-pressed="false">Azure</button>
