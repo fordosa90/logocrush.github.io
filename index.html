@@ -256,31 +256,40 @@
       position: absolute;
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 0.7rem;
-      font-weight: 700;
-      color: #ff8c00;
+      font-size: calc(var(--tile-size) * 0.38);
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 0 0 6px rgba(0,0,0,0.7), 0 1px 3px rgba(0,0,0,0.6);
       pointer-events: none;
       z-index: 10;
-      animation: scoreFloat 0.6s ease-out forwards;
+      white-space: nowrap;
+      animation: scoreFloat 1.1s ease-out forwards;
     }
     @keyframes scoreFloat {
-      0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-      100% { transform: translate(-50%, -150%) scale(0.8); opacity: 0; }
+      0%   { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+      45%  { transform: translate(-50%, -50%) scale(1.1);  opacity: 1; }
+      100% { transform: translate(-50%, -130%) scale(0.85); opacity: 0; }
     }
     .board-bonus-popup {
       position: fixed;
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 2rem;
+      font-size: 3.2rem;
       font-weight: 900;
-      color: #ff8c00;
+      color: #fff;
+      background: rgba(0,0,0,0.78);
+      padding: 0.35rem 1.1rem;
+      border-radius: 14px;
+      border: 2px solid #ff8c00;
+      text-shadow: 0 0 18px #ff8c00, 0 0 36px rgba(255,140,0,0.5);
       z-index: 100;
       pointer-events: none;
-      animation: bonusPop 0.8s ease-out forwards;
+      animation: bonusPop 1.3s ease-out forwards;
     }
     @keyframes bonusPop {
-      0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
-      50% { transform: translate(-50%, -50%) scale(1.3); opacity: 1; }
+      0%   { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+      15%  { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+      70%  { transform: translate(-50%, -50%) scale(1.05); opacity: 1; }
       100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
     }
 
@@ -304,9 +313,57 @@
     .btn-danger { background: #d83b01; color: white; border: none; border-radius: 8px; padding: 0.6rem 1.2rem; font-size: 0.95rem; font-weight: 700; cursor: pointer; }
 
     /* Progress jar */
-    #progress-jar-container { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-    #progress-jar { width: 28px; height: 70px; border: 2px solid var(--primary); border-radius: 4px 4px 8px 8px; background: rgba(0,120,212,0.1); position: relative; overflow: hidden; }
-    #progress-jar-fill { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, #0078D4, #50c0f0); transition: height 0.5s ease; height: 0%; }
+    #progress-jar-container { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    #progress-jar-wrap {
+      position: relative;
+      width: 62px;
+      height: calc(8 * var(--tile-size) + 7 * var(--gap) + 8px);
+    }
+    #progress-jar {
+      width: 100%;
+      height: 100%;
+      border: 2px solid var(--primary);
+      border-radius: 6px 6px 14px 14px;
+      background: rgba(0,120,212,0.07);
+      position: relative;
+      overflow: hidden;
+    }
+    #progress-jar-fill { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, #0050a0, #0078D4, #50c0f0); transition: height 0.5s ease; height: 0%; }
+    #progress-jar-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 3px;
+      pointer-events: none;
+    }
+    #jar-top-label {
+      font-size: 0.52rem;
+      font-weight: 800;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      line-height: 1.3;
+    }
+    #jar-target-score {
+      font-size: 0.6rem;
+      font-weight: 700;
+      color: var(--primary);
+      text-align: center;
+    }
+    #jar-current-score {
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: #fff;
+      text-align: center;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.55);
+    }
     #progress-level-label { font-size: 0.65rem; font-weight: 700; color: var(--primary); text-align: center; }
 
     #timer-display.timer-warning { color: #d83b01; }
@@ -402,8 +459,14 @@
         <div id="timer-display">4:00</div>
       </div>
       <div id="progress-jar-container">
-        <div id="progress-jar">
-          <div id="progress-jar-fill"></div>
+        <div id="progress-jar-wrap">
+          <div id="progress-jar">
+            <div id="progress-jar-fill"></div>
+          </div>
+          <div id="progress-jar-overlay">
+            <div id="jar-top-label">Target<span id="jar-target-score"></span></div>
+            <div id="jar-current-score"></div>
+          </div>
         </div>
         <div id="progress-level-label">LVL <span id="progress-level-num">1</span></div>
       </div>
@@ -591,14 +654,22 @@ function buildPool(tag, level) {
       // Moderate: sample randomly
       chosen = shuffle(sorted).slice(0, 6);
     } else {
-      // Similar hues: pick a random center hue
+      // Similar hues: pick a random center hue, then progressively narrow the pool
+      // as level rises so icons become ever more confusingly similar.
+      // Pool shrinks from 14 candidates (level 5, wide band) down to 6 (level 11+, tightest band).
+      // poolSize = max(MIN_POOL, MAX_POOL - floor((level - 5) * SCALE))
+      // Level 5→14, 6→13, 7→11, 8→10, 9→8, 10→7, 11+→6
+      const MIN_POOL = 6;
+      const MAX_POOL = 14;
+      const POOL_SCALE = 1.5;
       const centerHue = Math.random() * 360;
       const withDist = sorted.map(ic => {
         const d = Math.abs(ic.hue - centerHue);
         return { ic, dist: Math.min(d, 360 - d) };
       });
       withDist.sort((a, b) => a.dist - b.dist);
-      chosen = withDist.slice(0, 6).map(x => x.ic);
+      const poolSize = Math.max(MIN_POOL, MAX_POOL - Math.floor((level - 5) * POOL_SCALE));
+      chosen = shuffle(withDist.slice(0, poolSize)).slice(0, 6).map(x => x.ic);
     }
   } else {
     chosen = shuffle(filtered).slice(0, 6);
@@ -864,7 +935,7 @@ async function processMatches(matches) {
       bonusEl.className = 'board-bonus-popup';
       bonusEl.textContent = `+${totalBonus} BONUS!`;
       document.body.appendChild(bonusEl);
-      setTimeout(() => bonusEl.remove(), 900);
+      setTimeout(() => bonusEl.remove(), 1400);
     }
 
     // Phase 3: Animate matched tiles shrinking/disappearing
@@ -1140,6 +1211,8 @@ function updateHUD() {
   const pct = Math.min(100, (state.score / state.scoreTarget) * 100);
   document.getElementById('progress-jar-fill').style.height = pct + '%';
   document.getElementById('progress-level-num').textContent = state.level;
+  document.getElementById('jar-current-score').textContent = state.score.toLocaleString();
+  document.getElementById('jar-target-score').textContent = state.scoreTarget.toLocaleString();
 
   const tagEl = document.getElementById('tag-badge');
   const tagLabel = state.activeTag === 'all' ? 'All Products' :
