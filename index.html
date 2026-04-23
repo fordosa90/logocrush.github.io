@@ -16,6 +16,8 @@
       --border: #E0E0E0;
       --tile-size: min(10vmin, 64px);
       --gap: min(0.5vmin, 4px);
+      /* board-area total height = board grid + board padding (4px×2) + board-area padding (8px×2) */
+      --board-full-h: calc(8 * var(--tile-size) + 7 * var(--gap) + 24px);
     }
 
     body {
@@ -116,7 +118,7 @@
       flex: 0 0 auto;
     }
 
-    /* Game area: board + sidebar */
+    /* Game area: board column + stats panel */
     #game-area {
       display: flex;
       flex-direction: row;
@@ -124,7 +126,15 @@
       justify-content: center;
       gap: 1rem;
       padding: 1rem;
-      flex-wrap: wrap;
+    }
+
+    /* Board column: game board + hint button */
+    #board-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+      flex-shrink: 0;
     }
 
     /* Board */
@@ -147,37 +157,191 @@
       user-select: none;
     }
 
-    /* Sidebar stats */
-    #sidebar {
+    /* Hint button */
+    #hint-row { width: 100%; display: flex; justify-content: center; }
+    .btn-hint {
+      background: #16213e;
+      color: #ffd700;
+      border: 2px solid #ffd700;
+      border-radius: 10px;
+      padding: 0.5rem 2.2rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      transition: background 0.15s, color 0.15s, transform 0.1s;
+    }
+    .btn-hint:hover { background: #ffd700; color: #000; }
+    .btn-hint:active { transform: scale(0.96); }
+    .btn-hint:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    /* Stats panel — same height as board-area, ~1/3 its width */
+    #stats-panel {
+      height: var(--board-full-h);
+      width: calc(var(--board-full-h) / 3);
+      min-width: 90px;
+      background: #162b45;
+      border-radius: 14px;
       display: flex;
       flex-direction: column;
-      gap: 0.55rem;
-      min-width: 110px;
-      padding-top: 0.2rem;
+      align-items: center;
+      padding: 10px 8px 0;
+      gap: 4px;
+      position: relative;
+      flex-shrink: 0;
+      overflow: visible;
     }
-    .sidebar-stat {
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 0.45rem 0.7rem;
-    }
-    .sidebar-label {
-      font-size: 0.62rem;
-      color: #888;
-      text-transform: uppercase;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-    }
-    #level-display  { font-size: 1.05rem; font-weight: 700; color: #333; }
-    #score-display  { font-size: 1.05rem; font-weight: 700; color: var(--primary); }
-    #moves-display  { font-size: 1.05rem; font-weight: 700; color: #333; }
-    #timer-display  { font-size: 1.05rem; font-weight: 700; color: #333; }
 
-    @media (max-width: 600px) {
-      #game-area { flex-direction: column; align-items: center; padding: 0.5rem; }
-      #sidebar { flex-direction: row; flex-wrap: wrap; min-width: 0; width: 100%; justify-content: center; }
-      .sidebar-stat { min-width: 80px; text-align: center; }
-      .sidebar-label { text-align: center; }
+    /* Moves counter */
+    #hud-moves-wrap {
+      flex-shrink: 0;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      line-height: 1;
+    }
+    #moves-display {
+      font-size: 1.2rem;
+      font-weight: 900;
+      color: #fff;
+    }
+    .hud-moves-label {
+      font-size: 0.52rem;
+      font-weight: 700;
+      color: rgba(255,255,255,0.55);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* Timer */
+    #hud-timer-wrap { flex-shrink: 0; text-align: center; }
+    #timer-display {
+      font-size: 1.55rem;
+      font-weight: 900;
+      color: #fff;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.03em;
+    }
+    @keyframes timerPulse { from { opacity: 1; } to { opacity: 0.45; } }
+    #timer-display.timer-warning {
+      color: #ff4444;
+      animation: timerPulse 0.5s ease-in-out infinite alternate;
+    }
+
+    /* Jar region */
+    #jar-region {
+      flex: 1;
+      width: 100%;
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+      min-height: 0;
+      padding: 0 2px;
+      margin-bottom: 26px; /* paper label overlaps jar bottom by (40-26)=14px */
+    }
+    #progress-jar {
+      flex: 2;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 6px 6px 12px 12px;
+      background: rgba(0,50,130,0.35);
+      position: relative;
+      overflow: hidden;
+    }
+    /* Full-height fill; scaleY from bottom produces blue→gold colour reveal */
+    #progress-jar-fill {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 100%;
+      background: linear-gradient(to top,
+        #002880 0%,
+        #0057c2 28%,
+        #1a90ff 46%,
+        #e09000 72%,
+        #ffd700 100%);
+      transform: scaleY(0);
+      transform-origin: bottom center;
+      transition: transform 0.5s ease;
+    }
+
+    /* Ruler (right side of jar) */
+    #jar-ruler {
+      flex: 1;
+      position: relative;
+      margin-left: 4px;
+    }
+    /* Target mark — fixed at top */
+    #jar-mark-target {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      display: flex;
+      align-items: center;
+      transform: translateY(-50%);
+    }
+    /* Current score mark — moves as score rises */
+    #jar-mark-current {
+      position: absolute;
+      top: 100%; left: 0; right: 0;
+      display: flex;
+      align-items: center;
+      transform: translateY(-50%);
+      transition: top 0.5s ease;
+    }
+    .mark-tick { width: 10px; height: 2px; flex-shrink: 0; }
+    #jar-mark-target .mark-tick { background: #ffd700; }
+    #jar-mark-current .mark-tick { background: #00e5ff; }
+    .mark-label {
+      font-size: 0.44rem;
+      font-weight: 800;
+      padding-left: 3px;
+      white-space: nowrap;
+      line-height: 1;
+    }
+    #jar-mark-target .mark-label { color: #ffd700; }
+    #jar-mark-current .mark-label { color: #00e5ff; }
+
+    /* Paper level label (partially overlaps jar bottom) */
+    #level-label-paper {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 40px;
+      background: #fff;
+      border-radius: 10px 10px 14px 14px;
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35em;
+      font-weight: 800;
+      font-size: 0.8rem;
+      color: #1a3a6e;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      box-shadow: 0 -4px 12px rgba(0,0,0,0.35);
+    }
+    #progress-level-num { color: var(--primary); }
+
+    @media (max-width: 640px) {
+      #game-area { flex-direction: column; align-items: center; padding: 0.5rem; gap: 0.5rem; }
+      #stats-panel {
+        width: 100%;
+        height: auto;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        padding: 8px 12px;
+        gap: 10px 20px;
+        border-radius: 10px;
+      }
+      #jar-region { display: none; }
+      #level-label-paper {
+        position: static;
+        height: auto;
+        padding: 4px 14px;
+        border-radius: 8px;
+        box-shadow: none;
+      }
     }
 
     .tile {
@@ -293,6 +457,12 @@
       100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
     }
 
+    @keyframes tileHint {
+      0%, 100% { box-shadow: 0 0 0 2px #00e5ff, 0 0 10px 4px rgba(0,229,255,0.35); }
+      50%       { box-shadow: 0 0 0 3px #00e5ff, 0 0 22px 9px rgba(0,229,255,0.65); transform: scale(1.09); }
+    }
+    .tile.anim-hint { animation: tileHint 0.65s ease-in-out infinite; z-index: 4; }
+
     /* Modal */
     .modal-overlay {
       position: fixed; inset: 0;
@@ -312,67 +482,11 @@
     .btn-secondary { background: white; color: var(--primary); border: 1px solid var(--primary); border-radius: 8px; padding: 0.6rem 1.2rem; font-size: 0.95rem; font-weight: 600; cursor: pointer; }
     .btn-danger { background: #d83b01; color: white; border: none; border-radius: 8px; padding: 0.6rem 1.2rem; font-size: 0.95rem; font-weight: 700; cursor: pointer; }
 
-    /* Progress jar */
-    #progress-jar-container { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-    #progress-jar-wrap {
-      position: relative;
-      width: 62px;
-      height: calc(8 * var(--tile-size) + 7 * var(--gap) + 8px);
-    }
-    #progress-jar {
-      width: 100%;
-      height: 100%;
-      border: 2px solid var(--primary);
-      border-radius: 6px 6px 14px 14px;
-      background: rgba(0,120,212,0.07);
-      position: relative;
-      overflow: hidden;
-    }
-    #progress-jar-fill { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, #0050a0, #0078D4, #50c0f0); transition: height 0.5s ease; height: 0%; }
-    #progress-jar-overlay {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-      padding: 6px 3px;
-      pointer-events: none;
-    }
-    #jar-top-label {
-      font-size: 0.52rem;
-      font-weight: 800;
-      color: var(--primary);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      line-height: 1.3;
-    }
-    #jar-target-score {
-      font-size: 0.6rem;
-      font-weight: 700;
-      color: var(--primary);
-      text-align: center;
-    }
-    #jar-current-score {
-      font-size: 0.68rem;
-      font-weight: 800;
-      color: #fff;
-      text-align: center;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.55);
-    }
-    #progress-level-label { font-size: 0.65rem; font-weight: 700; color: var(--primary); text-align: center; }
-
-    #timer-display.timer-warning { color: #d83b01; }
-
     /* Menu button */
     .btn-menu { background: white; color: var(--primary); border: 1px solid var(--primary); border-radius: 6px; padding: 0.3rem 0.7rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
 
     @media (prefers-reduced-motion: reduce) {
-      .tile, .tile.anim-match, .tile.anim-new, .tile.anim-bounce, .tile.anim-fall, .tile.anim-highlight, .score-pulse {
+      .tile, .tile.anim-match, .tile.anim-new, .tile.anim-bounce, .tile.anim-fall, .tile.anim-highlight, .tile.anim-hint, .score-pulse {
         animation: none !important;
         transition: none !important;
       }
@@ -438,38 +552,38 @@
     <div id="tag-badge"></div>
   </header>
   <div id="game-area">
-    <div id="board-area">
-      <div id="board" role="grid" aria-label="Game board"></div>
+    <div id="board-column">
+      <div id="board-area">
+        <div id="board" role="grid" aria-label="Game board"></div>
+      </div>
+      <div id="hint-row">
+        <button id="btn-hint" class="btn-hint">💡 Hint</button>
+      </div>
     </div>
-    <div id="sidebar">
-      <div class="sidebar-stat">
-        <div class="sidebar-label">Level</div>
-        <div id="level-display">1</div>
+    <div id="stats-panel">
+      <div id="hud-moves-wrap">
+        <div id="moves-display">30</div>
+        <span class="hud-moves-label">moves left</span>
       </div>
-      <div class="sidebar-stat">
-        <div class="sidebar-label">Score</div>
-        <div id="score-display">0</div>
+      <div id="hud-timer-wrap">
+        <div id="timer-display">5:00</div>
       </div>
-      <div class="sidebar-stat">
-        <div class="sidebar-label">Moves</div>
-        <div id="moves-display">20</div>
-      </div>
-      <div class="sidebar-stat">
-        <div class="sidebar-label">Time</div>
-        <div id="timer-display">4:00</div>
-      </div>
-      <div id="progress-jar-container">
-        <div id="progress-jar-wrap">
-          <div id="progress-jar">
-            <div id="progress-jar-fill"></div>
+      <div id="jar-region">
+        <div id="progress-jar">
+          <div id="progress-jar-fill"></div>
+        </div>
+        <div id="jar-ruler">
+          <div id="jar-mark-target">
+            <div class="mark-tick"></div>
+            <div id="jar-target-score" class="mark-label"></div>
           </div>
-          <div id="progress-jar-overlay">
-            <div id="jar-top-label">Target<span id="jar-target-score"></span></div>
-            <div id="jar-current-score"></div>
+          <div id="jar-mark-current">
+            <div class="mark-tick"></div>
+            <div id="jar-current-score" class="mark-label"></div>
           </div>
         </div>
-        <div id="progress-level-label">LVL <span id="progress-level-num">1</span></div>
       </div>
+      <div id="level-label-paper">LEVEL <span id="progress-level-num">1</span></div>
     </div>
   </div>
 </div>
@@ -508,6 +622,10 @@ const LS_HIGHESTLEVEL = 'logocrush_highestlevel';
 const LS_TOTALGAMES  = 'logocrush_totalgames';
 const LS_TOTALLOGOS  = 'logocrush_totallogos';
 const LS_ACTIVETAG   = 'logocrush_activetag';
+
+const PER_TILE_PTS        = 100;   // base score per matched tile
+const INITIAL_TIME_SECONDS = 300;  // 5 minutes per level
+const HINT_ANIMATION_MS   = 2500;  // how long hint tiles glow (~4 × 0.65 s cycles)
 
 // ─── Analytics ───────────────────────────────────────────────────────────────
 function trackEvent(path, title) {
@@ -623,8 +741,10 @@ async function loadManifest() {
 // ─── Level config ─────────────────────────────────────────────────────────────
 function getLevelConfig(level) {
   return {
-    target: 1000 + (level - 1) * 500,
-    moves: Math.max(10, 20 - Math.floor((level - 1) / 2)),
+    // Much higher targets: level 1 needs ~17 good matches, grows by 2500 each level
+    target: 5000 + (level - 1) * 2500,
+    // More moves per level; decreases slowly
+    moves: Math.max(20, 30 - Math.floor((level - 1) / 2)),
   };
 }
 
@@ -733,7 +853,7 @@ function initLevel(level) {
   state.activePool = buildPool(state.activeTag, state.level);
 
   stopGameTimer();
-  timeRemaining = 240;
+  timeRemaining = INITIAL_TIME_SECONDS;
 
   initBoard();
   renderBoard();
@@ -894,7 +1014,6 @@ async function processMatches(matches) {
   const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // Scoring: each matched tile is worth PER_TILE_PTS, multiplied by (comboCount + 1).
-  const PER_TILE_PTS = 100;
   const specialBonus = extraCount * 200;
   const baseScore = matches.size * PER_TILE_PTS * (state.comboCount + 1);
   const earned = baseScore + specialBonus;
@@ -1081,6 +1200,28 @@ async function attemptSwap(r1, c1, r2, c2) {
   state.isAnimating = false;
 }
 
+// ─── Hint ─────────────────────────────────────────────────────────────────────
+// Returns the first valid swap that produces a match, along with how many tiles would match.
+function findHintMove() {
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      if (c + 1 < 8) {
+        [state.board[r][c], state.board[r][c+1]] = [state.board[r][c+1], state.board[r][c]];
+        const m = findMatches();
+        [state.board[r][c], state.board[r][c+1]] = [state.board[r][c+1], state.board[r][c]];
+        if (m.size > 0) return { r1: r, c1: c, r2: r, c2: c+1, matchSize: m.size };
+      }
+      if (r + 1 < 8) {
+        [state.board[r][c], state.board[r+1][c]] = [state.board[r+1][c], state.board[r][c]];
+        const m = findMatches();
+        [state.board[r][c], state.board[r+1][c]] = [state.board[r+1][c], state.board[r][c]];
+        if (m.size > 0) return { r1: r, c1: c, r2: r+1, c2: c, matchSize: m.size };
+      }
+    }
+  }
+  return null;
+}
+
 // ─── Win/lose check ───────────────────────────────────────────────────────────
 function hasAnyValidMove() {
   for (let r = 0; r < 8; r++) {
@@ -1190,12 +1331,7 @@ function renderBoard() {
 
 // ─── HUD ──────────────────────────────────────────────────────────────────────
 function updateHUD() {
-  document.getElementById('level-display').textContent = state.level;
-  const scoreEl = document.getElementById('score-display');
-  scoreEl.textContent = state.score.toLocaleString();
-  scoreEl.classList.remove('score-pulse');
-  scoreEl.offsetWidth;
-  scoreEl.classList.add('score-pulse');
+  // Moves
   document.getElementById('moves-display').textContent = state.movesLeft;
 
   // Timer
@@ -1207,13 +1343,18 @@ function updateHUD() {
     timerEl.classList.remove('timer-warning');
   }
 
-  // Progress jar
+  // Progress jar: scaleY from 0→1 reveals the blue-to-gold gradient bottom-up
   const pct = Math.min(100, (state.score / state.scoreTarget) * 100);
-  document.getElementById('progress-jar-fill').style.height = pct + '%';
+  document.getElementById('progress-jar-fill').style.transform = `scaleY(${pct / 100})`;
   document.getElementById('progress-level-num').textContent = state.level;
   document.getElementById('jar-current-score').textContent = state.score.toLocaleString();
   document.getElementById('jar-target-score').textContent = state.scoreTarget.toLocaleString();
 
+  // Current score ruler mark: starts at bottom (pct=0) and rises to top (pct=100)
+  const markEl = document.getElementById('jar-mark-current');
+  if (markEl) markEl.style.top = (100 - pct) + '%';
+
+  // Tag badge
   const tagEl = document.getElementById('tag-badge');
   const tagLabel = state.activeTag === 'all' ? 'All Products' :
     state.activeTag.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
@@ -1463,6 +1604,23 @@ function setupPlayButton() {
         { label: 'Back to Menu', className: 'btn-danger', action: () => { stopGameTimer(); showScreen('screen-start'); loadPersonalBests(); } },
       ]
     );
+  });
+
+  document.getElementById('btn-hint').addEventListener('click', () => {
+    if (state.isAnimating) return;
+    const hint = findHintMove();
+    if (!hint) return;
+
+    // Deduct the point value of the hinted combo (min 0) — even if the player doesn't play it
+    const cost = hint.matchSize * PER_TILE_PTS;
+    state.score = Math.max(0, state.score - cost);
+    updateHUD();
+
+    // Highlight the two tiles that should be swapped
+    const t1 = document.querySelector(`[data-row="${hint.r1}"][data-col="${hint.c1}"]`);
+    const t2 = document.querySelector(`[data-row="${hint.r2}"][data-col="${hint.c2}"]`);
+    if (t1) { t1.classList.add('anim-hint'); setTimeout(() => t1.classList.remove('anim-hint'), HINT_ANIMATION_MS); }
+    if (t2) { t2.classList.add('anim-hint'); setTimeout(() => t2.classList.remove('anim-hint'), HINT_ANIMATION_MS); }
   });
 
   document.getElementById('btn-next-level').addEventListener('click', () => {
