@@ -1,13 +1,5 @@
-<svg version="1.1" id="Livello_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;"
-	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100 100"
-	 enable-background="new 0 0 1881.25 1750" xml:space="preserve">
-<svg viewBox="0 0 1881.25 1750" width="100" height="100" preserveAspectRatio="xMidYMid meet">
-<metadata>
-	<sfw  xmlns="&ns_sfw;">
-		<slices></slices>
-		<sliceSourceBounds  bottomLeftOrigin="true" height="1750" width="1881.25" x="-938.5" y="-851"></sliceSourceBounds>
-	</sfw>
-</metadata>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<g transform="scale(0.053157 0.057143)">
 <path fill="#41A5EE" d="M1801.056,0H517.694C473.404,0,437.5,35.904,437.5,80.194c0,0,0,0,0,0V437.5l743.75,218.75l700-218.75
 	V80.194C1881.25,35.904,1845.346,0,1801.056,0L1801.056,0z"/>
 <path fill="#2B7CD3" d="M1881.25,437.5H437.5V875l743.75,131.25l700-131.25V437.5z"/>
@@ -36,5 +28,5 @@
 	c-2.406-9.931-5.162-22.925-8.181-38.894c-3.019-15.969-4.9-27.65-5.644-35h-1.444c-0.962,8.487-2.844,21.088-5.644,37.8
 	c-2.8,16.713-5.046,29.079-6.738,37.1l-78.138,344.269h-117.95L147.131,614.337h101.062l75.994,364.656
 	C325.894,986.475,327.513,996.45,329.088,1008.788z"/>
-</svg>
+</g>
 </svg>
