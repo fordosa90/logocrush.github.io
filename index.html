@@ -1387,15 +1387,20 @@ async function detectIconHues() {
 // ─── Bootstrap ────────────────────────────────────────────────────────────────
 async function init() {
   await loadManifest();
-  detectIconHues(); // fire-and-forget: hue data enhances colour-diversity pool building.
-                    // If the player starts a game before detection completes (level 1),
-                    // buildPool falls back to random selection; later levels benefit from hues.
   loadPersonalBests();
   setupModeSelector();
   restoreSavedTag();
   setupBoardListeners();
   setupPlayButton();
   showScreen('screen-start');
+  // Defer hue detection until the browser is idle to avoid impacting initial load
+  // performance metrics (TBT/LCP). If the player starts level 1 before detection
+  // completes, buildPool falls back to random selection; later levels benefit from hues.
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(() => detectIconHues());
+  } else {
+    setTimeout(() => detectIconHues(), 2000);
+  }
 }
 
 init();
