@@ -217,32 +217,47 @@
     /* Clippy panel — left of the board; hidden on mobile */
     #clippy-panel {
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-end;
+      align-items: center;       /* vertical centering within board height */
+      justify-content: center;
       height: var(--board-full-h);
       width: 110px;
       flex-shrink: 0;
-      padding-bottom: 12px;
-      gap: 0.5rem;
+    }
+    /* Inner wrapper: image stacked above the overlapping button */
+    #clippy-wrap {
       position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
     #clippy-img {
-      width: 100px;
+      /* 4 tiles tall + 3 gaps between them */
+      height: calc(4 * var(--tile-size) + 3 * var(--gap));
+      width: auto;
       object-fit: contain;
-      flex: 1;
-      min-height: 0;
+      display: block;
     }
-    /* "Need a hint?" sits at the bottom-right of the panel */
+    #clippy-img.anim-clippy-shake {
+      animation: clippyShake 0.5s ease-in-out;
+    }
+    @keyframes clippyShake {
+      0%, 100% { transform: rotate(0deg) scale(1); }
+      18%  { transform: rotate(-7deg) scale(1.06); }
+      36%  { transform: rotate(7deg)  scale(1.09); }
+      54%  { transform: rotate(-5deg) scale(1.05); }
+      72%  { transform: rotate(5deg)  scale(1.06); }
+      88%  { transform: rotate(-2deg) scale(1.02); }
+    }
+    /* Button overlaps the bottom of the image */
     #btn-clippy-hint {
-      position: absolute;
-      bottom: 0;
-      right: -8px;
+      margin-top: -1.4rem;   /* pull up to overlap the image bottom */
       white-space: normal;
       text-align: center;
       line-height: 1.2;
       padding: 0.25rem 0.55rem;
       font-size: 0.72rem;
+      position: relative;
+      z-index: 2;
     }
 
     /* Board column: game board only (hint moved to header) */
@@ -752,6 +767,7 @@
         animation: none !important;
         transition: none !important;
       }
+      #clippy-img.anim-clippy-shake { animation: none !important; }
       .jar-label-current { transition: none !important; }
     }
 
@@ -836,6 +852,7 @@
       <span class="visit-counter-label">All time statistics:</span>
       <img src="https://hits.sh/fordosa90.github.io/logocrush.github.io.svg?label=visitors&color=0078D4&style=flat-square" alt="Visit counter" class="hits-badge" style="height:28px;">
     </div>
+    <p style="font-weight:normal;font-size:0.82rem;">Starting from level 25, unlock clippy and many more swags!</p>
   </div>
 </div>
 <div id="screen-playing" class="screen hidden">
@@ -850,8 +867,10 @@
   <div id="game-area">
     <!-- Clippy panel: hidden on mobile via CSS -->
     <div id="clippy-panel">
-      <img id="clippy-img" src="assets/clippy.png" alt="Clippy the assistant">
-      <button id="btn-clippy-hint" class="btn-hint">💡 Need a hint?</button>
+      <div id="clippy-wrap">
+        <img id="clippy-img" src="assets/clippy.png" alt="Clippy the assistant">
+        <button id="btn-clippy-hint" class="btn-hint">💡 Need a hint?</button>
+      </div>
     </div>
     <div id="board-column">
       <div id="board-area">
@@ -1533,6 +1552,12 @@ function startSpecialShake() {
         t.addEventListener('animationend', () => t.classList.remove('anim-special-shake'), { once: true });
       }
     });
+    // Random shake for Clippy image too
+    const clippyImg = document.getElementById('clippy-img');
+    if (clippyImg && Math.random() < SPECIAL_SHAKE_PROBABILITY && !clippyImg.classList.contains('anim-clippy-shake')) {
+      clippyImg.classList.add('anim-clippy-shake');
+      clippyImg.addEventListener('animationend', () => clippyImg.classList.remove('anim-clippy-shake'), { once: true });
+    }
   }, SPECIAL_SHAKE_INTERVAL_MS);
 }
 
