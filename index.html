@@ -216,12 +216,15 @@
 
     /* Clippy panel — left of the board; hidden on mobile */
     #clippy-panel {
-      display: flex;
+      display: none;             /* hidden until level 20 is unlocked */
       align-items: center;       /* vertical centering within board height */
       justify-content: center;
       height: var(--board-full-h);
       width: 110px;
       flex-shrink: 0;
+    }
+    #clippy-panel.clippy-unlocked {
+      display: flex;
     }
     /* Inner wrapper: image stacked above the overlapping button */
     #clippy-wrap {
@@ -852,7 +855,7 @@
       <span class="visit-counter-label">All time statistics:</span>
       <img src="https://hits.sh/fordosa90.github.io/logocrush.github.io.svg?label=visitors&color=0078D4&style=flat-square" alt="Visit counter" class="hits-badge" style="height:28px;">
     </div>
-    <p style="font-weight:normal;font-size:0.82rem;">Starting from level 25, unlock clippy and many more swags!</p>
+    <p style="font-weight:normal;font-size:0.82rem;">Starting from level 20, unlock clippy and many more swags!</p>
   </div>
 </div>
 <div id="screen-playing" class="screen hidden">
@@ -932,6 +935,7 @@ const LS_HIGHESTLEVEL = 'logocrush_highestlevel';
 const LS_TOTALGAMES  = 'logocrush_totalgames';
 const LS_TOTALLOGOS  = 'logocrush_totallogos';
 const LS_ACTIVETAG   = 'logocrush_activetag';
+const CLIPPY_UNLOCK_LEVEL = 20;
 
 const PER_TILE_PTS             = 100;   // base score per matched tile
 const INITIAL_TIME_SECONDS     = 300;   // 5 minutes per level
@@ -1210,6 +1214,7 @@ function initLevel(level) {
   renderBoard();
   updateHUD();
   startSpecialShake();
+  updateClippyVisibility();
 
   gameTimerInterval = setInterval(() => {
     timeRemaining--;
@@ -1938,6 +1943,7 @@ function updatePersonalBests() {
   localStorage.setItem(LS_HIGHSCORE, hs);
   localStorage.setItem(LS_HIGHESTLEVEL, hl);
   localStorage.setItem(LS_TOTALLOGOS, logos);
+  updateClippyVisibility();
 }
 
 function loadPersonalBests() {
@@ -1947,6 +1953,11 @@ function loadPersonalBests() {
   document.getElementById('pb-logos').textContent = parseInt(localStorage.getItem(LS_TOTALLOGOS) || '0').toLocaleString();
   // Re-evaluate which tag buttons are unlocked now that stats may have changed
   applyTagUnlockRules();
+}
+
+function updateClippyVisibility() {
+  const bestLevel = parseInt(localStorage.getItem(LS_HIGHESTLEVEL) || '1');
+  document.getElementById('clippy-panel').classList.toggle('clippy-unlocked', bestLevel >= CLIPPY_UNLOCK_LEVEL);
 }
 
 // ─── Input handlers ───────────────────────────────────────────────────────────
