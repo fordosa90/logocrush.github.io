@@ -68,7 +68,7 @@
     .pb-value { font-size: 1.2rem; font-weight: 700; color: var(--primary); display: block; }
     .pb-label { font-size: 0.7rem; color: #666; text-transform: uppercase; }
 
-    /* Mode selector — 3 per row grid */
+    /* Mode selector — "All" on its own row, then 3 per row */
     #modeSelector {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -87,27 +87,30 @@
       text-align: center;
       width: 100%;
     }
+    #modeSelector button:first-child {
+      grid-column: 1 / -1; /* "All" spans full width */
+    }
     #modeSelector button[aria-pressed="true"] {
       background: var(--primary);
       color: var(--white);
       border-color: var(--primary);
     }
 
-    /* Visit counter */
+    /* Visit counter — inline: label + badge on same row */
     .visit-counter-wrap {
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       align-items: center;
-      gap: 0.25rem;
+      gap: 0.4rem;
     }
     .visit-counter-label {
       font-size: 0.78rem;
       color: #555;
       font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
     }
-    .hits-badge { height: 28px; border-radius: 4px; }
+    .hits-badge { border-radius: 4px; }
 
     /* Stats + LinkedIn share row */
     .pb-share-row {
@@ -458,25 +461,27 @@
       border: 2px solid #ff8800;
       box-shadow: 0 0 14px 5px rgba(255,160,0,0.7), inset 0 2px 0 rgba(255,255,200,0.5);
     }
-    /* Striped-H: 4-combo horizontal run → clears full row; white bg with thick H-border stripes */
+    /* Striped-H: 4-combo horizontal run → clears full row; all-around striped border rings */
     .tile.special-striped-h {
       background: var(--white);
-      border-top: 5px solid #dd1100;
-      border-bottom: 5px solid #ffd700;
-      border-left: 1px solid rgba(221,17,0,0.35);
-      border-right: 1px solid rgba(255,215,0,0.35);
-      box-shadow: 0 0 10px 3px rgba(255,120,0,0.45);
+      border: 1px solid transparent;
+      box-shadow:
+        0 0 0 3px #dd1100,
+        0 0 0 5px #ffd700,
+        0 0 0 7px #dd1100,
+        0 0 14px 6px rgba(255,100,0,0.45);
     }
-    /* Striped-V: 4-combo vertical run → clears full column; white bg with thick V-border stripes */
+    /* Striped-V: 4-combo vertical run → clears full column; all-around striped border rings */
     .tile.special-striped-v {
       background: var(--white);
-      border-left: 5px solid #dd1100;
-      border-right: 5px solid #ffd700;
-      border-top: 1px solid rgba(221,17,0,0.35);
-      border-bottom: 1px solid rgba(255,215,0,0.35);
-      box-shadow: 0 0 10px 3px rgba(255,120,0,0.45);
+      border: 1px solid transparent;
+      box-shadow:
+        0 0 0 3px #ffd700,
+        0 0 0 5px #dd1100,
+        0 0 0 7px #ffd700,
+        0 0 14px 6px rgba(255,100,0,0.45);
     }
-    /* Shiny: 5+-combo → clears all tiles with same logo */
+    /* Shiny: 5+-combo → clears all tiles with same logo; soft pulsing radiation aura */
     .tile.special-shiny {
       background: radial-gradient(circle at 34% 28%,
         rgba(255,255,255,0.92) 0%,
@@ -485,6 +490,20 @@
       border: 2px solid rgba(160,230,255,0.95);
       box-shadow: 0 0 18px 6px rgba(100,200,255,0.65),
                   inset 0 2px 6px rgba(255,255,255,0.55);
+      animation: shinyAura 1.8s ease-in-out infinite;
+    }
+    @keyframes shinyAura {
+      0%, 100% {
+        box-shadow: 0 0 10px 3px rgba(100,200,255,0.5),
+                    0 0 22px 8px rgba(100,200,255,0.25),
+                    inset 0 2px 6px rgba(255,255,255,0.55);
+      }
+      50% {
+        box-shadow: 0 0 18px 8px rgba(100,200,255,0.8),
+                    0 0 36px 16px rgba(100,200,255,0.35),
+                    0 0 52px 24px rgba(160,240,255,0.15),
+                    inset 0 2px 6px rgba(255,255,255,0.55);
+      }
     }
 
     /* Animations */
@@ -571,6 +590,8 @@
       50%       { box-shadow: 0 0 0 3px #00e5ff, 0 0 22px 9px rgba(0,229,255,0.65); transform: scale(1.09); }
     }
     .tile.anim-hint { animation: tileHint 0.65s ease-in-out infinite; z-index: 4; }
+    /* shinyAura already uses 'animation:' — override conflicts prevented by specificity */
+    .tile.special-shiny.anim-special-shake { animation: specialShake 0.5s ease-in-out; }
 
     @keyframes specialShake {
       0%, 100% { transform: rotate(0deg) scale(1); }
@@ -640,7 +661,7 @@
 <!-- START SCREEN -->
 <div id="screen-start" class="screen">
   <h1>LogoCrush 🎮</h1>
-  <p>The Microsoft cloud logo match-3 game</p>
+  <p>The Microsoft cloud logo match-3 game, built by <a href="https://www.linkedin.com/in/andrasfordos" target="_blank" rel="noopener noreferrer" style="color:var(--primary);font-weight:600;">András Fördős</a></p>
 
   <div class="pb-share-row">
     <div class="pb-display">
@@ -682,8 +703,8 @@
 
   <button id="btn-play" class="btn-primary">Play!</button>
   <div class="visit-counter-wrap">
-    <span class="visit-counter-label">Global player count:</span>
-    <img src="https://hits.sh/fordosa90.github.io/logocrush.github.io.svg?label=Players&color=0078D4&style=flat-square" alt="Visit counter" class="hits-badge" style="height:28px;">
+    <span class="visit-counter-label">All time visitor count:</span>
+    <img src="https://hits.sh/fordosa90.github.io/logocrush.github.io.svg?label=&color=0078D4&style=flat-square" alt="Visit counter" class="hits-badge" style="height:28px;">
   </div>
 </div>
 <div id="screen-playing" class="screen hidden">
@@ -691,8 +712,8 @@
     <button id="btn-menu" class="btn-menu">⬅ Menu</button>
     <span class="game-title">LogoCrush 🎮</span>
     <div class="header-visits-wrap">
-      <span class="header-visits-label">Global player count:</span>
-      <img src="https://hits.sh/fordosa90.github.io/logocrush.github.io.svg?label=Players&color=0078D4&style=flat-square" alt="Visit counter" class="hits-badge" style="height:16px;">
+      <span class="header-visits-label">All time visitor count:</span>
+      <img src="https://hits.sh/fordosa90.github.io/logocrush.github.io.svg?label=&color=0078D4&style=flat-square" alt="Visit counter" class="hits-badge" style="height:16px;">
     </div>
     <button id="btn-hint" class="btn-hint">💡 Hint</button>
   </header>
@@ -758,7 +779,7 @@ const LS_ACTIVETAG   = 'logocrush_activetag';
 
 const PER_TILE_PTS             = 100;   // base score per matched tile
 const INITIAL_TIME_SECONDS     = 300;   // 5 minutes per level
-const HINT_ANIMATION_MS        = 2500;  // how long hint tiles glow (~3.8 × 0.65 s cycles)
+const HINT_ANIMATION_MS        = 5000;  // how long hint tiles glow (doubled; cleared on any move)
 const SWAP_ANIMATION_MS        = 180;   // tile swap slide duration (ms)
 const SPECIAL_SHAKE_INTERVAL_MS  = 1300; // how often to check for special-tile shakes
 const SPECIAL_SHAKE_PROBABILITY  = 0.28; // chance each eligible tile shakes per interval
@@ -786,6 +807,10 @@ let gameTimerInterval = null;
 let specialShakeInterval = null;
 let timeRemaining = 240;
 
+// Hint highlight state — cleared on any player move
+let hintTimers = [];
+let hintTileEls = [];
+
 // ─── Utilities ────────────────────────────────────────────────────────────────
 function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -802,6 +827,23 @@ function shuffle(arr) {
 
 function randItem(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
+}
+
+// ─── Hint highlight helpers ───────────────────────────────────────────────────
+function clearHintHighlights() {
+  hintTimers.forEach(t => clearTimeout(t));
+  hintTimers = [];
+  hintTileEls.forEach(el => el && el.classList.remove('anim-hint'));
+  hintTileEls = [];
+}
+
+// ─── Score drain (level 8+) ───────────────────────────────────────────────────
+// Returns pts drained per second for the given level.
+// Level 8–14: barely noticeable (3→21 pts/s).  Level 15+: aggressive (50+ pts/s).
+function getScoreDrain(level) {
+  if (level < 8) return 0;
+  if (level < 15) return (level - 7) * 3;
+  return 50 + (level - 15) * 10;
 }
 
 // ─── Modal helpers ────────────────────────────────────────────────────────────
@@ -1012,6 +1054,13 @@ function initLevel(level) {
 
   gameTimerInterval = setInterval(() => {
     timeRemaining--;
+
+    // Score drain from level 8 — score slowly decreases over time
+    const drain = getScoreDrain(state.level);
+    if (drain > 0 && !state.isAnimating) {
+      state.score = Math.max(0, state.score - drain);
+    }
+
     updateHUD();
     if (timeRemaining <= 0) {
       stopGameTimer();
@@ -1392,6 +1441,9 @@ async function attemptSwap(r1, c1, r2, c2) {
   if (state.isAnimating) return;
   if (r1 < 0 || r1 >= 8 || c1 < 0 || c1 >= 8) return;
   if (r2 < 0 || r2 >= 8 || c2 < 0 || c2 >= 8) return;
+
+  // Clear any active hint highlights immediately when player makes a move
+  clearHintHighlights();
 
   // Only orthogonal
   const dr = Math.abs(r1 - r2), dc = Math.abs(c1 - c2);
@@ -1849,10 +1901,10 @@ function shareOnLinkedIn() {
 
   const shareUrl =
     'https://www.linkedin.com/shareArticle?mini=true' +
-    '&url='     + encodeURIComponent(url) +
-    '&title='   + encodeURIComponent(title) +
-    '&summary=' + encodeURIComponent(summary) +
-    '&source='  + encodeURIComponent(source);
+    '&url='         + encodeURIComponent(url) +
+    '&title='       + encodeURIComponent(title) +
+    '&description=' + encodeURIComponent(summary) +
+    '&source='      + encodeURIComponent(source);
 
   window.open(shareUrl, '_blank', 'noopener,noreferrer');
 }
@@ -1891,11 +1943,22 @@ function setupPlayButton() {
     state.score = Math.max(0, state.score - cost);
     updateHUD();
 
-    // Highlight the two tiles that should be swapped
+    // Clear any previous hint highlights first
+    clearHintHighlights();
+
+    // Highlight the two tiles that should be swapped; auto-clear after HINT_ANIMATION_MS
     const t1 = document.querySelector(`[data-row="${hint.r1}"][data-col="${hint.c1}"]`);
     const t2 = document.querySelector(`[data-row="${hint.r2}"][data-col="${hint.c2}"]`);
-    if (t1) { t1.classList.add('anim-hint'); setTimeout(() => t1.classList.remove('anim-hint'), HINT_ANIMATION_MS); }
-    if (t2) { t2.classList.add('anim-hint'); setTimeout(() => t2.classList.remove('anim-hint'), HINT_ANIMATION_MS); }
+    if (t1) {
+      t1.classList.add('anim-hint');
+      hintTileEls.push(t1);
+      hintTimers.push(setTimeout(() => t1.classList.remove('anim-hint'), HINT_ANIMATION_MS));
+    }
+    if (t2) {
+      t2.classList.add('anim-hint');
+      hintTileEls.push(t2);
+      hintTimers.push(setTimeout(() => t2.classList.remove('anim-hint'), HINT_ANIMATION_MS));
+    }
   });
 
   document.getElementById('btn-next-level').addEventListener('click', () => {
