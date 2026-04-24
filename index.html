@@ -270,6 +270,7 @@
       min-height: 0;
       padding: 0 2px;
       margin-bottom: 26px; /* paper label overlaps jar bottom by (40-26)=14px */
+      position: relative;  /* anchor for current-score label */
     }
     #progress-jar {
       width: 100%;
@@ -294,7 +295,7 @@
       transform-origin: bottom center;
       transition: transform 0.5s ease;
     }
-    /* Score labels rendered inside the jar */
+    /* Score labels rendered inside/over the jar */
     .jar-label {
       position: absolute;
       left: 2px; right: 2px;
@@ -302,22 +303,28 @@
       font-size: calc(var(--tile-size) * 0.38);
       font-weight: 900;
       line-height: 1;
-      z-index: 2;
+      z-index: 4;
       pointer-events: none;
       white-space: nowrap;
       overflow: hidden;
       text-shadow: 0 1px 4px rgba(0,0,0,0.85);
     }
-    .jar-label-target { top: 6px;    color: #ffd700; }
-    .jar-label-current { bottom: 6px; color: #00e5ff; }
+    /* Target score: fixed at top of the jar */
+    .jar-label-target { top: 6px; color: #ffd700; }
+    /* Current score: floats at the top of the golden liquid (bottom set via JS) */
+    .jar-label-current {
+      color: #00e5ff;
+      bottom: 0; /* overridden by updateHUD */
+      transition: bottom 0.5s ease;
+    }
 
-    /* Level badge — CC-style bottom badge */
+    /* Level badge — white paper sticker look */
     #level-label-paper {
       position: absolute;
       bottom: 0; left: 0; right: 0;
       height: 40px;
-      background: linear-gradient(180deg, #1a5fa0 0%, #0d3870 100%);
-      border-top: 2px solid rgba(255,255,255,0.14);
+      background: #fff;
+      border-top: 1px solid #ccc;
       border-radius: 10px 10px 14px 14px;
       z-index: 3;
       display: flex;
@@ -326,12 +333,12 @@
       gap: 0.35em;
       font-weight: 800;
       font-size: 0.8rem;
-      color: rgba(255,255,255,0.82);
+      color: #333;
       letter-spacing: 0.09em;
       text-transform: uppercase;
-      box-shadow: 0 -4px 14px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.12);
+      box-shadow: 0 -3px 10px rgba(0,0,0,0.35), 0 2px 4px rgba(0,0,0,0.15);
     }
-    #progress-level-num { color: #ffd700; text-shadow: 0 0 8px rgba(255,215,0,0.55); }
+    #progress-level-num { color: var(--primary); }
 
     @media (max-width: 640px) {
       #game-area { flex-direction: column; align-items: center; padding: 0.5rem; gap: 0.5rem; }
@@ -383,15 +390,43 @@
       transform: scale(1.05);
       z-index: 2;
     }
-    .tile.special-rowclear {
-      background: #ffd700;
-      border: 2px solid #ff8c00;
-      box-shadow: 0 0 10px 3px rgba(255, 165, 0, 0.55);
+
+    /* ── Special tiles ─────────────────────────────────────────────────── */
+    /* Golden: random drop, explodes 8 neighbours */
+    .tile.special-golden {
+      background: radial-gradient(circle at 38% 32%, #ffe566 0%, #ffa500 55%, #e65c00 100%);
+      border: 2px solid #ff8800;
+      box-shadow: 0 0 14px 5px rgba(255,160,0,0.7), inset 0 2px 0 rgba(255,255,200,0.5);
     }
-    .tile.special-bomb {
-      background: #ffd700;
-      border: 2px solid #ff4500;
-      box-shadow: 0 0 12px 4px rgba(255, 69, 0, 0.6);
+    /* Striped-H: 4-combo horizontal run → clears full row */
+    .tile.special-striped-h {
+      background: repeating-linear-gradient(
+        0deg,
+        #dd1100 0px, #dd1100 4px,
+        #ffd700 4px, #ffd700 8px
+      );
+      border: 2px solid #ff6600;
+      box-shadow: 0 0 10px 3px rgba(255,165,0,0.55);
+    }
+    /* Striped-V: 4-combo vertical run → clears full column */
+    .tile.special-striped-v {
+      background: repeating-linear-gradient(
+        90deg,
+        #dd1100 0px, #dd1100 4px,
+        #ffd700 4px, #ffd700 8px
+      );
+      border: 2px solid #ff6600;
+      box-shadow: 0 0 10px 3px rgba(255,165,0,0.55);
+    }
+    /* Shiny: 5+-combo → clears all tiles with same logo */
+    .tile.special-shiny {
+      background: radial-gradient(circle at 34% 28%,
+        rgba(255,255,255,0.92) 0%,
+        rgba(160,225,255,0.75) 38%,
+        rgba(80,170,255,0.55) 100%);
+      border: 2px solid rgba(160,230,255,0.95);
+      box-shadow: 0 0 18px 6px rgba(100,200,255,0.65),
+                  inset 0 2px 6px rgba(255,255,255,0.55);
     }
 
     /* Animations */
@@ -516,6 +551,7 @@
         animation: none !important;
         transition: none !important;
       }
+      .jar-label-current { transition: none !important; }
     }
 
     /* Level summary & game over */
@@ -608,8 +644,8 @@
         <div id="progress-jar">
           <div id="progress-jar-fill"></div>
           <div id="jar-target-score"  class="jar-label jar-label-target"></div>
-          <div id="jar-current-score" class="jar-label jar-label-current"></div>
         </div>
+        <div id="jar-current-score" class="jar-label jar-label-current"></div>
       </div>
       <div id="level-label-paper">LEVEL <span id="progress-level-num">1</span></div>
     </div>
@@ -657,6 +693,7 @@ const SWAP_ANIMATION_MS        = 180;   // tile swap slide duration (ms)
 const SPECIAL_SHAKE_INTERVAL_MS  = 1300; // how often to check for special-tile shakes
 const SPECIAL_SHAKE_PROBABILITY  = 0.28; // chance each eligible tile shakes per interval
 const LEVEL_COMPLETE_COUNTDOWN_S = 10;   // seconds before auto-advancing after level complete
+const GOLDEN_TILE_CHANCE         = 0.03; // 3% chance a newly filled tile is golden
 
 // ─── State ───────────────────────────────────────────────────────────────────
 let allIcons = []; // loaded from manifest.json
@@ -826,7 +863,8 @@ function buildPool(tag, level) {
 // ─── Board init ───────────────────────────────────────────────────────────────
 function randomTile() {
   const icon = randItem(state.activePool);
-  return { iconId: icon.id, type: 'normal' };
+  const type = Math.random() < GOLDEN_TILE_CHANCE ? 'golden' : 'normal';
+  return { iconId: icon.id, type };
 }
 
 function initBoard() {
@@ -904,12 +942,13 @@ function initLevel(level) {
 }
 
 // ─── Match detection ──────────────────────────────────────────────────────────
-// Returns Map<"r,c", {iconId, type, isSpecial, specialAction}>
-function findMatches() {
+// Returns Map<"r,c", cellInfo>.  swapEndR/C: destination tile of the player's swap
+// (used to place the created special at the correct position).  Pass -1,-1 for cascades.
+function findMatches(swapEndR = -1, swapEndC = -1) {
   const matched = new Map(); // key "r,c" -> cell info
-  const specialCreate = new Map(); // key "r,c" -> 'rowclear' | 'bomb'
+  const specialCreate = new Map(); // key "r,c" -> 'striped-h' | 'striped-v' | 'shiny'
 
-  // Horizontal runs
+  // ── Horizontal runs ───────────────────────────────────────────────────────
   for (let r = 0; r < 8; r++) {
     let c = 0;
     while (c < 8) {
@@ -919,20 +958,22 @@ function findMatches() {
       while (c + len < 8 && state.board[r][c + len] && state.board[r][c + len].iconId === id) len++;
       if (len >= 3) {
         for (let k = 0; k < len; k++) {
-          const key = `${r},${c+k}`;
-          matched.set(key, { ...state.board[r][c+k] });
+          matched.set(`${r},${c+k}`, { ...state.board[r][c+k] });
         }
         if (len === 4) {
-          specialCreate.set(`${r},${c+len-1}`, 'rowclear');
+          // Striped-H: prefer swap-end position if it fell in this run
+          let sc = (swapEndR === r && swapEndC >= c && swapEndC < c + len) ? swapEndC : c + len - 1;
+          specialCreate.set(`${r},${sc}`, 'striped-h');
         } else if (len >= 5) {
-          specialCreate.set(`${r},${c+len-1}`, 'bomb');
+          let sc = (swapEndR === r && swapEndC >= c && swapEndC < c + len) ? swapEndC : c + len - 1;
+          specialCreate.set(`${r},${sc}`, 'shiny');
         }
       }
       c += len;
     }
   }
 
-  // Vertical runs
+  // ── Vertical runs ─────────────────────────────────────────────────────────
   for (let c = 0; c < 8; c++) {
     let r = 0;
     while (r < 8) {
@@ -943,18 +984,20 @@ function findMatches() {
       if (len >= 3) {
         for (let k = 0; k < len; k++) {
           const key = `${r+k},${c}`;
-          // Check if already in horizontal match → L/T shape → bomb
           if (matched.has(key)) {
-            specialCreate.set(key, 'bomb');
+            // L/T intersection with a horizontal match → shiny at intersection
+            specialCreate.set(key, 'shiny');
           }
           matched.set(key, { ...state.board[r+k][c] });
         }
         if (len === 4) {
-          if (!specialCreate.has(`${r+len-1},${c}`)) {
-            specialCreate.set(`${r+len-1},${c}`, 'rowclear');
-          }
+          const inRun = swapEndC === c && swapEndR >= r && swapEndR < r + len;
+          let sr = inRun ? swapEndR : r + len - 1;
+          if (!specialCreate.has(`${sr},${c}`)) specialCreate.set(`${sr},${c}`, 'striped-v');
         } else if (len >= 5) {
-          specialCreate.set(`${r+len-1},${c}`, 'bomb');
+          const inRun = swapEndC === c && swapEndR >= r && swapEndR < r + len;
+          let sr = inRun ? swapEndR : r + len - 1;
+          specialCreate.set(`${sr},${c}`, 'shiny');
         }
       }
       r += len;
@@ -981,16 +1024,34 @@ function expandMatchesForSpecials(matches) {
     const tile = state.board[r][c];
     if (!tile) continue;
 
-    if (tile.type === 'rowclear') {
+    if (tile.type === 'striped-h') {
+      // Clear entire row
       for (let cc = 0; cc < 8; cc++) {
         if (state.board[r][cc]) extraKeys.add(`${r},${cc}`);
       }
-    } else if (tile.type === 'bomb') {
+    } else if (tile.type === 'striped-v') {
+      // Clear entire column
+      for (let rr = 0; rr < 8; rr++) {
+        if (state.board[rr][c]) extraKeys.add(`${rr},${c}`);
+      }
+    } else if (tile.type === 'golden') {
+      // Clear 8 neighbours (3×3 minus self)
       for (let dr = -1; dr <= 1; dr++) {
         for (let dc = -1; dc <= 1; dc++) {
+          if (dr === 0 && dc === 0) continue;
           const nr = r + dr, nc = c + dc;
           if (nr >= 0 && nr < 8 && nc >= 0 && nc < 8 && state.board[nr][nc]) {
             extraKeys.add(`${nr},${nc}`);
+          }
+        }
+      }
+    } else if (tile.type === 'shiny') {
+      // Clear every tile on the board that shares the same logo
+      const targetId = tile.iconId;
+      for (let rr = 0; rr < 8; rr++) {
+        for (let cc = 0; cc < 8; cc++) {
+          if (state.board[rr][cc] && state.board[rr][cc].iconId === targetId) {
+            extraKeys.add(`${rr},${cc}`);
           }
         }
       }
@@ -1168,7 +1229,7 @@ async function processMatches(matches) {
   });
 
   // Check for cascade: if the reshuffle created new matches, process them automatically
-  const newMatches = findMatches();
+  const newMatches = findMatches(); // no swap-end for cascades
   if (newMatches.size > 0) {
     state.comboCount++;
     await processMatches(newMatches);
@@ -1182,7 +1243,9 @@ function startSpecialShake() {
   stopSpecialShake();
   specialShakeInterval = setInterval(() => {
     if (state.isAnimating) return;
-    const specials = document.querySelectorAll('.tile.special-rowclear, .tile.special-bomb');
+    const specials = document.querySelectorAll(
+      '.tile.special-golden, .tile.special-striped-h, .tile.special-striped-v, .tile.special-shiny'
+    );
     specials.forEach(t => {
       if (
         Math.random() < SPECIAL_SHAKE_PROBABILITY &&
@@ -1205,9 +1268,10 @@ function stopSpecialShake() {
 }
 
 // ─── Swap animation ───────────────────────────────────────────────────────────
-// Slides two tiles toward each other's grid positions via CSS transform, then
-// clears inline styles so renderBoard() can snap everything to the correct state.
-async function doSwapAnimation(r1, c1, r2, c2) {
+// Slides two tiles toward each other's grid positions via CSS transforms.
+// When reverse=true, after sliding apart the tiles slide smoothly back
+// (no intermediate renderBoard or cssText clear — eliminates the "snap" artefact).
+async function animateSwap(r1, c1, r2, c2, reverse = false) {
   const boardEl = document.getElementById('board');
   const t1 = boardEl.querySelector(`[data-row="${r1}"][data-col="${c1}"]`);
   const t2 = boardEl.querySelector(`[data-row="${r2}"][data-col="${c2}"]`);
@@ -1216,14 +1280,22 @@ async function doSwapAnimation(r1, c1, r2, c2) {
   const rect2 = t2.getBoundingClientRect();
   const dx = rect2.left - rect1.left;
   const dy = rect2.top - rect1.top;
-  const duration = `${SWAP_ANIMATION_MS}ms`;
-  t1.style.transition = `transform ${duration} cubic-bezier(0.4,0,0.2,1)`;
-  t2.style.transition = `transform ${duration} cubic-bezier(0.4,0,0.2,1)`;
+  const dur = `${SWAP_ANIMATION_MS}ms`;
+  const ease = 'cubic-bezier(0.4,0,0.2,1)';
+  t1.style.transition = `transform ${dur} ${ease}`;
+  t2.style.transition = `transform ${dur} ${ease}`;
   t1.style.zIndex = '10';
   t2.style.zIndex = '9';
   t1.style.transform = `translate(${dx}px, ${dy}px)`;
   t2.style.transform = `translate(${-dx}px, ${-dy}px)`;
   await delay(SWAP_ANIMATION_MS);
+  if (reverse) {
+    // Slide back to origin while the transition is still active → no visual snap
+    t1.style.transform = '';
+    t2.style.transform = '';
+    await delay(SWAP_ANIMATION_MS);
+  }
+  // Clear all inline styles (transforms are now 0 so no snap)
   t1.style.cssText = '';
   t2.style.cssText = '';
 }
@@ -1239,39 +1311,35 @@ async function attemptSwap(r1, c1, r2, c2) {
   if (!((dr === 1 && dc === 0) || (dr === 0 && dc === 1))) return;
 
   state.isAnimating = true;
-
   const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // Animate tiles sliding toward each other BEFORE touching the data model
-  if (!prefersReduced) {
-    await doSwapAnimation(r1, c1, r2, c2);
-  }
-
-  // Swap the data model
+  // Swap data first so findMatches can evaluate the new state
   [state.board[r1][c1], state.board[r2][c2]] = [state.board[r2][c2], state.board[r1][c1]];
-
-  const matches = findMatches();
+  const matches = findMatches(r2, c2);
 
   if (matches.size === 0) {
-    // Show swapped state (renderBoard clears transforms, shows new icon positions)
-    renderBoard();
-    if (!prefersReduced) {
-      // Animate the swap back (reversed args so tiles slide back to their origins)
-      await doSwapAnimation(r2, c2, r1, c1);
-    }
-    // Restore data
+    // Restore data immediately; animation plays on original icon positions
     [state.board[r1][c1], state.board[r2][c2]] = [state.board[r2][c2], state.board[r1][c1]];
     state.selectedCell = null;
-    renderBoard();
     if (!prefersReduced) {
-      const t1 = document.querySelector(`[data-row="${r1}"][data-col="${c1}"]`);
-      const t2 = document.querySelector(`[data-row="${r2}"][data-col="${c2}"]`);
-      if (t1) { t1.classList.add('anim-bounce'); t1.addEventListener('animationend', () => t1.classList.remove('anim-bounce'), { once: true }); }
-      if (t2) { t2.classList.add('anim-bounce'); t2.addEventListener('animationend', () => t2.classList.remove('anim-bounce'), { once: true }); }
+      // Forward then smooth reverse — no intermediate snap or renderBoard
+      await animateSwap(r1, c1, r2, c2, true);
+      renderBoard();
+      const ta = document.querySelector(`[data-row="${r1}"][data-col="${c1}"]`);
+      const tb = document.querySelector(`[data-row="${r2}"][data-col="${c2}"]`);
+      if (ta) { ta.classList.add('anim-bounce'); ta.addEventListener('animationend', () => ta.classList.remove('anim-bounce'), { once: true }); }
+      if (tb) { tb.classList.add('anim-bounce'); tb.addEventListener('animationend', () => tb.classList.remove('anim-bounce'), { once: true }); }
       await delay(260);
+    } else {
+      renderBoard();
     }
     state.isAnimating = false;
     return;
+  }
+
+  // Valid match: animate the forward swap while DOM still shows original icons
+  if (!prefersReduced) {
+    await animateSwap(r1, c1, r2, c2, false);
   }
 
   state.movesLeft--;
@@ -1384,7 +1452,7 @@ function renderBoard() {
       const img = tile.querySelector('img');
 
       // Reset special classes and any lingering animation classes
-      tile.classList.remove('selected', 'special-rowclear', 'special-bomb', 'anim-match', 'anim-fall', 'anim-new', 'anim-highlight', 'anim-hint', 'anim-special-shake');
+      tile.classList.remove('selected', 'special-golden', 'special-striped-h', 'special-striped-v', 'special-shiny', 'anim-match', 'anim-fall', 'anim-new', 'anim-highlight', 'anim-hint', 'anim-special-shake');
       tile.style.removeProperty('--fall-rows');
 
       if (cell) {
@@ -1398,8 +1466,10 @@ function renderBoard() {
           tile.setAttribute('aria-label', cell.iconId);
         }
 
-        if (cell.type === 'rowclear') tile.classList.add('special-rowclear');
-        if (cell.type === 'bomb') tile.classList.add('special-bomb');
+        if (cell.type === 'golden')     tile.classList.add('special-golden');
+        if (cell.type === 'striped-h')  tile.classList.add('special-striped-h');
+        if (cell.type === 'striped-v')  tile.classList.add('special-striped-v');
+        if (cell.type === 'shiny')      tile.classList.add('special-shiny');
       } else {
         img.src = '';
         tile.setAttribute('aria-label', 'Empty');
@@ -1430,8 +1500,14 @@ function updateHUD() {
   const pct = Math.min(100, (state.score / state.scoreTarget) * 100);
   document.getElementById('progress-jar-fill').style.transform = `scaleY(${pct / 100})`;
   document.getElementById('progress-level-num').textContent = state.level;
-  document.getElementById('jar-current-score').textContent = state.score.toLocaleString();
   document.getElementById('jar-target-score').textContent = state.scoreTarget.toLocaleString();
+
+  // Float current-score label at the top of the golden fill
+  const currentEl = document.getElementById('jar-current-score');
+  currentEl.textContent = state.score.toLocaleString();
+  // Clamp so the label is always readable within jar-region
+  const labelPct = Math.max(1, Math.min(94, pct));
+  currentEl.style.bottom = `${labelPct}%`;
 
   // Tag badge
   const tagEl = document.getElementById('tag-badge');
