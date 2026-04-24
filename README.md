@@ -1,5 +1,7 @@
 # LogoCrush 🎮
 
+![LogoCrush banner](assets/socialbanner.png)
+
 The ultimate Microsoft cloud product logo match-3 puzzle game, inspired by Candy Crush.
 
 ## 🎮 Play Now
