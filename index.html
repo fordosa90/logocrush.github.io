@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LogoCrush</title>
   <meta name="description" content="LogoCrush – match Microsoft cloud product logos in this browser-based match-3 puzzle game. Inspired by Candy Crush, runs entirely in your browser with no install needed.">
+  <!-- Open Graph / LinkedIn sharing tags -->
+  <meta property="og:type"        content="website">
+  <meta property="og:url"         content="https://fordosa90.github.io/logocrush.github.io/">
+  <meta property="og:title"       content="LogoCrush – Microsoft Cloud Logo Match-3 Game">
+  <meta property="og:description" content="Match Microsoft cloud product logos in this browser-based match-3 puzzle game built by András Fördős. How far can you get?">
+  <meta property="og:site_name"   content="LogoCrush">
   <link rel="icon" href="data:,">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -446,6 +452,8 @@
       object-fit: contain;
       pointer-events: none;
       display: block;
+      position: relative;
+      z-index: 2; /* sit above the striped-tile ::before white inset */
     }
     .tile:focus { outline: 2px solid var(--primary); outline-offset: 1px; }
     .tile.selected {
@@ -461,25 +469,45 @@
       border: 2px solid #ff8800;
       box-shadow: 0 0 14px 5px rgba(255,160,0,0.7), inset 0 2px 0 rgba(255,255,200,0.5);
     }
-    /* Striped-H: 4-combo horizontal run → clears full row; all-around striped border rings */
+    /* Striped-H: 4-combo horizontal run → clears full row.
+       Outer layer: horizontal red/yellow stripes fill the whole tile.
+       Inner layer (::before): white rectangle inset ~8px, floats above the stripes,
+       so the striped band shows all around as a visible border. */
     .tile.special-striped-h {
-      background: var(--white);
-      border: 1px solid transparent;
-      box-shadow:
-        0 0 0 3px #dd1100,
-        0 0 0 5px #ffd700,
-        0 0 0 7px #dd1100,
-        0 0 14px 6px rgba(255,100,0,0.45);
+      background: repeating-linear-gradient(
+        0deg,
+        #dd1100 0px,  #dd1100 5px,
+        #ffd700 5px,  #ffd700 10px
+      );
+      border: none;
+      box-shadow: 0 0 12px 4px rgba(255,100,0,0.5);
     }
-    /* Striped-V: 4-combo vertical run → clears full column; all-around striped border rings */
+    .tile.special-striped-h::before {
+      content: '';
+      position: absolute;
+      inset: 8px;
+      background: white;
+      border-radius: 3px;
+      z-index: 1;
+    }
+    /* Striped-V: 4-combo vertical run → clears full column.
+       Outer layer: vertical blue/white stripes. Inner white inset on top. */
     .tile.special-striped-v {
-      background: var(--white);
-      border: 1px solid transparent;
-      box-shadow:
-        0 0 0 3px #ffd700,
-        0 0 0 5px #dd1100,
-        0 0 0 7px #ffd700,
-        0 0 14px 6px rgba(255,100,0,0.45);
+      background: repeating-linear-gradient(
+        90deg,
+        #ffd700 0px,  #ffd700 5px,
+        #dd1100 5px,  #dd1100 10px
+      );
+      border: none;
+      box-shadow: 0 0 12px 4px rgba(255,100,0,0.5);
+    }
+    .tile.special-striped-v::before {
+      content: '';
+      position: absolute;
+      inset: 8px;
+      background: white;
+      border-radius: 3px;
+      z-index: 1;
     }
     /* Shiny: 5+-combo → clears all tiles with same logo; soft pulsing radiation aura */
     .tile.special-shiny {
@@ -703,8 +731,8 @@
 
   <button id="btn-play" class="btn-primary">Play!</button>
   <div class="visit-counter-wrap">
-    <span class="visit-counter-label">All time visitor count:</span>
-    <img src="https://hits.sh/fordosa90.github.io/logocrush.github.io.svg?label=&color=0078D4&style=flat-square" alt="Visit counter" class="hits-badge" style="height:28px;">
+    <span class="visit-counter-label">All time statistics:</span>
+    <img src="https://hits.sh/fordosa90.github.io/logocrush.github.io.svg?label=visitors&color=0078D4&style=flat-square" alt="Visit counter" class="hits-badge" style="height:28px;">
   </div>
 </div>
 <div id="screen-playing" class="screen hidden">
@@ -712,8 +740,8 @@
     <button id="btn-menu" class="btn-menu">⬅ Menu</button>
     <span class="game-title">LogoCrush 🎮</span>
     <div class="header-visits-wrap">
-      <span class="header-visits-label">All time visitor count:</span>
-      <img src="https://hits.sh/fordosa90.github.io/logocrush.github.io.svg?label=&color=0078D4&style=flat-square" alt="Visit counter" class="hits-badge" style="height:16px;">
+      <span class="header-visits-label">All time statistics:</span>
+      <img src="https://hits.sh/fordosa90.github.io/logocrush.github.io.svg?label=visitors&color=0078D4&style=flat-square" alt="Visit counter" class="hits-badge" style="height:16px;">
     </div>
     <button id="btn-hint" class="btn-hint">💡 Hint</button>
   </header>
