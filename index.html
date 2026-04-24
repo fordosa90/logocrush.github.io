@@ -267,15 +267,13 @@
     #jar-region {
       flex: 1;
       width: 100%;
-      display: flex;
-      flex-direction: row;
-      align-items: stretch;
       min-height: 0;
       padding: 0 2px;
       margin-bottom: 26px; /* paper label overlaps jar bottom by (40-26)=14px */
     }
     #progress-jar {
-      flex: 2;
+      width: 100%;
+      height: 100%;
       border: 2px solid rgba(255,255,255,0.3);
       border-radius: 6px 6px 12px 12px;
       background: rgba(255,255,255,0.08);
@@ -296,47 +294,22 @@
       transform-origin: bottom center;
       transition: transform 0.5s ease;
     }
-
-    /* Ruler (right side of jar) */
-    #jar-ruler {
-      flex: 1;
-      position: relative;
-      margin-left: 4px;
-    }
-    /* Invisible left spacer — mirrors the ruler so the jar is truly centred */
-    #jar-region::before {
-      content: '';
-      flex: 1;
-    }
-    /* Target mark — fixed at top */
-    #jar-mark-target {
+    /* Score labels rendered inside the jar */
+    .jar-label {
       position: absolute;
-      top: 0; left: 0; right: 0;
-      display: flex;
-      align-items: center;
-      transform: translateY(-50%);
-    }
-    /* Current score mark — moves as score rises */
-    #jar-mark-current {
-      position: absolute;
-      top: 100%; left: 0; right: 0;
-      display: flex;
-      align-items: center;
-      transform: translateY(-50%);
-      transition: top 0.5s ease;
-    }
-    .mark-tick { width: 18px; height: 3px; flex-shrink: 0; border-radius: 2px; }
-    #jar-mark-target .mark-tick { background: #ffd700; }
-    #jar-mark-current .mark-tick { background: #00e5ff; }
-    .mark-label {
-      font-size: 0.72rem;
+      left: 2px; right: 2px;
+      text-align: center;
+      font-size: calc(var(--tile-size) * 0.38);
       font-weight: 900;
-      padding-left: 4px;
-      white-space: nowrap;
       line-height: 1;
+      z-index: 2;
+      pointer-events: none;
+      white-space: nowrap;
+      overflow: hidden;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.85);
     }
-    #jar-mark-target .mark-label { color: #ffd700; }
-    #jar-mark-current .mark-label { color: #00e5ff; }
+    .jar-label-target { top: 6px;    color: #ffd700; }
+    .jar-label-current { bottom: 6px; color: #00e5ff; }
 
     /* Level badge — CC-style bottom badge */
     #level-label-paper {
@@ -560,6 +533,12 @@
 
     /* hits.sh visit counter badge */
     .hits-badge { height: 20px; border-radius: 4px; }
+
+    /* Board blur when level-complete overlay is active */
+    .board-blurred { filter: blur(3px); transition: filter 0.3s ease; }
+
+    /* Countdown line inside level-complete modal */
+    .modal-countdown { font-size: 0.8rem; color: #888; margin-top: 0.4rem; text-align: center; }
   </style>
 </head>
 <body>
@@ -628,16 +607,8 @@
       <div id="jar-region">
         <div id="progress-jar">
           <div id="progress-jar-fill"></div>
-        </div>
-        <div id="jar-ruler">
-          <div id="jar-mark-target">
-            <div class="mark-tick"></div>
-            <div id="jar-target-score" class="mark-label"></div>
-          </div>
-          <div id="jar-mark-current">
-            <div class="mark-tick"></div>
-            <div id="jar-current-score" class="mark-label"></div>
-          </div>
+          <div id="jar-target-score"  class="jar-label jar-label-target"></div>
+          <div id="jar-current-score" class="jar-label jar-label-current"></div>
         </div>
       </div>
       <div id="level-label-paper">LEVEL <span id="progress-level-num">1</span></div>
@@ -1284,8 +1255,8 @@ async function attemptSwap(r1, c1, r2, c2) {
     // Show swapped state (renderBoard clears transforms, shows new icon positions)
     renderBoard();
     if (!prefersReduced) {
-      // Animate the swap back
-      await doSwapAnimation(r1, c1, r2, c2);
+      // Animate the swap back (reversed args so tiles slide back to their origins)
+      await doSwapAnimation(r2, c2, r1, c1);
     }
     // Restore data
     [state.board[r1][c1], state.board[r2][c2]] = [state.board[r2][c2], state.board[r1][c1]];
@@ -1461,10 +1432,6 @@ function updateHUD() {
   document.getElementById('jar-current-score').textContent = state.score.toLocaleString();
   document.getElementById('jar-target-score').textContent = state.scoreTarget.toLocaleString();
 
-  // Current score ruler mark: starts at bottom (pct=0) and rises to top (pct=100)
-  const markEl = document.getElementById('jar-mark-current');
-  if (markEl) markEl.style.top = (100 - pct) + '%';
-
   // Tag badge
   const tagEl = document.getElementById('tag-badge');
   const tagLabel = state.activeTag === 'all' ? 'All Products' :
@@ -1482,59 +1449,74 @@ let summaryTimer = null;
 
 function showLevelSummary(won) {
   stopGameTimer();
-  if (summaryTimer) { clearTimeout(summaryTimer); summaryTimer = null; }
-
-  const title = document.getElementById('summary-title');
-  const emoji = document.getElementById('summary-emoji');
-  const stats = document.getElementById('summary-stats');
-  const timerEl = document.getElementById('summary-timer');
-  const nextBtn = document.getElementById('btn-next-level');
+  if (summaryTimer) { clearInterval(summaryTimer); summaryTimer = null; }
 
   if (won) {
-    title.textContent = 'Level Complete!';
-    emoji.textContent = '🎉';
-    nextBtn.textContent = 'Next Level →';
-    nextBtn.style.display = '';
-
     updatePersonalBests();
 
-    stats.innerHTML = `
-      <div class="summary-stat"><span>Level</span><strong>${state.level}</strong></div>
-      <div class="summary-stat"><span>Score</span><strong>${state.score.toLocaleString()}</strong></div>
-      <div class="summary-stat"><span>Target</span><strong>${state.scoreTarget.toLocaleString()}</strong></div>
-      <div class="summary-stat"><span>Logos Cleared</span><strong>${state.totalClearedThisLevel}</strong></div>
-      <div class="summary-stat"><span>Moves Left</span><strong>${state.movesLeft}</strong></div>
-    `;
+    // Keep the board visible but blurred behind the overlay
+    document.getElementById('board-area').classList.add('board-blurred');
 
-    let countdown = 3;
-    timerEl.textContent = `Auto-advancing in ${countdown}s…`;
+    const titleEl  = document.getElementById('modal-title');
+    const bodyEl   = document.getElementById('modal-body');
+    const btnsEl   = document.getElementById('modal-buttons');
+
+    titleEl.textContent = '🎉 Level Complete!';
+    bodyEl.innerHTML =
+      `<div class="summary-stat"><span>Level</span><strong>${state.level}</strong></div>` +
+      `<div class="summary-stat"><span>Score</span><strong>${state.score.toLocaleString()}</strong></div>` +
+      `<div class="summary-stat"><span>Target</span><strong>${state.scoreTarget.toLocaleString()}</strong></div>` +
+      `<div class="summary-stat"><span>Logos Cleared</span><strong>${state.totalClearedThisLevel}</strong></div>` +
+      `<div class="summary-stat"><span>Moves Left</span><strong>${state.movesLeft}</strong></div>` +
+      `<div id="level-complete-countdown" class="modal-countdown"></div>`;
+
+    btnsEl.innerHTML = '';
+
+    function closeLevelModal() {
+      document.getElementById('board-area').classList.remove('board-blurred');
+      hideModal();
+      if (summaryTimer) { clearInterval(summaryTimer); summaryTimer = null; }
+    }
+
+    const continueBtn = document.createElement('button');
+    continueBtn.textContent = 'Continue →';
+    continueBtn.className = 'btn-primary';
+    continueBtn.addEventListener('click', () => { closeLevelModal(); startNextLevel(); });
+    btnsEl.appendChild(continueBtn);
+
+    const exitBtn = document.createElement('button');
+    exitBtn.textContent = 'Exit to Menu';
+    exitBtn.className = 'btn-secondary';
+    exitBtn.addEventListener('click', () => {
+      closeLevelModal();
+      showScreen('screen-start');
+      loadPersonalBests();
+    });
+    btnsEl.appendChild(exitBtn);
+
+    document.getElementById('modal-overlay').classList.remove('hidden');
+
+    let countdown = 10;
+    const countdownEl = document.getElementById('level-complete-countdown');
+    function updateCountdown() {
+      if (countdownEl) countdownEl.textContent = `Auto-advancing in ${countdown}s…`;
+    }
+    updateCountdown();
+
     summaryTimer = setInterval(() => {
       countdown--;
       if (countdown <= 0) {
-        clearInterval(summaryTimer);
-        summaryTimer = null;
+        closeLevelModal();
         startNextLevel();
       } else {
-        timerEl.textContent = `Auto-advancing in ${countdown}s…`;
+        updateCountdown();
       }
     }, 1000);
+
   } else {
-    title.textContent = 'Level Failed';
-    emoji.textContent = '😔';
-    nextBtn.style.display = 'none';
-    timerEl.textContent = '';
-    stats.innerHTML = `
-      <div class="summary-stat"><span>Level</span><strong>${state.level}</strong></div>
-      <div class="summary-stat"><span>Score</span><strong>${state.score.toLocaleString()}</strong></div>
-      <div class="summary-stat"><span>Target</span><strong>${state.scoreTarget.toLocaleString()}</strong></div>
-      <div class="summary-stat"><span>Logos Cleared</span><strong>${state.totalClearedThisLevel}</strong></div>
-    `;
     updatePersonalBests();
     showGameOver();
-    return;
   }
-
-  showScreen('screen-level-summary');
 }
 
 function startNextLevel() {
