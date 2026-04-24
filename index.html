@@ -68,28 +68,78 @@
     .pb-value { font-size: 1.2rem; font-weight: 700; color: var(--primary); display: block; }
     .pb-label { font-size: 0.7rem; color: #666; text-transform: uppercase; }
 
-    /* Mode selector */
+    /* Mode selector — 3 per row grid */
     #modeSelector {
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
       gap: 0.4rem;
-      justify-content: center;
+      width: 100%;
     }
     #modeSelector button {
       background: var(--white);
       border: 1px solid var(--border);
       border-radius: 20px;
-      padding: 0.3rem 0.8rem;
+      padding: 0.35rem 0.6rem;
       font-size: 0.82rem;
       cursor: pointer;
       transition: background 0.15s, color 0.15s;
       color: #444;
+      text-align: center;
+      width: 100%;
     }
     #modeSelector button[aria-pressed="true"] {
       background: var(--primary);
       color: var(--white);
       border-color: var(--primary);
     }
+
+    /* Visit counter */
+    .visit-counter-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    .visit-counter-label {
+      font-size: 0.78rem;
+      color: #555;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .hits-badge { height: 28px; border-radius: 4px; }
+
+    /* Stats + LinkedIn share row */
+    .pb-share-row {
+      display: flex;
+      gap: 0.6rem;
+      width: 100%;
+      align-items: stretch;
+    }
+    .pb-share-row .pb-display { flex: 1; }
+    .btn-linkedin-share {
+      background: #0077B5;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 0.5rem 0.6rem;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.25rem;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      min-width: 62px;
+      text-align: center;
+      line-height: 1.2;
+      transition: background 0.15s, transform 0.1s;
+      flex-shrink: 0;
+    }
+    .btn-linkedin-share:hover { background: #005582; }
+    .btn-linkedin-share:active { transform: scale(0.97); }
 
     /* Playing screen layout */
     #screen-playing {
@@ -102,22 +152,31 @@
       width: 100%;
       background: var(--white);
       border-bottom: 1px solid var(--border);
-      padding: 0.5rem 1rem;
+      padding: 0.4rem 0.75rem;
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      justify-content: center;
+      gap: 0.6rem;
     }
-    .game-title { font-weight: 700; font-size: 1rem; color: var(--primary); flex: 1; }
+    .game-title { font-weight: 700; font-size: 1rem; color: var(--primary); }
 
-    #tag-badge {
-      font-size: 0.75rem;
-      background: #e8f0fe;
-      color: var(--primary);
-      border-radius: 12px;
-      padding: 0.2rem 0.7rem;
-      font-weight: 600;
-      flex: 0 0 auto;
+    /* Visits wrap inside header */
+    .header-visits-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1px;
+      flex-shrink: 0;
     }
+    .header-visits-label {
+      font-size: 0.5rem;
+      color: #666;
+      font-weight: 600;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .header-visits-wrap .hits-badge { height: 16px; }
 
     /* Game area: board column + stats panel */
     #game-area {
@@ -129,7 +188,7 @@
       padding: 1rem;
     }
 
-    /* Board column: game board + hint button */
+    /* Board column: game board only (hint moved to header) */
     #board-column {
       display: flex;
       flex-direction: column;
@@ -158,19 +217,20 @@
       user-select: none;
     }
 
-    /* Hint button */
-    #hint-row { width: 100%; display: flex; justify-content: center; }
+    /* Hint button — compact for header */
     .btn-hint {
       background: #16213e;
       color: #ffd700;
       border: 2px solid #ffd700;
-      border-radius: 10px;
-      padding: 0.5rem 2.2rem;
-      font-size: 0.95rem;
+      border-radius: 8px;
+      padding: 0.25rem 0.7rem;
+      font-size: 0.8rem;
       font-weight: 700;
       cursor: pointer;
       letter-spacing: 0.04em;
+      white-space: nowrap;
       transition: background 0.15s, color 0.15s, transform 0.1s;
+      flex-shrink: 0;
     }
     .btn-hint:hover { background: #ffd700; color: #000; }
     .btn-hint:active { transform: scale(0.96); }
@@ -398,25 +458,23 @@
       border: 2px solid #ff8800;
       box-shadow: 0 0 14px 5px rgba(255,160,0,0.7), inset 0 2px 0 rgba(255,255,200,0.5);
     }
-    /* Striped-H: 4-combo horizontal run → clears full row */
+    /* Striped-H: 4-combo horizontal run → clears full row; white bg with thick H-border stripes */
     .tile.special-striped-h {
-      background: repeating-linear-gradient(
-        0deg,
-        #dd1100 0px, #dd1100 4px,
-        #ffd700 4px, #ffd700 8px
-      );
-      border: 2px solid #ff6600;
-      box-shadow: 0 0 10px 3px rgba(255,165,0,0.55);
+      background: var(--white);
+      border-top: 5px solid #dd1100;
+      border-bottom: 5px solid #ffd700;
+      border-left: 1px solid rgba(221,17,0,0.35);
+      border-right: 1px solid rgba(255,215,0,0.35);
+      box-shadow: 0 0 10px 3px rgba(255,120,0,0.45);
     }
-    /* Striped-V: 4-combo vertical run → clears full column */
+    /* Striped-V: 4-combo vertical run → clears full column; white bg with thick V-border stripes */
     .tile.special-striped-v {
-      background: repeating-linear-gradient(
-        90deg,
-        #dd1100 0px, #dd1100 4px,
-        #ffd700 4px, #ffd700 8px
-      );
-      border: 2px solid #ff6600;
-      box-shadow: 0 0 10px 3px rgba(255,165,0,0.55);
+      background: var(--white);
+      border-left: 5px solid #dd1100;
+      border-right: 5px solid #ffd700;
+      border-top: 1px solid rgba(221,17,0,0.35);
+      border-bottom: 1px solid rgba(255,215,0,0.35);
+      box-shadow: 0 0 10px 3px rgba(255,120,0,0.45);
     }
     /* Shiny: 5+-combo → clears all tiles with same logo */
     .tile.special-shiny {
@@ -567,8 +625,8 @@
     /* Emoji decorations */
     .emoji-big { font-size: 3rem; }
 
-    /* hits.sh visit counter badge */
-    .hits-badge { height: 20px; border-radius: 4px; }
+    /* hits.sh visit counter badge — base size; overridden per context */
+    .hits-badge { border-radius: 4px; }
 
     /* Board blur when level-complete overlay is active */
     .board-blurred { filter: blur(3px); transition: filter 0.3s ease; }
@@ -584,27 +642,35 @@
   <h1>LogoCrush 🎮</h1>
   <p>The Microsoft cloud logo match-3 game</p>
 
-  <div class="pb-display">
-    <div class="pb-item">
-      <span class="pb-value" id="pb-highscore">0</span>
-      <span class="pb-label">Best Score</span>
+  <div class="pb-share-row">
+    <div class="pb-display">
+      <div class="pb-item">
+        <span class="pb-value" id="pb-highscore">0</span>
+        <span class="pb-label">Best Score</span>
+      </div>
+      <div class="pb-item">
+        <span class="pb-value" id="pb-level">1</span>
+        <span class="pb-label">Best Level</span>
+      </div>
+      <div class="pb-item">
+        <span class="pb-value" id="pb-games">0</span>
+        <span class="pb-label">Games</span>
+      </div>
+      <div class="pb-item">
+        <span class="pb-value" id="pb-logos">0</span>
+        <span class="pb-label">Logos Cleared</span>
+      </div>
     </div>
-    <div class="pb-item">
-      <span class="pb-value" id="pb-level">1</span>
-      <span class="pb-label">Best Level</span>
-    </div>
-    <div class="pb-item">
-      <span class="pb-value" id="pb-games">0</span>
-      <span class="pb-label">Games</span>
-    </div>
-    <div class="pb-item">
-      <span class="pb-value" id="pb-logos">0</span>
-      <span class="pb-label">Logos Cleared</span>
-    </div>
+    <button id="btn-linkedin-share" class="btn-linkedin-share">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
+        <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+      </svg>
+      Share<br>Stats
+    </button>
   </div>
 
-  <h2 class="section-label">Your Cloud</h2>
-  <div id="modeSelector" role="group" aria-label="Your Cloud filter">
+  <h2 class="section-label">Choose your cloud:</h2>
+  <div id="modeSelector" role="group" aria-label="Cloud filter">
     <button data-tag="all" aria-pressed="true">All</button>
     <button data-tag="azure" aria-pressed="false">Azure</button>
     <button data-tag="m365" aria-pressed="false">M365</button>
@@ -615,21 +681,25 @@
   </div>
 
   <button id="btn-play" class="btn-primary">Play!</button>
-  <img src="https://hits.sh/fordosa90.github.io/logocrush.github.io.svg?label=Visits&color=0078D4&style=flat-square" alt="Visit counter" class="hits-badge">
+  <div class="visit-counter-wrap">
+    <span class="visit-counter-label">Global player count:</span>
+    <img src="https://hits.sh/fordosa90.github.io/logocrush.github.io.svg?label=Players&color=0078D4&style=flat-square" alt="Visit counter" class="hits-badge" style="height:28px;">
+  </div>
 </div>
 <div id="screen-playing" class="screen hidden">
   <header>
     <button id="btn-menu" class="btn-menu">⬅ Menu</button>
     <span class="game-title">LogoCrush 🎮</span>
-    <div id="tag-badge"></div>
+    <div class="header-visits-wrap">
+      <span class="header-visits-label">Global player count:</span>
+      <img src="https://hits.sh/fordosa90.github.io/logocrush.github.io.svg?label=Players&color=0078D4&style=flat-square" alt="Visit counter" class="hits-badge" style="height:16px;">
+    </div>
+    <button id="btn-hint" class="btn-hint">💡 Hint</button>
   </header>
   <div id="game-area">
     <div id="board-column">
       <div id="board-area">
         <div id="board" role="grid" aria-label="Game board"></div>
-      </div>
-      <div id="hint-row">
-        <button id="btn-hint" class="btn-hint">💡 Hint</button>
       </div>
     </div>
     <div id="stats-panel">
@@ -861,10 +931,27 @@ function buildPool(tag, level) {
 }
 
 // ─── Board init ───────────────────────────────────────────────────────────────
+function countSpecialTiles() {
+  let n = 0;
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      const t = state.board[r][c];
+      if (t && t.type !== 'normal') n++;
+    }
+  }
+  return n;
+}
+
+/** Normal tile only — used during board init (no golden on initial board). */
+function randomNormalTile() {
+  return { iconId: randItem(state.activePool).id, type: 'normal' };
+}
+
+/** Regular tile drop during gravity fill — may produce a golden tile if constraints allow. */
 function randomTile() {
   const icon = randItem(state.activePool);
-  const type = Math.random() < GOLDEN_TILE_CHANCE ? 'golden' : 'normal';
-  return { iconId: icon.id, type };
+  const canBeGolden = Math.random() < GOLDEN_TILE_CHANCE && countSpecialTiles() < 3;
+  return { iconId: icon.id, type: canBeGolden ? 'golden' : 'normal' };
 }
 
 function initBoard() {
@@ -872,7 +959,7 @@ function initBoard() {
   for (let r = 0; r < 8; r++) {
     state.board[r] = [];
     for (let c = 0; c < 8; c++) {
-      state.board[r][c] = randomTile();
+      state.board[r][c] = randomNormalTile();
     }
   }
   resolveInitialMatches();
@@ -894,7 +981,7 @@ function resolveInitialMatches() {
           state.board[r-1][c].iconId === id &&
           state.board[r-2][c].iconId === id;
         if (hMatch || vMatch) {
-          state.board[r][c] = randomTile();
+          state.board[r][c] = randomNormalTile();
           found = true;
         }
       }
@@ -1508,12 +1595,6 @@ function updateHUD() {
   // Clamp so the label is always readable within jar-region
   const labelPct = Math.max(1, Math.min(94, pct));
   currentEl.style.bottom = `${labelPct}%`;
-
-  // Tag badge
-  const tagEl = document.getElementById('tag-badge');
-  const tagLabel = state.activeTag === 'all' ? 'All Products' :
-    state.activeTag.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-  tagEl.textContent = state.activeTag === 'all' ? `🌐 ${tagLabel}` : `🏷️ ${tagLabel}`;
 }
 
 // ─── Screens ──────────────────────────────────────────────────────────────────
@@ -1751,6 +1832,31 @@ function restoreSavedTag() {
   state.activeTag = saved;
 }
 
+// ─── LinkedIn share ───────────────────────────────────────────────────────────
+function shareOnLinkedIn() {
+  const hs     = parseInt(localStorage.getItem(LS_HIGHSCORE)    || '0');
+  const hl     = parseInt(localStorage.getItem(LS_HIGHESTLEVEL) || '1');
+  const games  = parseInt(localStorage.getItem(LS_TOTALGAMES)   || '0');
+  const logos  = parseInt(localStorage.getItem(LS_TOTALLOGOS)   || '0');
+
+  const url     = 'https://fordosa90.github.io/logocrush.github.io/';
+  const title   = 'Check out my LogoCrush stats!';
+  const summary =
+    `🎮 I've matched ${logos.toLocaleString()} Microsoft logos across ${games} games, ` +
+    `smashed level ${hl} and scored ${hs.toLocaleString()} points in LogoCrush — ` +
+    `the cloud logo match-3 game. Think you can beat me? 😏`;
+  const source  = 'github.com/fordosa90';
+
+  const shareUrl =
+    'https://www.linkedin.com/shareArticle?mini=true' +
+    '&url='     + encodeURIComponent(url) +
+    '&title='   + encodeURIComponent(title) +
+    '&summary=' + encodeURIComponent(summary) +
+    '&source='  + encodeURIComponent(source);
+
+  window.open(shareUrl, '_blank', 'noopener,noreferrer');
+}
+
 // ─── Play button ──────────────────────────────────────────────────────────────
 function setupPlayButton() {
   document.getElementById('btn-play').addEventListener('click', () => {
@@ -1760,6 +1866,8 @@ function setupPlayButton() {
     initLevel(1);
     showScreen('screen-playing');
   });
+
+  document.getElementById('btn-linkedin-share').addEventListener('click', shareOnLinkedIn);
 
   document.getElementById('btn-menu').addEventListener('click', () => {
     if (state.isAnimating) return;
