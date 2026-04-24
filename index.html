@@ -656,6 +656,7 @@ const HINT_ANIMATION_MS        = 2500;  // how long hint tiles glow (~3.8 × 0.6
 const SWAP_ANIMATION_MS        = 180;   // tile swap slide duration (ms)
 const SPECIAL_SHAKE_INTERVAL_MS  = 1300; // how often to check for special-tile shakes
 const SPECIAL_SHAKE_PROBABILITY  = 0.28; // chance each eligible tile shakes per interval
+const LEVEL_COMPLETE_COUNTDOWN_S = 10;   // seconds before auto-advancing after level complete
 
 // ─── State ───────────────────────────────────────────────────────────────────
 let allIcons = []; // loaded from manifest.json
@@ -1496,7 +1497,7 @@ function showLevelSummary(won) {
 
     document.getElementById('modal-overlay').classList.remove('hidden');
 
-    let countdown = 10;
+    let countdown = LEVEL_COMPLETE_COUNTDOWN_S;
     const countdownEl = document.getElementById('level-complete-countdown');
     function updateCountdown() {
       if (countdownEl) countdownEl.textContent = `Auto-advancing in ${countdown}s…`;
