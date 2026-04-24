@@ -101,6 +101,23 @@
       color: var(--white);
       border-color: var(--primary);
     }
+    /* Locked tag buttons — greyed out, not-allowed cursor */
+    #modeSelector button.tag-locked {
+      opacity: 0.42;
+      cursor: not-allowed;
+      filter: grayscale(0.6);
+    }
+
+    /* Menu sections — three visual groups on the start screen */
+    .menu-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+      width: 100%;
+    }
+    /* Larger gap between sections than within them */
+    #screen-start { gap: 1.75rem; }
 
     /* Visit counter — inline: label + badge on same row */
     .visit-counter-wrap {
@@ -195,6 +212,37 @@
       justify-content: center;
       gap: 1rem;
       padding: 1rem;
+    }
+
+    /* Clippy panel — left of the board; hidden on mobile */
+    #clippy-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      height: var(--board-full-h);
+      width: 110px;
+      flex-shrink: 0;
+      padding-bottom: 12px;
+      gap: 0.5rem;
+      position: relative;
+    }
+    #clippy-img {
+      width: 100px;
+      object-fit: contain;
+      flex: 1;
+      min-height: 0;
+    }
+    /* "Need a hint?" sits at the bottom-right of the panel */
+    #btn-clippy-hint {
+      position: absolute;
+      bottom: 0;
+      right: -8px;
+      white-space: normal;
+      text-align: center;
+      line-height: 1.2;
+      padding: 0.25rem 0.55rem;
+      font-size: 0.72rem;
     }
 
     /* Board column: game board only (hint moved to header) */
@@ -331,6 +379,9 @@
       color: #ff4444;
       animation: timerPulse 0.5s ease-in-out infinite alternate;
     }
+    /* Mobile-only elements — hidden on desktop */
+    #mobile-score-bar { display: none; }
+    #timer-display-mobile { display: none; }
 
     /* Jar region */
     #jar-region {
@@ -411,6 +462,7 @@
 
     @media (max-width: 640px) {
       #game-area { flex-direction: column; align-items: center; padding: 0.5rem; gap: 0.5rem; }
+      #clippy-panel { display: none; }
       #stats-panel {
         width: 100%;
         height: auto;
@@ -423,12 +475,54 @@
         border-radius: 10px;
       }
       #jar-region { display: none; }
+      /* On mobile the timer-wrap becomes a horizontal score bar */
+      #hud-timer-wrap {
+        position: relative;
+        padding: 0;
+        border-radius: 8px;
+        overflow: hidden;
+        width: 100%;
+        height: 24px;
+        border: 1px solid rgba(255,255,255,0.18);
+      }
+      #timer-display { display: none; }
+      #mobile-score-bar {
+        display: block;
+        position: absolute;
+        inset: 0;
+        background: rgba(0,0,0,0.35);
+        border-radius: inherit;
+        overflow: hidden;
+      }
+      #mobile-score-bar-fill {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(to right,
+          rgba(180,120,0,0.85) 0%,
+          rgba(220,160,0,0.9)  45%,
+          rgba(255,215,0,1)    100%);
+        transition: width 0.5s ease;
+        border-radius: inherit;
+      }
+      /* Timer shown inline next to the level label on mobile */
+      #timer-display-mobile {
+        display: inline;
+        font-size: 0.8rem;
+        font-weight: 900;
+        color: var(--primary);
+        font-variant-numeric: tabular-nums;
+      }
+      #timer-display-mobile.timer-warning {
+        color: #ff4444;
+        animation: timerPulse 0.5s ease-in-out infinite alternate;
+      }
       #level-label-paper {
         position: static;
         height: auto;
         padding: 4px 14px;
         border-radius: 8px;
         box-shadow: none;
+        gap: 0.5em;
       }
     }
 
@@ -688,57 +782,65 @@
 
 <!-- START SCREEN -->
 <div id="screen-start" class="screen">
-  <h1>LogoCrush 🎮</h1>
-  <p>The Microsoft cloud logo match-3 game, built by <a href="https://www.linkedin.com/in/andrasfordos" target="_blank" rel="noopener noreferrer" style="color:var(--primary);font-weight:600;">András Fördős</a></p>
+  <!-- Section 1: title, subtitle, stats, LinkedIn share -->
+  <div class="menu-section">
+    <h1>LogoCrush 🎮</h1>
+    <p>The Microsoft cloud logo match-3 game, built by <a href="https://www.linkedin.com/in/andrasfordos" target="_blank" rel="noopener noreferrer" style="color:var(--primary);font-weight:600;">András Fördős</a></p>
 
-  <div class="pb-share-row">
-    <div class="pb-display">
-      <div class="pb-item">
-        <span class="pb-value" id="pb-highscore">0</span>
-        <span class="pb-label">Best Score</span>
+    <div class="pb-share-row">
+      <div class="pb-display">
+        <div class="pb-item">
+          <span class="pb-value" id="pb-highscore">0</span>
+          <span class="pb-label">Best Score</span>
+        </div>
+        <div class="pb-item">
+          <span class="pb-value" id="pb-level">1</span>
+          <span class="pb-label">Best Level</span>
+        </div>
+        <div class="pb-item">
+          <span class="pb-value" id="pb-games">0</span>
+          <span class="pb-label">Games</span>
+        </div>
+        <div class="pb-item">
+          <span class="pb-value" id="pb-logos">0</span>
+          <span class="pb-label">Logos Cleared</span>
+        </div>
       </div>
-      <div class="pb-item">
-        <span class="pb-value" id="pb-level">1</span>
-        <span class="pb-label">Best Level</span>
-      </div>
-      <div class="pb-item">
-        <span class="pb-value" id="pb-games">0</span>
-        <span class="pb-label">Games</span>
-      </div>
-      <div class="pb-item">
-        <span class="pb-value" id="pb-logos">0</span>
-        <span class="pb-label">Logos Cleared</span>
-      </div>
+      <button id="btn-linkedin-share" class="btn-linkedin-share">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
+          <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+        </svg>
+        Share<br>Stats
+      </button>
     </div>
-    <button id="btn-linkedin-share" class="btn-linkedin-share">
-      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
-        <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
-      </svg>
-      Share<br>Stats
-    </button>
   </div>
 
-  <h2 class="section-label">Choose your cloud:</h2>
-  <div id="modeSelector" role="group" aria-label="Cloud filter">
-    <button data-tag="all" aria-pressed="true">All</button>
-    <button data-tag="azure" aria-pressed="false">Azure</button>
-    <button data-tag="m365" aria-pressed="false">M365</button>
-    <button data-tag="power-platform" aria-pressed="false">Power Platform</button>
-    <button data-tag="dynamics" aria-pressed="false">Dynamics</button>
-    <button data-tag="security" aria-pressed="false">Security</button>
-    <button data-tag="modern-workplace" aria-pressed="false">Modern Workplace</button>
+  <!-- Section 2: cloud picker -->
+  <div class="menu-section">
+    <h2 class="section-label">Choose your cloud:</h2>
+    <div id="modeSelector" role="group" aria-label="Cloud filter">
+      <button data-tag="all" aria-pressed="true">All</button>
+      <button data-tag="azure" aria-pressed="false">Azure</button>
+      <button data-tag="m365" aria-pressed="false">M365</button>
+      <button data-tag="power-platform" aria-pressed="false">Power Platform</button>
+      <button data-tag="dynamics" aria-pressed="false">Dynamics</button>
+      <button data-tag="security" aria-pressed="false">Security</button>
+      <button data-tag="modern-workplace" aria-pressed="false">Modern Workplace</button>
+    </div>
   </div>
 
-  <button id="btn-play" class="btn-primary">Play!</button>
-  <div class="visit-counter-wrap">
-    <span class="visit-counter-label">All time statistics:</span>
-    <img src="https://hits.sh/fordosa90.github.io/logocrush.github.io.svg?label=visitors&color=0078D4&style=flat-square" alt="Visit counter" class="hits-badge" style="height:28px;">
+  <!-- Section 3: play button and visitor counter -->
+  <div class="menu-section">
+    <button id="btn-play" class="btn-primary">Play!</button>
+    <div class="visit-counter-wrap">
+      <span class="visit-counter-label">All time statistics:</span>
+      <img src="https://hits.sh/fordosa90.github.io/logocrush.github.io.svg?label=visitors&color=0078D4&style=flat-square" alt="Visit counter" class="hits-badge" style="height:28px;">
+    </div>
   </div>
 </div>
 <div id="screen-playing" class="screen hidden">
   <header>
     <button id="btn-menu" class="btn-menu">⬅ Menu</button>
-    <span class="game-title">LogoCrush 🎮</span>
     <div class="header-visits-wrap">
       <span class="header-visits-label">All time statistics:</span>
       <img src="https://hits.sh/fordosa90.github.io/logocrush.github.io.svg?label=visitors&color=0078D4&style=flat-square" alt="Visit counter" class="hits-badge" style="height:16px;">
@@ -746,6 +848,11 @@
     <button id="btn-hint" class="btn-hint">💡 Hint</button>
   </header>
   <div id="game-area">
+    <!-- Clippy panel: hidden on mobile via CSS -->
+    <div id="clippy-panel">
+      <img id="clippy-img" src="assets/clippy.png" alt="Clippy the assistant">
+      <button id="btn-clippy-hint" class="btn-hint">💡 Need a hint?</button>
+    </div>
     <div id="board-column">
       <div id="board-area">
         <div id="board" role="grid" aria-label="Game board"></div>
@@ -758,6 +865,8 @@
       </div>
       <div id="hud-timer-wrap">
         <div id="timer-display">5:00</div>
+        <!-- Mobile: horizontal score bar replacing timer background -->
+        <div id="mobile-score-bar"><div id="mobile-score-bar-fill"></div></div>
       </div>
       <div id="jar-region">
         <div id="progress-jar">
@@ -766,7 +875,7 @@
         </div>
         <div id="jar-current-score" class="jar-label jar-label-current"></div>
       </div>
-      <div id="level-label-paper">LEVEL <span id="progress-level-num">1</span></div>
+      <div id="level-label-paper">LEVEL <span id="progress-level-num">1</span><span id="timer-display-mobile"></span></div>
     </div>
   </div>
 </div>
@@ -931,12 +1040,15 @@ async function loadManifest() {
     const data = await res.json();
     if (Array.isArray(data.icons) && data.icons.length >= 6) {
       allIcons = data.icons;
+      // Store tag unlock rules globally for later use
+      window._tagRules = Array.isArray(data.tagRules) ? data.tagRules : [];
       return;
     }
     throw new Error('invalid manifest');
   } catch (e) {
     console.warn('manifest.json load failed, using fallback:', e.message);
     allIcons = FALLBACK_ICONS;
+    window._tagRules = [];
   }
 }
 
@@ -1654,7 +1766,7 @@ function updateHUD() {
   // Moves
   document.getElementById('moves-display').textContent = state.movesLeft;
 
-  // Timer
+  // Timer (desktop)
   const timerEl = document.getElementById('timer-display');
   timerEl.textContent = formatTime(timeRemaining);
   if (timeRemaining < 30) {
@@ -1663,11 +1775,23 @@ function updateHUD() {
     timerEl.classList.remove('timer-warning');
   }
 
+  // Timer (mobile — shown next to level label)
+  const mobileTimerEl = document.getElementById('timer-display-mobile');
+  if (mobileTimerEl) {
+    mobileTimerEl.textContent = formatTime(timeRemaining);
+    if (timeRemaining < 30) mobileTimerEl.classList.add('timer-warning');
+    else mobileTimerEl.classList.remove('timer-warning');
+  }
+
   // Progress jar: scaleY from 0→1 reveals the blue-to-gold gradient bottom-up
   const pct = Math.min(100, (state.score / state.scoreTarget) * 100);
   document.getElementById('progress-jar-fill').style.transform = `scaleY(${pct / 100})`;
   document.getElementById('progress-level-num').textContent = state.level;
   document.getElementById('jar-target-score').textContent = state.scoreTarget.toLocaleString();
+
+  // Mobile horizontal score bar — fills left to right
+  const mobileBarFill = document.getElementById('mobile-score-bar-fill');
+  if (mobileBarFill) mobileBarFill.style.width = `${pct}%`;
 
   // Float current-score label at the top of the golden fill
   const currentEl = document.getElementById('jar-current-score');
@@ -1796,6 +1920,8 @@ function loadPersonalBests() {
   document.getElementById('pb-level').textContent = localStorage.getItem(LS_HIGHESTLEVEL) || '1';
   document.getElementById('pb-games').textContent = localStorage.getItem(LS_TOTALGAMES) || '0';
   document.getElementById('pb-logos').textContent = parseInt(localStorage.getItem(LS_TOTALLOGOS) || '0').toLocaleString();
+  // Re-evaluate which tag buttons are unlocked now that stats may have changed
+  applyTagUnlockRules();
 }
 
 // ─── Input handlers ───────────────────────────────────────────────────────────
@@ -1888,12 +2014,51 @@ function setupBoardListeners() {
   }, { passive: true });
 }
 
+// ─── Tag unlock rules ─────────────────────────────────────────────────────────
+function isTagUnlocked(rule) {
+  if (!rule || rule.always) return true;
+  const games = parseInt(localStorage.getItem(LS_TOTALGAMES)   || '0');
+  const level = parseInt(localStorage.getItem(LS_HIGHESTLEVEL) || '1');
+  if (rule.minGames && games < rule.minGames) return false;
+  if (rule.minLevel && level < rule.minLevel) return false;
+  return true;
+}
+
+function applyTagUnlockRules() {
+  const rules = window._tagRules || [];
+  if (!rules.length) return;
+  const container = document.getElementById('modeSelector');
+  for (const rule of rules) {
+    const btn = container.querySelector(`button[data-tag="${CSS.escape(rule.tag)}"]`);
+    if (!btn) continue;
+    const unlocked = isTagUnlocked(rule);
+    if (unlocked) {
+      btn.classList.remove('tag-locked');
+      btn.removeAttribute('disabled');
+      btn.removeAttribute('title');
+    } else {
+      btn.classList.add('tag-locked');
+      btn.setAttribute('disabled', '');
+      btn.setAttribute('title', rule.tooltip || 'Locked');
+      // If the locked tag was the active one, reset to 'all'
+      if (state.activeTag === rule.tag) {
+        state.activeTag = 'all';
+        localStorage.setItem(LS_ACTIVETAG, 'all');
+        container.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', 'false'));
+        const allBtn = container.querySelector('button[data-tag="all"]');
+        if (allBtn) allBtn.setAttribute('aria-pressed', 'true');
+      }
+    }
+  }
+}
+
 // ─── Mode selector ────────────────────────────────────────────────────────────
 function setupModeSelector() {
   const container = document.getElementById('modeSelector');
   container.addEventListener('click', e => {
     const btn = e.target.closest('button');
     if (!btn) return;
+    if (btn.classList.contains('tag-locked')) return; // locked: ignore
     container.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', 'false'));
     btn.setAttribute('aria-pressed', 'true');
     state.activeTag = btn.dataset.tag;
@@ -1989,6 +2154,11 @@ function setupPlayButton() {
     }
   });
 
+  // Clippy "Need a hint?" button — identical behaviour to btn-hint
+  document.getElementById('btn-clippy-hint').addEventListener('click', () => {
+    document.getElementById('btn-hint').click();
+  });
+
   document.getElementById('btn-next-level').addEventListener('click', () => {
     if (summaryTimer) { clearInterval(summaryTimer); summaryTimer = null; }
     startNextLevel();
@@ -2052,6 +2222,7 @@ async function init() {
   loadPersonalBests();
   setupModeSelector();
   restoreSavedTag();
+  applyTagUnlockRules();  // grey out locked tags based on saved stats
   setupBoardListeners();
   setupPlayButton();
   showScreen('screen-start');
