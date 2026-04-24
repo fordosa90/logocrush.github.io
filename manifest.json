@@ -1,5 +1,14 @@
 {
   "namingConvention": "{product-name}.svg  |  {product-family}-{product-name}.svg  —  kebab-case, no version dates",
+  "tagRules": [
+    { "tag": "all",              "always": true },
+    { "tag": "azure",            "minGames": 3,  "tooltip": "Unlock by playing 3 games" },
+    { "tag": "m365",             "minGames": 5,  "tooltip": "Unlock by playing 5 games" },
+    { "tag": "power-platform",   "minLevel": 3,  "tooltip": "Unlock by beating level 3" },
+    { "tag": "dynamics",         "minLevel": 5,  "tooltip": "Unlock by beating level 5" },
+    { "tag": "security",         "minGames": 10, "tooltip": "Unlock by playing 10 games" },
+    { "tag": "modern-workplace", "minLevel": 10, "tooltip": "Unlock by beating level 10" }
+  ],
   "icons": [
     {"id": "microsoft-365",                   "name": "Microsoft 365",                   "file": "icons/microsoft-365.svg",                   "tags": ["m365", "modern-workplace"]},
     {"id": "teams",                           "name": "Teams",                           "file": "icons/teams.svg",                           "tags": ["m365", "modern-workplace"]},

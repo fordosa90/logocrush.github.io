@@ -4,7 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LogoCrush</title>
-  <meta name="description" content="LogoCrush – match Microsoft cloud product logos in this browser-based match-3 puzzle game. Inspired by Candy Crush, runs entirely in your browser with no install needed.">
+  <meta name="description" content="Match Microsoft cloud product logos in this browser-based match-3 puzzle game. How far can you get?">
+  <!-- Open Graph / LinkedIn sharing tags -->
+  <meta property="og:type"        content="website">
+  <meta property="og:url"         content="https://fordosa90.github.io/logocrush.github.io/">
+  <meta property="og:title"       content="LogoCrush">
+  <meta property="og:description" content="Match Microsoft cloud product logos in this browser-based match-3 puzzle game. How far can you get?">
+  <meta property="og:site_name"   content="LogoCrush">
+  <meta property="og:image"       content="https://fordosa90.github.io/logocrush.github.io/assets/socialbanner.png">
+  <meta property="og:author"      content="András Fördős">
   <link rel="icon" href="data:,">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -16,6 +24,8 @@
       --border: #E0E0E0;
       --tile-size: min(10vmin, 64px);
       --gap: min(0.5vmin, 4px);
+      /* board-area total height = board grid + board padding (4px×2) + board-area padding (8px×2) */
+      --board-full-h: calc(8 * var(--tile-size) + 7 * var(--gap) + 24px);
     }
 
     body {
@@ -25,6 +35,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
     }
 
     .screen { width: 100%; max-width: 520px; padding: 1rem; display: flex; flex-direction: column; align-items: center; gap: 0.75rem; }
@@ -65,80 +76,474 @@
     .pb-value { font-size: 1.2rem; font-weight: 700; color: var(--primary); display: block; }
     .pb-label { font-size: 0.7rem; color: #666; text-transform: uppercase; }
 
-    /* Mode selector */
+    /* Mode selector — "All" on its own row, then 3 per row */
     #modeSelector {
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
       gap: 0.4rem;
-      justify-content: center;
+      width: 100%;
     }
     #modeSelector button {
       background: var(--white);
       border: 1px solid var(--border);
       border-radius: 20px;
-      padding: 0.3rem 0.8rem;
+      padding: 0.35rem 0.6rem;
       font-size: 0.82rem;
       cursor: pointer;
       transition: background 0.15s, color 0.15s;
       color: #444;
+      text-align: center;
+      width: 100%;
+    }
+    #modeSelector button:first-child {
+      grid-column: 1 / -1; /* "All" spans full width */
     }
     #modeSelector button[aria-pressed="true"] {
       background: var(--primary);
       color: var(--white);
       border-color: var(--primary);
     }
+    /* Locked tag buttons — greyed out, not-allowed cursor */
+    #modeSelector button.tag-locked {
+      opacity: 0.42;
+      cursor: not-allowed;
+      filter: grayscale(60%);
+    }
 
-    /* Playing screen header */
+    /* Menu sections — three visual groups on the start screen */
+    .menu-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+      width: 100%;
+    }
+    /* Larger gap between sections than within them */
+    #screen-start { gap: 1.75rem; }
+
+    /* Visit counter — inline: label + badge on same row */
+    .visit-counter-wrap {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .visit-counter-label {
+      font-size: 0.78rem;
+      color: #555;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+    }
+    .hits-badge { border-radius: 4px; }
+
+    /* Stats + LinkedIn share row */
+    .pb-share-row {
+      display: flex;
+      gap: 0.6rem;
+      width: 100%;
+      align-items: stretch;
+    }
+    .pb-share-row .pb-display { flex: 1; }
+    .btn-linkedin-share {
+      background: #0077B5;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 0.5rem 0.6rem;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.25rem;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      min-width: 62px;
+      text-align: center;
+      line-height: 1.2;
+      transition: background 0.15s, transform 0.1s;
+      flex-shrink: 0;
+    }
+    .btn-linkedin-share:hover { background: #005582; }
+    .btn-linkedin-share:active { transform: scale(0.97); }
+
+    /* Playing screen layout */
     #screen-playing {
       max-width: 100%;
       padding: 0;
       gap: 0;
+      align-items: stretch;
     }
     header {
       width: 100%;
       background: var(--white);
       border-bottom: 1px solid var(--border);
-      padding: 0.5rem 1rem;
+      padding: 0.4rem 0.75rem;
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      justify-content: center;
+      gap: 0.6rem;
     }
-    .game-title { font-weight: 700; font-size: 1rem; color: var(--primary); flex: 0 0 auto; }
-    #level-display { font-size: 0.9rem; color: #555; flex: 1; }
-    .header-stats { display: flex; flex-direction: column; align-items: flex-end; gap: 0.1rem; }
-    #score-display { font-size: 1rem; font-weight: 700; color: var(--primary); }
-    #moves-display { font-size: 0.8rem; color: #666; }
+    .game-title { font-weight: 700; font-size: 1rem; color: var(--primary); }
 
-    #tag-badge {
-      font-size: 0.75rem;
-      background: #e8f0fe;
-      color: var(--primary);
-      border-radius: 12px;
-      padding: 0.2rem 0.7rem;
-      margin: 0.4rem 0 0.1rem;
+    /* Visits wrap inside header */
+    .header-visits-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1px;
+      flex-shrink: 0;
+    }
+    .header-visits-label {
+      font-size: 0.5rem;
+      color: #666;
       font-weight: 600;
-      align-self: flex-start;
-      margin-left: 1rem;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .header-visits-wrap .hits-badge { height: 16px; }
+
+    /* Game area: board column + stats panel */
+    #game-area {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 1rem;
+      padding: 1rem;
+    }
+
+    /* Clippy panel — left of the board; hidden on mobile */
+    #clippy-panel {
+      display: none;             /* hidden until level 20 is unlocked */
+      align-items: center;       /* vertical centering within board height */
+      justify-content: center;
+      height: var(--board-full-h);
+      width: 110px;
+      flex-shrink: 0;
+    }
+    #clippy-panel.clippy-unlocked {
+      display: flex;
+    }
+    /* Inner wrapper: image stacked above the overlapping button */
+    #clippy-wrap {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #clippy-img {
+      /* 4 tiles tall + 3 gaps between them */
+      height: calc(4 * var(--tile-size) + 3 * var(--gap));
+      width: auto;
+      object-fit: contain;
+      display: block;
+    }
+    #clippy-img.anim-clippy-shake {
+      animation: clippyShake 0.5s ease-in-out;
+    }
+    @keyframes clippyShake {
+      0%, 100% { transform: rotate(0deg) scale(1); }
+      18%  { transform: rotate(-7deg) scale(1.06); }
+      36%  { transform: rotate(7deg)  scale(1.09); }
+      54%  { transform: rotate(-5deg) scale(1.05); }
+      72%  { transform: rotate(5deg)  scale(1.06); }
+      88%  { transform: rotate(-2deg) scale(1.02); }
+    }
+    /* Button overlaps the bottom of the image */
+    #btn-clippy-hint {
+      margin-top: -1.4rem;   /* pull up to overlap the image bottom */
+      white-space: normal;
+      text-align: center;
+      line-height: 1.2;
+      padding: 0.25rem 0.55rem;
+      font-size: 0.72rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Board column: game board only (hint moved to header) */
+    #board-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+      flex-shrink: 0;
     }
 
     /* Board */
+    #board-area {
+      padding: 8px;
+      background: #162b45;
+      border-radius: 14px;
+      display: flex;
+      flex-shrink: 0;
+    }
     #board {
       display: grid;
       grid-template-columns: repeat(8, var(--tile-size));
       grid-template-rows: repeat(8, var(--tile-size));
       gap: var(--gap);
-      padding: 6px;
+      padding: 4px;
       background: #0f2744;
-      border-radius: 12px;
+      border-radius: 10px;
       touch-action: none;
       user-select: none;
     }
-    #board-area {
-      padding: 0.75rem;
-      background: #162b45;
-      width: 100%;
+
+    /* Hint button — compact for header */
+    .btn-hint {
+      background: #16213e;
+      color: #ffd700;
+      border: 2px solid #ffd700;
+      border-radius: 8px;
+      padding: 0.25rem 0.7rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+      transition: background 0.15s, color 0.15s, transform 0.1s;
+      flex-shrink: 0;
+    }
+    .btn-hint:hover { background: #ffd700; color: #000; }
+    .btn-hint:active { transform: scale(0.96); }
+    .btn-hint:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    /* Stats panel — Candy Crush–inspired side panel */
+    #stats-panel {
+      height: var(--board-full-h);
+      width: calc(var(--board-full-h) / 3);
+      min-width: 90px;
+      background: linear-gradient(175deg, #1e3d6b 0%, #0d1f38 55%, #06111f 100%);
+      border: 1px solid rgba(100,160,255,0.18);
+      border-radius: 14px;
+      box-shadow: 0 6px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08);
       display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px 8px 0;
+      gap: 6px;
+      position: relative;
+      flex-shrink: 0;
+      overflow: visible;
+    }
+    /* Subtle top sheen */
+    #stats-panel::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 12px; right: 12px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent);
+      pointer-events: none;
+    }
+
+    /* Moves counter — CC-style circular badge */
+    #hud-moves-wrap {
+      flex-shrink: 0;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      line-height: 1;
+      gap: 4px;
+    }
+    #moves-display {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 42% 33%, #ff7b33 0%, #c0392b 62%, #8e1a10 100%);
+      border: 3px solid rgba(255,255,255,0.22);
+      box-shadow: 0 0 0 3px rgba(255,80,0,0.28), 0 5px 16px rgba(0,0,0,0.5), inset 0 2px 0 rgba(255,255,255,0.2);
+      display: flex;
+      align-items: center;
       justify-content: center;
+      font-size: 1.55rem;
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.55);
+      line-height: 1;
+    }
+    .hud-moves-label {
+      font-size: 0.52rem;
+      font-weight: 700;
+      color: rgba(255,255,255,0.65);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* Timer — styled pill */
+    #hud-timer-wrap {
+      flex-shrink: 0;
+      text-align: center;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 4px 10px;
+      width: 100%;
+      box-shadow: inset 0 1px 4px rgba(0,0,0,0.35);
+    }
+    #timer-display {
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: #fff;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.05em;
+      text-shadow: 0 0 10px rgba(255,255,255,0.22);
+    }
+    @keyframes timerPulse { from { opacity: 1; } to { opacity: 0.45; } }
+    #timer-display.timer-warning {
+      color: #ff4444;
+      animation: timerPulse 0.5s ease-in-out infinite alternate;
+    }
+    /* Mobile-only elements — hidden on desktop */
+    #mobile-score-bar { display: none; }
+    #timer-display-mobile { display: none; }
+
+    /* Jar region */
+    #jar-region {
+      flex: 1;
+      width: 100%;
+      min-height: 0;
+      padding: 0 2px;
+      margin-bottom: 26px; /* paper label overlaps jar bottom by (40-26)=14px */
+      position: relative;  /* anchor for current-score label */
+    }
+    #progress-jar {
+      width: 100%;
+      height: 100%;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 6px 6px 12px 12px;
+      background: rgba(255,255,255,0.08);
+      position: relative;
+      overflow: hidden;
+    }
+    /* Full-height fill; scaleY from bottom: transparent at 0%, golden at 100% */
+    #progress-jar-fill {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 100%;
+      background: linear-gradient(to top,
+        rgba(180, 120, 0, 0.85) 0%,
+        rgba(220, 160, 0, 0.9)  40%,
+        rgba(255, 200, 0, 0.95) 70%,
+        rgba(255, 215, 0, 1)    100%);
+      transform: scaleY(0);
+      transform-origin: bottom center;
+      transition: transform 0.5s ease;
+    }
+    /* Score labels rendered inside/over the jar */
+    .jar-label {
+      position: absolute;
+      left: 2px; right: 2px;
+      text-align: center;
+      font-size: calc(var(--tile-size) * 0.38);
+      font-weight: 900;
+      line-height: 1;
+      z-index: 4;
+      pointer-events: none;
+      white-space: nowrap;
+      overflow: hidden;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.85);
+    }
+    /* Target score: fixed at top of the jar */
+    .jar-label-target { top: 6px; color: #ffd700; }
+    /* Current score: floats at the top of the golden liquid (bottom set via JS) */
+    .jar-label-current {
+      color: #00e5ff;
+      bottom: 0; /* overridden by updateHUD */
+      transition: bottom 0.5s ease;
+    }
+
+    /* Level badge — white paper sticker look */
+    #level-label-paper {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 40px;
+      background: #fff;
+      border-top: 1px solid #ccc;
+      border-radius: 10px 10px 14px 14px;
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35em;
+      font-weight: 800;
+      font-size: 0.8rem;
+      color: #333;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      box-shadow: 0 -3px 10px rgba(0,0,0,0.35), 0 2px 4px rgba(0,0,0,0.15);
+    }
+    #progress-level-num { color: var(--primary); }
+
+    @media (max-width: 640px) {
+      #game-area { flex-direction: column; align-items: center; padding: 0.5rem; gap: 0.5rem; }
+      #clippy-panel { display: none; }
+      #stats-panel {
+        width: 100%;
+        height: auto;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        padding: 8px 12px;
+        gap: 10px 20px;
+        border-radius: 10px;
+      }
+      #jar-region { display: none; }
+      /* On mobile the timer-wrap becomes a horizontal score bar */
+      #hud-timer-wrap {
+        position: relative;
+        padding: 0;
+        border-radius: 8px;
+        overflow: hidden;
+        width: 100%;
+        height: 24px;
+        border: 1px solid rgba(255,255,255,0.18);
+      }
+      #timer-display { display: none; }
+      #mobile-score-bar {
+        display: block;
+        position: absolute;
+        inset: 0;
+        background: rgba(0,0,0,0.35);
+        border-radius: inherit;
+        overflow: hidden;
+      }
+      #mobile-score-bar-fill {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(to right,
+          rgba(180,120,0,0.85) 0%,
+          rgba(220,160,0,0.9)  45%,
+          rgba(255,215,0,1)    100%);
+        transition: width 0.5s ease;
+        border-radius: inherit;
+      }
+      /* Timer shown inline next to the level label on mobile */
+      #timer-display-mobile {
+        display: inline;
+        font-size: 0.8rem;
+        font-weight: 900;
+        color: var(--primary);
+        font-variant-numeric: tabular-nums;
+      }
+      #timer-display-mobile.timer-warning {
+        color: #ff4444;
+        animation: timerPulse 0.5s ease-in-out infinite alternate;
+      }
+      #level-label-paper {
+        position: static;
+        height: auto;
+        padding: 4px 14px;
+        border-radius: 8px;
+        box-shadow: none;
+        gap: 0.5em;
+      }
     }
 
     .tile {
@@ -161,6 +566,8 @@
       object-fit: contain;
       pointer-events: none;
       display: block;
+      position: relative;
+      z-index: 2; /* sit above the striped-tile ::before white inset */
     }
     .tile:focus { outline: 2px solid var(--primary); outline-offset: 1px; }
     .tile.selected {
@@ -168,11 +575,77 @@
       transform: scale(1.05);
       z-index: 2;
     }
-    .tile.special-rowclear {
-      box-shadow: 0 0 0 2px gold, 0 0 8px 2px rgba(255, 200, 0, 0.6);
+
+    /* ── Special tiles ─────────────────────────────────────────────────── */
+    /* Golden: random drop, explodes 8 neighbours */
+    .tile.special-golden {
+      background: radial-gradient(circle at 38% 32%, #ffe566 0%, #ffa500 55%, #e65c00 100%);
+      border: 2px solid #ff8800;
+      box-shadow: 0 0 14px 5px rgba(255,160,0,0.7), inset 0 2px 0 rgba(255,255,200,0.5);
     }
-    .tile.special-bomb {
-      box-shadow: 0 0 0 2px #ff4500, 0 0 10px 3px rgba(255, 69, 0, 0.5);
+    /* Striped-H: 4-combo horizontal run → clears full row.
+       Outer layer: horizontal red/yellow stripes fill the whole tile.
+       Inner layer (::before): white rectangle inset ~8px, floats above the stripes,
+       so the striped band shows all around as a visible border. */
+    .tile.special-striped-h {
+      background: repeating-linear-gradient(
+        0deg,
+        #dd1100 0px,  #dd1100 5px,
+        #ffd700 5px,  #ffd700 10px
+      );
+      border: none;
+      box-shadow: 0 0 12px 4px rgba(255,100,0,0.5);
+    }
+    .tile.special-striped-h::before {
+      content: '';
+      position: absolute;
+      inset: 8px;
+      background: white;
+      border-radius: 3px;
+      z-index: 1;
+    }
+    /* Striped-V: 4-combo vertical run → clears full column.
+       Outer layer: vertical blue/white stripes. Inner white inset on top. */
+    .tile.special-striped-v {
+      background: repeating-linear-gradient(
+        90deg,
+        #ffd700 0px,  #ffd700 5px,
+        #dd1100 5px,  #dd1100 10px
+      );
+      border: none;
+      box-shadow: 0 0 12px 4px rgba(255,100,0,0.5);
+    }
+    .tile.special-striped-v::before {
+      content: '';
+      position: absolute;
+      inset: 8px;
+      background: white;
+      border-radius: 3px;
+      z-index: 1;
+    }
+    /* Shiny: 5+-combo → clears all tiles with same logo; soft pulsing radiation aura */
+    .tile.special-shiny {
+      background: radial-gradient(circle at 34% 28%,
+        rgba(255,255,255,0.92) 0%,
+        rgba(160,225,255,0.75) 38%,
+        rgba(80,170,255,0.55) 100%);
+      border: 2px solid rgba(160,230,255,0.95);
+      box-shadow: 0 0 18px 6px rgba(100,200,255,0.65),
+                  inset 0 2px 6px rgba(255,255,255,0.55);
+      animation: shinyAura 1.8s ease-in-out infinite;
+    }
+    @keyframes shinyAura {
+      0%, 100% {
+        box-shadow: 0 0 10px 3px rgba(100,200,255,0.5),
+                    0 0 22px 8px rgba(100,200,255,0.25),
+                    inset 0 2px 6px rgba(255,255,255,0.55);
+      }
+      50% {
+        box-shadow: 0 0 18px 8px rgba(100,200,255,0.8),
+                    0 0 36px 16px rgba(100,200,255,0.35),
+                    0 0 52px 24px rgba(160,240,255,0.15),
+                    inset 0 2px 6px rgba(255,255,255,0.55);
+      }
     }
 
     /* Animations */
@@ -201,6 +674,12 @@
     .tile.anim-bounce { animation: tileBounce 0.25s ease-in-out; }
     .score-pulse { animation: scorePulse 0.4s ease-in-out; }
 
+    @keyframes tileHighlight {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0px rgba(255,140,0,0); }
+      50% { transform: scale(1.1); box-shadow: 0 0 0 3px rgba(255,140,0,0.9), 0 0 14px 5px rgba(255,140,0,0.45); }
+    }
+    .tile.anim-highlight { animation: tileHighlight 0.28s ease-in-out; z-index: 3; }
+
     @keyframes tileFall {
       0% { transform: translateY(calc(-1 * var(--tile-size) * var(--fall-rows, 1))); opacity: 0.7; }
       100% { transform: translateY(0); opacity: 1; }
@@ -211,33 +690,60 @@
       position: absolute;
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 0.7rem;
-      font-weight: 700;
-      color: #ff8c00;
+      font-size: calc(var(--tile-size) * 0.38);
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 0 0 6px rgba(0,0,0,0.7), 0 1px 3px rgba(0,0,0,0.6);
       pointer-events: none;
       z-index: 10;
-      animation: scoreFloat 0.6s ease-out forwards;
+      white-space: nowrap;
+      animation: scoreFloat 1.1s ease-out forwards;
     }
     @keyframes scoreFloat {
-      0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-      100% { transform: translate(-50%, -150%) scale(0.8); opacity: 0; }
+      0%   { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+      45%  { transform: translate(-50%, -50%) scale(1.1);  opacity: 1; }
+      100% { transform: translate(-50%, -130%) scale(0.85); opacity: 0; }
     }
     .board-bonus-popup {
       position: fixed;
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 2rem;
+      font-size: 3.2rem;
       font-weight: 900;
-      color: #ff8c00;
+      color: #fff;
+      background: rgba(0,0,0,0.78);
+      padding: 0.35rem 1.1rem;
+      border-radius: 14px;
+      border: 2px solid #ff8c00;
+      text-shadow: 0 0 18px #ff8c00, 0 0 36px rgba(255,140,0,0.5);
       z-index: 100;
       pointer-events: none;
-      animation: bonusPop 0.8s ease-out forwards;
+      animation: bonusPop 1.3s ease-out forwards;
     }
     @keyframes bonusPop {
-      0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
-      50% { transform: translate(-50%, -50%) scale(1.3); opacity: 1; }
+      0%   { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+      15%  { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+      70%  { transform: translate(-50%, -50%) scale(1.05); opacity: 1; }
       100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
     }
+
+    @keyframes tileHint {
+      0%, 100% { box-shadow: 0 0 0 2px #00e5ff, 0 0 10px 4px rgba(0,229,255,0.35); }
+      50%       { box-shadow: 0 0 0 3px #00e5ff, 0 0 22px 9px rgba(0,229,255,0.65); transform: scale(1.09); }
+    }
+    .tile.anim-hint { animation: tileHint 0.65s ease-in-out infinite; z-index: 4; }
+    /* shinyAura already uses 'animation:' — override conflicts prevented by specificity */
+    .tile.special-shiny.anim-special-shake { animation: specialShake 0.5s ease-in-out; }
+
+    @keyframes specialShake {
+      0%, 100% { transform: rotate(0deg) scale(1); }
+      18%  { transform: rotate(-9deg) scale(1.07); }
+      36%  { transform: rotate(9deg)  scale(1.1);  }
+      54%  { transform: rotate(-6deg) scale(1.06); }
+      72%  { transform: rotate(6deg)  scale(1.07); }
+      88%  { transform: rotate(-2deg) scale(1.03); }
+    }
+    .tile.anim-special-shake { animation: specialShake 0.5s ease-in-out; z-index: 3; }
 
     /* Modal */
     .modal-overlay {
@@ -258,24 +764,16 @@
     .btn-secondary { background: white; color: var(--primary); border: 1px solid var(--primary); border-radius: 8px; padding: 0.6rem 1.2rem; font-size: 0.95rem; font-weight: 600; cursor: pointer; }
     .btn-danger { background: #d83b01; color: white; border: none; border-radius: 8px; padding: 0.6rem 1.2rem; font-size: 0.95rem; font-weight: 700; cursor: pointer; }
 
-    /* Progress jar */
-    #progress-jar-container { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-    #progress-jar { width: 28px; height: 70px; border: 2px solid var(--primary); border-radius: 4px 4px 8px 8px; background: rgba(0,120,212,0.1); position: relative; overflow: hidden; }
-    #progress-jar-fill { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, #0078D4, #50c0f0); transition: height 0.5s ease; height: 0%; }
-    #progress-level-label { font-size: 0.65rem; font-weight: 700; color: var(--primary); text-align: center; }
-
-    /* Timer */
-    #timer-display { font-size: 0.9rem; font-weight: 700; color: #333; }
-    #timer-display.timer-warning { color: #d83b01; }
-
     /* Menu button */
     .btn-menu { background: white; color: var(--primary); border: 1px solid var(--primary); border-radius: 6px; padding: 0.3rem 0.7rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
 
     @media (prefers-reduced-motion: reduce) {
-      .tile, .tile.anim-match, .tile.anim-new, .tile.anim-bounce, .tile.anim-fall, .score-pulse {
+      .tile, .tile.anim-match, .tile.anim-new, .tile.anim-bounce, .tile.anim-fall, .tile.anim-highlight, .tile.anim-hint, .tile.anim-special-shake, .score-pulse {
         animation: none !important;
         transition: none !important;
       }
+      #clippy-img.anim-clippy-shake { animation: none !important; }
+      .jar-label-current { transition: none !important; }
     }
 
     /* Level summary & game over */
@@ -290,66 +788,119 @@
 
     /* Emoji decorations */
     .emoji-big { font-size: 3rem; }
+
+    /* hits.sh visit counter badge — base size; overridden per context */
+    .hits-badge { border-radius: 4px; }
+
+    /* Board blur when level-complete overlay is active */
+    .board-blurred { filter: blur(3px); transition: filter 0.3s ease; }
+
+    /* Countdown line inside level-complete modal */
+    .modal-countdown { font-size: 0.8rem; color: #888; margin-top: 0.4rem; text-align: center; }
   </style>
 </head>
 <body>
 
 <!-- START SCREEN -->
 <div id="screen-start" class="screen">
-  <h1>LogoCrush 🎮</h1>
-  <p>The Microsoft cloud logo match-3 game</p>
+  <!-- Section 1: title, subtitle, stats, LinkedIn share -->
+  <div class="menu-section">
+    <h1>LogoCrush 🎮</h1>
+    <p>The Microsoft cloud logo match-3 game, built by <a href="https://www.linkedin.com/in/andrasfordos" target="_blank" rel="noopener noreferrer" style="color:var(--primary);font-weight:600;">András Fördős</a></p>
 
-  <div class="pb-display">
-    <div class="pb-item">
-      <span class="pb-value" id="pb-highscore">0</span>
-      <span class="pb-label">Best Score</span>
-    </div>
-    <div class="pb-item">
-      <span class="pb-value" id="pb-level">1</span>
-      <span class="pb-label">Best Level</span>
-    </div>
-    <div class="pb-item">
-      <span class="pb-value" id="pb-games">0</span>
-      <span class="pb-label">Games</span>
-    </div>
-    <div class="pb-item">
-      <span class="pb-value" id="pb-logos">0</span>
-      <span class="pb-label">Logos Cleared</span>
+    <div class="pb-share-row">
+      <div class="pb-display">
+        <div class="pb-item">
+          <span class="pb-value" id="pb-highscore">0</span>
+          <span class="pb-label">Best Score</span>
+        </div>
+        <div class="pb-item">
+          <span class="pb-value" id="pb-level">1</span>
+          <span class="pb-label">Best Level</span>
+        </div>
+        <div class="pb-item">
+          <span class="pb-value" id="pb-games">0</span>
+          <span class="pb-label">Games</span>
+        </div>
+        <div class="pb-item">
+          <span class="pb-value" id="pb-logos">0</span>
+          <span class="pb-label">Logos Cleared</span>
+        </div>
+      </div>
+      <button id="btn-linkedin-share" class="btn-linkedin-share">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
+          <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+        </svg>
+        Share<br>Stats
+      </button>
     </div>
   </div>
 
-  <h2 class="section-label">Your Cloud</h2>
-  <div id="modeSelector" role="group" aria-label="Your Cloud filter">
-    <button data-tag="all" aria-pressed="true">All</button>
-    <button data-tag="azure" aria-pressed="false">Azure</button>
-    <button data-tag="m365" aria-pressed="false">M365</button>
-    <button data-tag="power-platform" aria-pressed="false">Power Platform</button>
-    <button data-tag="dynamics" aria-pressed="false">Dynamics</button>
-    <button data-tag="security" aria-pressed="false">Security</button>
-    <button data-tag="modern-workplace" aria-pressed="false">Modern Workplace</button>
+  <!-- Section 2: cloud picker -->
+  <div class="menu-section">
+    <h2 class="section-label">Choose your cloud:</h2>
+    <div id="modeSelector" role="group" aria-label="Cloud filter">
+      <button data-tag="all" aria-pressed="true">All</button>
+      <button data-tag="azure" aria-pressed="false">Azure</button>
+      <button data-tag="m365" aria-pressed="false">M365</button>
+      <button data-tag="power-platform" aria-pressed="false">Power Platform</button>
+      <button data-tag="dynamics" aria-pressed="false">Dynamics</button>
+      <button data-tag="security" aria-pressed="false">Security</button>
+      <button data-tag="modern-workplace" aria-pressed="false">Modern Workplace</button>
+    </div>
   </div>
 
-  <button id="btn-play" class="btn-primary">Play!</button>
+  <!-- Section 3: play button and visitor counter -->
+  <div class="menu-section">
+    <button id="btn-play" class="btn-primary">Play!</button>
+    <div class="visit-counter-wrap">
+      <span class="visit-counter-label">All time statistics:</span>
+      <img src="https://hits.sh/fordosa90.github.io/logocrush.github.io.svg?label=visitors&color=0078D4&style=flat-square" alt="Visit counter" class="hits-badge" style="height:28px;">
+    </div>
+    <p style="font-weight:normal;font-size:0.82rem;">Starting from level 20, unlock clippy and many more swags!</p>
+  </div>
 </div>
 <div id="screen-playing" class="screen hidden">
   <header>
     <button id="btn-menu" class="btn-menu">⬅ Menu</button>
-    <span id="level-display">Level 1</span>
-    <div class="header-stats">
-      <span id="score-display">0</span>
-      <span id="moves-display">20 moves</span>
-      <span id="timer-display">4:00</span>
+    <div class="header-visits-wrap">
+      <span class="header-visits-label">All time statistics:</span>
+      <img src="https://hits.sh/fordosa90.github.io/logocrush.github.io.svg?label=visitors&color=0078D4&style=flat-square" alt="Visit counter" class="hits-badge" style="height:16px;">
     </div>
-    <div id="progress-jar-container">
-      <div id="progress-jar">
-        <div id="progress-jar-fill"></div>
-      </div>
-      <div id="progress-level-label">LVL <span id="progress-level-num">1</span></div>
-    </div>
+    <button id="btn-hint" class="btn-hint">💡 Hint</button>
   </header>
-  <div id="tag-badge"></div>
-  <div id="board-area">
-    <div id="board" role="grid" aria-label="Game board"></div>
+  <div id="game-area">
+    <!-- Clippy panel: hidden on mobile via CSS -->
+    <div id="clippy-panel">
+      <div id="clippy-wrap">
+        <img id="clippy-img" src="assets/clippy.png" alt="Clippy the assistant">
+        <button id="btn-clippy-hint" class="btn-hint">💡 Need a hint?</button>
+      </div>
+    </div>
+    <div id="board-column">
+      <div id="board-area">
+        <div id="board" role="grid" aria-label="Game board"></div>
+      </div>
+    </div>
+    <div id="stats-panel">
+      <div id="hud-moves-wrap">
+        <div id="moves-display">30</div>
+        <span class="hud-moves-label">moves left</span>
+      </div>
+      <div id="hud-timer-wrap">
+        <div id="timer-display">5:00</div>
+        <!-- Mobile: horizontal score bar replacing timer background -->
+        <div id="mobile-score-bar"><div id="mobile-score-bar-fill"></div></div>
+      </div>
+      <div id="jar-region">
+        <div id="progress-jar">
+          <div id="progress-jar-fill"></div>
+          <div id="jar-target-score"  class="jar-label jar-label-target"></div>
+        </div>
+        <div id="jar-current-score" class="jar-label jar-label-current"></div>
+      </div>
+      <div id="level-label-paper">LEVEL <span id="progress-level-num">1</span><span id="timer-display-mobile"></span></div>
+    </div>
   </div>
 </div>
 
@@ -381,20 +932,21 @@
 
 <script>
 // ─── Constants ────────────────────────────────────────────────────────────────
-const GOATCOUNTER_CODE = '';
 const LS_HIGHSCORE   = 'logocrush_highscore';
 const LS_HIGHESTLEVEL = 'logocrush_highestlevel';
 const LS_TOTALGAMES  = 'logocrush_totalgames';
 const LS_TOTALLOGOS  = 'logocrush_totallogos';
 const LS_ACTIVETAG   = 'logocrush_activetag';
+const CLIPPY_UNLOCK_LEVEL = 20;
 
-// ─── Analytics ───────────────────────────────────────────────────────────────
-function trackEvent(path, title) {
-  if (!GOATCOUNTER_CODE) return;
-  if (window.goatcounter && window.goatcounter.count) {
-    window.goatcounter.count({ path, title, event: true });
-  }
-}
+const PER_TILE_PTS             = 100;   // base score per matched tile
+const INITIAL_TIME_SECONDS     = 300;   // 5 minutes per level
+const HINT_ANIMATION_MS        = 5000;  // how long hint tiles glow (doubled; cleared on any move)
+const SWAP_ANIMATION_MS        = 180;   // tile swap slide duration (ms)
+const SPECIAL_SHAKE_INTERVAL_MS  = 1300; // how often to check for special-tile shakes
+const SPECIAL_SHAKE_PROBABILITY  = 0.28; // chance each eligible tile shakes per interval
+const LEVEL_COMPLETE_COUNTDOWN_S = 10;   // seconds before auto-advancing after level complete
+const GOLDEN_TILE_CHANCE         = 0.03; // 3% chance a newly filled tile is golden
 
 // ─── State ───────────────────────────────────────────────────────────────────
 let allIcons = []; // loaded from manifest.json
@@ -414,7 +966,12 @@ let state = {
 };
 
 let gameTimerInterval = null;
+let specialShakeInterval = null;
 let timeRemaining = 240;
+
+// Hint highlight state — cleared on any player move
+let hintTimers = [];
+let hintTileEls = [];
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 function delay(ms) {
@@ -432,6 +989,23 @@ function shuffle(arr) {
 
 function randItem(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
+}
+
+// ─── Hint highlight helpers ───────────────────────────────────────────────────
+function clearHintHighlights() {
+  hintTimers.forEach(t => clearTimeout(t));
+  hintTimers = [];
+  hintTileEls.forEach(el => el && el.classList.remove('anim-hint'));
+  hintTileEls = [];
+}
+
+// ─── Score drain (level 8+) ───────────────────────────────────────────────────
+// Returns pts drained per second for the given level.
+// Level 8–14: barely noticeable (3→21 pts/s).  Level 15+: aggressive (50+ pts/s).
+function getScoreDrain(level) {
+  if (level < 8) return 0;
+  if (level < 15) return (level - 7) * 3;
+  return 50 + (level - 15) * 10;
 }
 
 // ─── Modal helpers ────────────────────────────────────────────────────────────
@@ -463,6 +1037,7 @@ function stopGameTimer() {
     clearInterval(gameTimerInterval);
     gameTimerInterval = null;
   }
+  stopSpecialShake();
 }
 
 function formatTime(s) {
@@ -490,20 +1065,25 @@ async function loadManifest() {
     const data = await res.json();
     if (Array.isArray(data.icons) && data.icons.length >= 6) {
       allIcons = data.icons;
+      // Store tag unlock rules globally for later use
+      window._tagRules = Array.isArray(data.tagRules) ? data.tagRules : [];
       return;
     }
     throw new Error('invalid manifest');
   } catch (e) {
     console.warn('manifest.json load failed, using fallback:', e.message);
     allIcons = FALLBACK_ICONS;
+    window._tagRules = [];
   }
 }
 
 // ─── Level config ─────────────────────────────────────────────────────────────
 function getLevelConfig(level) {
   return {
-    target: 1000 + (level - 1) * 500,
-    moves: Math.max(10, 20 - Math.floor((level - 1) / 2)),
+    // Much higher targets: level 1 needs ~17 good matches, grows by 2500 each level
+    target: 5000 + (level - 1) * 2500,
+    // More moves per level; decreases slowly
+    moves: Math.max(20, 30 - Math.floor((level - 1) / 2)),
   };
 }
 
@@ -533,14 +1113,22 @@ function buildPool(tag, level) {
       // Moderate: sample randomly
       chosen = shuffle(sorted).slice(0, 6);
     } else {
-      // Similar hues: pick a random center hue
+      // Similar hues: pick a random center hue, then progressively narrow the pool
+      // as level rises so icons become ever more confusingly similar.
+      // Pool shrinks from 14 candidates (level 5, wide band) down to 6 (level 11+, tightest band).
+      // poolSize = max(MIN_POOL, MAX_POOL - floor((level - 5) * SCALE))
+      // Level 5→14, 6→13, 7→11, 8→10, 9→8, 10→7, 11+→6
+      const MIN_POOL = 6;
+      const MAX_POOL = 14;
+      const POOL_SCALE = 1.5;
       const centerHue = Math.random() * 360;
       const withDist = sorted.map(ic => {
         const d = Math.abs(ic.hue - centerHue);
         return { ic, dist: Math.min(d, 360 - d) };
       });
       withDist.sort((a, b) => a.dist - b.dist);
-      chosen = withDist.slice(0, 6).map(x => x.ic);
+      const poolSize = Math.max(MIN_POOL, MAX_POOL - Math.floor((level - 5) * POOL_SCALE));
+      chosen = shuffle(withDist.slice(0, poolSize)).slice(0, 6).map(x => x.ic);
     }
   } else {
     chosen = shuffle(filtered).slice(0, 6);
@@ -550,9 +1138,27 @@ function buildPool(tag, level) {
 }
 
 // ─── Board init ───────────────────────────────────────────────────────────────
+function countSpecialTiles() {
+  let n = 0;
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      const t = state.board[r][c];
+      if (t && t.type !== 'normal') n++;
+    }
+  }
+  return n;
+}
+
+/** Normal tile only — used during board init (no golden on initial board). */
+function randomNormalTile() {
+  return { iconId: randItem(state.activePool).id, type: 'normal' };
+}
+
+/** Regular tile drop during gravity fill — may produce a golden tile if constraints allow. */
 function randomTile() {
   const icon = randItem(state.activePool);
-  return { iconId: icon.id, type: 'normal' };
+  const canBeGolden = Math.random() < GOLDEN_TILE_CHANCE && countSpecialTiles() < 3;
+  return { iconId: icon.id, type: canBeGolden ? 'golden' : 'normal' };
 }
 
 function initBoard() {
@@ -560,7 +1166,7 @@ function initBoard() {
   for (let r = 0; r < 8; r++) {
     state.board[r] = [];
     for (let c = 0; c < 8; c++) {
-      state.board[r][c] = randomTile();
+      state.board[r][c] = randomNormalTile();
     }
   }
   resolveInitialMatches();
@@ -582,7 +1188,7 @@ function resolveInitialMatches() {
           state.board[r-1][c].iconId === id &&
           state.board[r-2][c].iconId === id;
         if (hMatch || vMatch) {
-          state.board[r][c] = randomTile();
+          state.board[r][c] = randomNormalTile();
           found = true;
         }
       }
@@ -604,14 +1210,23 @@ function initLevel(level) {
   state.activePool = buildPool(state.activeTag, state.level);
 
   stopGameTimer();
-  timeRemaining = 240;
+  timeRemaining = INITIAL_TIME_SECONDS;
 
   initBoard();
   renderBoard();
   updateHUD();
+  startSpecialShake();
+  updateClippyVisibility();
 
   gameTimerInterval = setInterval(() => {
     timeRemaining--;
+
+    // Score drain from level 8 — score slowly decreases over time
+    const drain = getScoreDrain(state.level);
+    if (drain > 0 && !state.isAnimating) {
+      state.score = Math.max(0, state.score - drain);
+    }
+
     updateHUD();
     if (timeRemaining <= 0) {
       stopGameTimer();
@@ -629,12 +1244,13 @@ function initLevel(level) {
 }
 
 // ─── Match detection ──────────────────────────────────────────────────────────
-// Returns Map<"r,c", {iconId, type, isSpecial, specialAction}>
-function findMatches() {
+// Returns Map<"r,c", cellInfo>.  swapEndR/C: destination tile of the player's swap
+// (used to place the created special at the correct position).  Pass -1,-1 for cascades.
+function findMatches(swapEndR = -1, swapEndC = -1) {
   const matched = new Map(); // key "r,c" -> cell info
-  const specialCreate = new Map(); // key "r,c" -> 'rowclear' | 'bomb'
+  const specialCreate = new Map(); // key "r,c" -> 'striped-h' | 'striped-v' | 'shiny'
 
-  // Horizontal runs
+  // ── Horizontal runs ───────────────────────────────────────────────────────
   for (let r = 0; r < 8; r++) {
     let c = 0;
     while (c < 8) {
@@ -644,20 +1260,22 @@ function findMatches() {
       while (c + len < 8 && state.board[r][c + len] && state.board[r][c + len].iconId === id) len++;
       if (len >= 3) {
         for (let k = 0; k < len; k++) {
-          const key = `${r},${c+k}`;
-          matched.set(key, { ...state.board[r][c+k] });
+          matched.set(`${r},${c+k}`, { ...state.board[r][c+k] });
         }
         if (len === 4) {
-          specialCreate.set(`${r},${c+len-1}`, 'rowclear');
+          // Striped-H: prefer swap-end position if it fell in this run
+          let sc = (swapEndR === r && swapEndC >= c && swapEndC < c + len) ? swapEndC : c + len - 1;
+          specialCreate.set(`${r},${sc}`, 'striped-h');
         } else if (len >= 5) {
-          specialCreate.set(`${r},${c+len-1}`, 'bomb');
+          let sc = (swapEndR === r && swapEndC >= c && swapEndC < c + len) ? swapEndC : c + len - 1;
+          specialCreate.set(`${r},${sc}`, 'shiny');
         }
       }
       c += len;
     }
   }
 
-  // Vertical runs
+  // ── Vertical runs ─────────────────────────────────────────────────────────
   for (let c = 0; c < 8; c++) {
     let r = 0;
     while (r < 8) {
@@ -668,18 +1286,20 @@ function findMatches() {
       if (len >= 3) {
         for (let k = 0; k < len; k++) {
           const key = `${r+k},${c}`;
-          // Check if already in horizontal match → L/T shape → bomb
           if (matched.has(key)) {
-            specialCreate.set(key, 'bomb');
+            // L/T intersection with a horizontal match → shiny at intersection
+            specialCreate.set(key, 'shiny');
           }
           matched.set(key, { ...state.board[r+k][c] });
         }
         if (len === 4) {
-          if (!specialCreate.has(`${r+len-1},${c}`)) {
-            specialCreate.set(`${r+len-1},${c}`, 'rowclear');
-          }
+          const inRun = swapEndC === c && swapEndR >= r && swapEndR < r + len;
+          let sr = inRun ? swapEndR : r + len - 1;
+          if (!specialCreate.has(`${sr},${c}`)) specialCreate.set(`${sr},${c}`, 'striped-v');
         } else if (len >= 5) {
-          specialCreate.set(`${r+len-1},${c}`, 'bomb');
+          const inRun = swapEndC === c && swapEndR >= r && swapEndR < r + len;
+          let sr = inRun ? swapEndR : r + len - 1;
+          specialCreate.set(`${sr},${c}`, 'shiny');
         }
       }
       r += len;
@@ -706,16 +1326,34 @@ function expandMatchesForSpecials(matches) {
     const tile = state.board[r][c];
     if (!tile) continue;
 
-    if (tile.type === 'rowclear') {
+    if (tile.type === 'striped-h') {
+      // Clear entire row
       for (let cc = 0; cc < 8; cc++) {
         if (state.board[r][cc]) extraKeys.add(`${r},${cc}`);
       }
-    } else if (tile.type === 'bomb') {
+    } else if (tile.type === 'striped-v') {
+      // Clear entire column
+      for (let rr = 0; rr < 8; rr++) {
+        if (state.board[rr][c]) extraKeys.add(`${rr},${c}`);
+      }
+    } else if (tile.type === 'golden') {
+      // Clear 8 neighbours (3×3 minus self)
       for (let dr = -1; dr <= 1; dr++) {
         for (let dc = -1; dc <= 1; dc++) {
+          if (dr === 0 && dc === 0) continue;
           const nr = r + dr, nc = c + dc;
           if (nr >= 0 && nr < 8 && nc >= 0 && nc < 8 && state.board[nr][nc]) {
             extraKeys.add(`${nr},${nc}`);
+          }
+        }
+      }
+    } else if (tile.type === 'shiny') {
+      // Clear every tile on the board that shares the same logo
+      const targetId = tile.iconId;
+      for (let rr = 0; rr < 8; rr++) {
+        for (let cc = 0; cc < 8; cc++) {
+          if (state.board[rr][cc] && state.board[rr][cc].iconId === targetId) {
+            extraKeys.add(`${rr},${cc}`);
           }
         }
       }
@@ -765,21 +1403,32 @@ async function processMatches(matches) {
   const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // Scoring: each matched tile is worth PER_TILE_PTS, multiplied by (comboCount + 1).
-  // comboDisplayBonus is the extra earned from combos, used only for the visual popup (not added separately to score).
-  const PER_TILE_PTS = 100;
   const specialBonus = extraCount * 200;
   const baseScore = matches.size * PER_TILE_PTS * (state.comboCount + 1);
   const earned = baseScore + specialBonus;
-  // Visual display only: extra points beyond the flat per-tile base
   const comboDisplayBonus = matches.size * PER_TILE_PTS * state.comboCount;
 
+  const tileEls = document.querySelectorAll('.tile');
+
   if (!prefersReduced) {
-    const tileEls = document.querySelectorAll('.tile');
+    // Phase 1: Highlight matched tiles so the player can see the combo
+    for (const key of matches.keys()) {
+      const [r, c] = key.split(',').map(Number);
+      const el = tileEls[r * 8 + c];
+      if (el) el.classList.add('anim-highlight');
+    }
+    await delay(280);
+    for (const key of matches.keys()) {
+      const [r, c] = key.split(',').map(Number);
+      const el = tileEls[r * 8 + c];
+      if (el) el.classList.remove('anim-highlight');
+    }
+
+    // Phase 2: Show score popups on the matched tiles while they are still visible
     const popups = [];
     for (const key of matches.keys()) {
       const [r, c] = key.split(',').map(Number);
-      const idx = r * 8 + c;
-      const tileEl = tileEls[idx];
+      const tileEl = tileEls[r * 8 + c];
       if (tileEl) {
         const popup = document.createElement('div');
         popup.className = 'tile-score-popup';
@@ -794,36 +1443,31 @@ async function processMatches(matches) {
       bonusEl.className = 'board-bonus-popup';
       bonusEl.textContent = `+${totalBonus} BONUS!`;
       document.body.appendChild(bonusEl);
-      setTimeout(() => bonusEl.remove(), 900);
+      setTimeout(() => bonusEl.remove(), 1400);
     }
-    await delay(500);
+
+    // Phase 3: Animate matched tiles shrinking/disappearing
+    const animPromises = [];
+    for (const key of matches.keys()) {
+      const [r, c] = key.split(',').map(Number);
+      const el = tileEls[r * 8 + c];
+      if (el) {
+        el.classList.add('anim-match');
+        animPromises.push(new Promise(res => {
+          el.addEventListener('animationend', res, { once: true });
+        }));
+      }
+    }
+    await Promise.race([Promise.all(animPromises), delay(350)]);
     popups.forEach(p => p.remove());
   }
 
-  // Animate clearing
-  const tileEls = document.querySelectorAll('.tile');
-  const animPromises = [];
-  for (const key of matches.keys()) {
-    const [r, c] = key.split(',').map(Number);
-    const idx = r * 8 + c;
-    if (tileEls[idx]) {
-      tileEls[idx].classList.add('anim-match');
-      animPromises.push(new Promise(res => {
-        tileEls[idx].addEventListener('animationend', res, { once: true });
-      }));
-    }
-  }
-
+  // Update score and stats
   state.score += earned;
   state.totalClearedThisLevel += matches.size;
+  updateHUD();
 
-  if (!prefersReduced && animPromises.length > 0) {
-    await Promise.race([Promise.all(animPromises), delay(350)]);
-  } else {
-    await delay(prefersReduced ? 0 : 300);
-  }
-
-  // Create special tiles at designated positions, clear matched
+  // Create special tiles at designated positions, clear matched cells from state
   for (const [key, cellInfo] of matches) {
     const [r, c] = key.split(',').map(Number);
     if (cellInfo.createSpecial) {
@@ -833,32 +1477,27 @@ async function processMatches(matches) {
     }
   }
 
-  updateHUD();
-
-  // Track positions before gravity
+  // Capture pre-gravity layout so we can calculate fall distances
   const preGravity = state.board.map(row => row.map(cell => cell ? { ...cell } : null));
 
   applyGravity();
   fillNewTiles();
+  // renderBoard() resets all animation classes, so tiles are visible and clean
   renderBoard();
 
-  // Animate tiles that fell and new tiles
-  // For each column: a tile at pre-gravity row r falls by the number of nulls strictly below row r.
-  // New tiles (rows that were null before gravity) appear from above.
+  // Phase 4: Animate tiles falling into position
   if (!prefersReduced) {
     const newTileEls = document.querySelectorAll('.tile');
     for (let c = 0; c < 8; c++) {
-      // Precompute null-below counts for existing tiles so they can get a fall animation
       for (let r = 0; r < 8; r++) {
         const preCell = preGravity[r][c];
         if (preCell) {
-          // Count nulls strictly below this tile in preGravity (rows r+1..7)
+          // Tile existed before; count how many rows it drops
           let fallRows = 0;
           for (let dr = r + 1; dr < 8; dr++) {
             if (!preGravity[dr][c]) fallRows++;
           }
           if (fallRows > 0) {
-            // This tile ended up at row r + fallRows after gravity
             const newRow = r + fallRows;
             const idx = newRow * 8 + c;
             const el = newTileEls[idx];
@@ -868,8 +1507,7 @@ async function processMatches(matches) {
             }
           }
         } else {
-          // Null cell before gravity → filled by a new tile or a tile from above
-          // Count nulls at rows 0..r (inclusive) to determine how far new tile "drops"
+          // Null position before gravity — new tile dropped in from above
           let nullsAbove = 0;
           for (let pr = 0; pr <= r; pr++) {
             if (!preGravity[pr][c]) nullsAbove++;
@@ -883,12 +1521,17 @@ async function processMatches(matches) {
         }
       }
     }
-    await delay(280);
+    await delay(300);
   }
 
-  document.querySelectorAll('.tile.anim-fall').forEach(el => { el.classList.remove('anim-fall'); el.style.removeProperty('--fall-rows'); });
+  // Clean up fall animation classes so the board is in a neutral state
+  document.querySelectorAll('.tile.anim-fall').forEach(el => {
+    el.classList.remove('anim-fall');
+    el.style.removeProperty('--fall-rows');
+  });
 
-  const newMatches = findMatches();
+  // Check for cascade: if the reshuffle created new matches, process them automatically
+  const newMatches = findMatches(); // no swap-end for cascades
   if (newMatches.size > 0) {
     state.comboCount++;
     await processMatches(newMatches);
@@ -897,44 +1540,117 @@ async function processMatches(matches) {
   }
 }
 
+// ─── Special tile shake ───────────────────────────────────────────────────────
+function startSpecialShake() {
+  stopSpecialShake();
+  specialShakeInterval = setInterval(() => {
+    if (state.isAnimating) return;
+    const specials = document.querySelectorAll(
+      '.tile.special-golden, .tile.special-striped-h, .tile.special-striped-v, .tile.special-shiny'
+    );
+    specials.forEach(t => {
+      if (
+        Math.random() < SPECIAL_SHAKE_PROBABILITY &&
+        !t.classList.contains('anim-special-shake') &&
+        !t.classList.contains('anim-match') &&
+        !t.classList.contains('anim-hint')
+      ) {
+        t.classList.add('anim-special-shake');
+        t.addEventListener('animationend', () => t.classList.remove('anim-special-shake'), { once: true });
+      }
+    });
+    // Random shake for Clippy image too
+    const clippyImg = document.getElementById('clippy-img');
+    if (clippyImg && Math.random() < SPECIAL_SHAKE_PROBABILITY && !clippyImg.classList.contains('anim-clippy-shake')) {
+      clippyImg.classList.add('anim-clippy-shake');
+      clippyImg.addEventListener('animationend', () => clippyImg.classList.remove('anim-clippy-shake'), { once: true });
+    }
+  }, SPECIAL_SHAKE_INTERVAL_MS);
+}
+
+function stopSpecialShake() {
+  if (specialShakeInterval) {
+    clearInterval(specialShakeInterval);
+    specialShakeInterval = null;
+  }
+}
+
+// ─── Swap animation ───────────────────────────────────────────────────────────
+// Slides two tiles toward each other's grid positions via CSS transforms.
+// When reverse=true, after sliding apart the tiles slide smoothly back
+// (no intermediate renderBoard or cssText clear — eliminates the "snap" artefact).
+async function animateSwap(r1, c1, r2, c2, reverse = false) {
+  const boardEl = document.getElementById('board');
+  const t1 = boardEl.querySelector(`[data-row="${r1}"][data-col="${c1}"]`);
+  const t2 = boardEl.querySelector(`[data-row="${r2}"][data-col="${c2}"]`);
+  if (!t1 || !t2) return;
+  const rect1 = t1.getBoundingClientRect();
+  const rect2 = t2.getBoundingClientRect();
+  const dx = rect2.left - rect1.left;
+  const dy = rect2.top - rect1.top;
+  const dur = `${SWAP_ANIMATION_MS}ms`;
+  const ease = 'cubic-bezier(0.4,0,0.2,1)';
+  t1.style.transition = `transform ${dur} ${ease}`;
+  t2.style.transition = `transform ${dur} ${ease}`;
+  t1.style.zIndex = '10';
+  t2.style.zIndex = '9';
+  t1.style.transform = `translate(${dx}px, ${dy}px)`;
+  t2.style.transform = `translate(${-dx}px, ${-dy}px)`;
+  await delay(SWAP_ANIMATION_MS);
+  if (reverse) {
+    // Slide back to origin while the transition is still active → no visual snap
+    t1.style.transform = '';
+    t2.style.transform = '';
+    await delay(SWAP_ANIMATION_MS);
+  }
+  // Clear all inline styles (transforms are now 0 so no snap)
+  t1.style.cssText = '';
+  t2.style.cssText = '';
+}
+
 // ─── Swap ─────────────────────────────────────────────────────────────────────
 async function attemptSwap(r1, c1, r2, c2) {
   if (state.isAnimating) return;
   if (r1 < 0 || r1 >= 8 || c1 < 0 || c1 >= 8) return;
   if (r2 < 0 || r2 >= 8 || c2 < 0 || c2 >= 8) return;
 
+  // Clear any active hint highlights immediately when player makes a move
+  clearHintHighlights();
+
   // Only orthogonal
   const dr = Math.abs(r1 - r2), dc = Math.abs(c1 - c2);
   if (!((dr === 1 && dc === 0) || (dr === 0 && dc === 1))) return;
 
   state.isAnimating = true;
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // Swap
+  // Swap data first so findMatches can evaluate the new state
   [state.board[r1][c1], state.board[r2][c2]] = [state.board[r2][c2], state.board[r1][c1]];
-
-  const matches = findMatches();
+  const matches = findMatches(r2, c2);
 
   if (matches.size === 0) {
-    // Show swapped state briefly, then swap back
-    renderBoard();
-    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (!prefersReduced) {
-      await delay(200);
-    }
-    // Swap back
+    // Restore data immediately; animation plays on original icon positions
     [state.board[r1][c1], state.board[r2][c2]] = [state.board[r2][c2], state.board[r1][c1]];
-    renderBoard();
-    if (!prefersReduced) {
-      const t1 = document.querySelector(`[data-row="${r1}"][data-col="${c1}"]`);
-      const t2 = document.querySelector(`[data-row="${r2}"][data-col="${c2}"]`);
-      if (t1) { t1.classList.add('anim-bounce'); t1.addEventListener('animationend', () => t1.classList.remove('anim-bounce'), { once: true }); }
-      if (t2) { t2.classList.add('anim-bounce'); t2.addEventListener('animationend', () => t2.classList.remove('anim-bounce'), { once: true }); }
-      await delay(260);
-    }
     state.selectedCell = null;
-    renderBoard();
+    if (!prefersReduced) {
+      // Forward then smooth reverse — no intermediate snap or renderBoard
+      await animateSwap(r1, c1, r2, c2, true);
+      renderBoard();
+      const ta = document.querySelector(`[data-row="${r1}"][data-col="${c1}"]`);
+      const tb = document.querySelector(`[data-row="${r2}"][data-col="${c2}"]`);
+      if (ta) { ta.classList.add('anim-bounce'); ta.addEventListener('animationend', () => ta.classList.remove('anim-bounce'), { once: true }); }
+      if (tb) { tb.classList.add('anim-bounce'); tb.addEventListener('animationend', () => tb.classList.remove('anim-bounce'), { once: true }); }
+      await delay(260);
+    } else {
+      renderBoard();
+    }
     state.isAnimating = false;
     return;
+  }
+
+  // Valid match: animate the forward swap while DOM still shows original icons
+  if (!prefersReduced) {
+    await animateSwap(r1, c1, r2, c2, false);
   }
 
   state.movesLeft--;
@@ -944,6 +1660,28 @@ async function attemptSwap(r1, c1, r2, c2) {
   updateHUD();
   await processMatches(matches);
   state.isAnimating = false;
+}
+
+// ─── Hint ─────────────────────────────────────────────────────────────────────
+// Returns the first valid swap that produces a match, along with how many tiles would match.
+function findHintMove() {
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      if (c + 1 < 8) {
+        [state.board[r][c], state.board[r][c+1]] = [state.board[r][c+1], state.board[r][c]];
+        const m = findMatches();
+        [state.board[r][c], state.board[r][c+1]] = [state.board[r][c+1], state.board[r][c]];
+        if (m.size > 0) return { r1: r, c1: c, r2: r, c2: c+1, matchSize: m.size };
+      }
+      if (r + 1 < 8) {
+        [state.board[r][c], state.board[r+1][c]] = [state.board[r+1][c], state.board[r][c]];
+        const m = findMatches();
+        [state.board[r][c], state.board[r+1][c]] = [state.board[r+1][c], state.board[r][c]];
+        if (m.size > 0) return { r1: r, c1: c, r2: r+1, c2: c, matchSize: m.size };
+      }
+    }
+  }
+  return null;
 }
 
 // ─── Win/lose check ───────────────────────────────────────────────────────────
@@ -1024,8 +1762,9 @@ function renderBoard() {
       const cell = state.board[r][c];
       const img = tile.querySelector('img');
 
-      // Reset special classes (but not animation classes)
-      tile.classList.remove('selected', 'special-rowclear', 'special-bomb');
+      // Reset special classes and any lingering animation classes
+      tile.classList.remove('selected', 'special-golden', 'special-striped-h', 'special-striped-v', 'special-shiny', 'anim-match', 'anim-fall', 'anim-new', 'anim-highlight', 'anim-hint', 'anim-special-shake');
+      tile.style.removeProperty('--fall-rows');
 
       if (cell) {
         const icon = iconById(cell.iconId);
@@ -1038,8 +1777,10 @@ function renderBoard() {
           tile.setAttribute('aria-label', cell.iconId);
         }
 
-        if (cell.type === 'rowclear') tile.classList.add('special-rowclear');
-        if (cell.type === 'bomb') tile.classList.add('special-bomb');
+        if (cell.type === 'golden')     tile.classList.add('special-golden');
+        if (cell.type === 'striped-h')  tile.classList.add('special-striped-h');
+        if (cell.type === 'striped-v')  tile.classList.add('special-striped-v');
+        if (cell.type === 'shiny')      tile.classList.add('special-shiny');
       } else {
         img.src = '';
         tile.setAttribute('aria-label', 'Empty');
@@ -1054,15 +1795,10 @@ function renderBoard() {
 
 // ─── HUD ──────────────────────────────────────────────────────────────────────
 function updateHUD() {
-  document.getElementById('level-display').textContent = `Level ${state.level}`;
-  const scoreEl = document.getElementById('score-display');
-  scoreEl.textContent = state.score.toLocaleString();
-  scoreEl.classList.remove('score-pulse');
-  scoreEl.offsetWidth;
-  scoreEl.classList.add('score-pulse');
-  document.getElementById('moves-display').textContent = `${state.movesLeft} move${state.movesLeft !== 1 ? 's' : ''}`;
+  // Moves
+  document.getElementById('moves-display').textContent = state.movesLeft;
 
-  // Timer
+  // Timer (desktop)
   const timerEl = document.getElementById('timer-display');
   timerEl.textContent = formatTime(timeRemaining);
   if (timeRemaining < 30) {
@@ -1071,15 +1807,30 @@ function updateHUD() {
     timerEl.classList.remove('timer-warning');
   }
 
-  // Progress jar
-  const pct = Math.min(100, (state.score / state.scoreTarget) * 100);
-  document.getElementById('progress-jar-fill').style.height = pct + '%';
-  document.getElementById('progress-level-num').textContent = state.level;
+  // Timer (mobile — shown next to level label)
+  const mobileTimerEl = document.getElementById('timer-display-mobile');
+  if (mobileTimerEl) {
+    mobileTimerEl.textContent = formatTime(timeRemaining);
+    if (timeRemaining < 30) mobileTimerEl.classList.add('timer-warning');
+    else mobileTimerEl.classList.remove('timer-warning');
+  }
 
-  const tagEl = document.getElementById('tag-badge');
-  const tagLabel = state.activeTag === 'all' ? 'All Products' :
-    state.activeTag.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-  tagEl.textContent = state.activeTag === 'all' ? `🌐 ${tagLabel}` : `🏷️ ${tagLabel}`;
+  // Progress jar: scaleY from 0→1 reveals the blue-to-gold gradient bottom-up
+  const pct = Math.min(100, (state.score / state.scoreTarget) * 100);
+  document.getElementById('progress-jar-fill').style.transform = `scaleY(${pct / 100})`;
+  document.getElementById('progress-level-num').textContent = state.level;
+  document.getElementById('jar-target-score').textContent = state.scoreTarget.toLocaleString();
+
+  // Mobile horizontal score bar — fills left to right
+  const mobileBarFill = document.getElementById('mobile-score-bar-fill');
+  if (mobileBarFill) mobileBarFill.style.width = `${pct}%`;
+
+  // Float current-score label at the top of the golden fill
+  const currentEl = document.getElementById('jar-current-score');
+  currentEl.textContent = state.score.toLocaleString();
+  // Clamp so the label is always readable within jar-region
+  const labelPct = Math.max(1, Math.min(94, pct));
+  currentEl.style.bottom = `${labelPct}%`;
 }
 
 // ─── Screens ──────────────────────────────────────────────────────────────────
@@ -1092,61 +1843,74 @@ let summaryTimer = null;
 
 function showLevelSummary(won) {
   stopGameTimer();
-  if (summaryTimer) { clearTimeout(summaryTimer); summaryTimer = null; }
-
-  const title = document.getElementById('summary-title');
-  const emoji = document.getElementById('summary-emoji');
-  const stats = document.getElementById('summary-stats');
-  const timerEl = document.getElementById('summary-timer');
-  const nextBtn = document.getElementById('btn-next-level');
+  if (summaryTimer) { clearInterval(summaryTimer); summaryTimer = null; }
 
   if (won) {
-    title.textContent = 'Level Complete!';
-    emoji.textContent = '🎉';
-    nextBtn.textContent = 'Next Level →';
-    nextBtn.style.display = '';
-
     updatePersonalBests();
-    trackEvent('level-complete/' + state.level, 'Level Complete');
 
-    stats.innerHTML = `
-      <div class="summary-stat"><span>Level</span><strong>${state.level}</strong></div>
-      <div class="summary-stat"><span>Score</span><strong>${state.score.toLocaleString()}</strong></div>
-      <div class="summary-stat"><span>Target</span><strong>${state.scoreTarget.toLocaleString()}</strong></div>
-      <div class="summary-stat"><span>Logos Cleared</span><strong>${state.totalClearedThisLevel}</strong></div>
-      <div class="summary-stat"><span>Moves Left</span><strong>${state.movesLeft}</strong></div>
-    `;
+    // Keep the board visible but blurred behind the overlay
+    document.getElementById('board-area').classList.add('board-blurred');
 
-    let countdown = 3;
-    timerEl.textContent = `Auto-advancing in ${countdown}s…`;
+    const titleEl  = document.getElementById('modal-title');
+    const bodyEl   = document.getElementById('modal-body');
+    const btnsEl   = document.getElementById('modal-buttons');
+
+    titleEl.textContent = '🎉 Level Complete!';
+    bodyEl.innerHTML =
+      `<div class="summary-stat"><span>Level</span><strong>${state.level}</strong></div>` +
+      `<div class="summary-stat"><span>Score</span><strong>${state.score.toLocaleString()}</strong></div>` +
+      `<div class="summary-stat"><span>Target</span><strong>${state.scoreTarget.toLocaleString()}</strong></div>` +
+      `<div class="summary-stat"><span>Logos Cleared</span><strong>${state.totalClearedThisLevel}</strong></div>` +
+      `<div class="summary-stat"><span>Moves Left</span><strong>${state.movesLeft}</strong></div>` +
+      `<div id="level-complete-countdown" class="modal-countdown"></div>`;
+
+    btnsEl.innerHTML = '';
+
+    function closeLevelModal() {
+      document.getElementById('board-area').classList.remove('board-blurred');
+      hideModal();
+      if (summaryTimer) { clearInterval(summaryTimer); summaryTimer = null; }
+    }
+
+    const continueBtn = document.createElement('button');
+    continueBtn.textContent = 'Continue →';
+    continueBtn.className = 'btn-primary';
+    continueBtn.addEventListener('click', () => { closeLevelModal(); startNextLevel(); });
+    btnsEl.appendChild(continueBtn);
+
+    const exitBtn = document.createElement('button');
+    exitBtn.textContent = 'Exit to Menu';
+    exitBtn.className = 'btn-secondary';
+    exitBtn.addEventListener('click', () => {
+      closeLevelModal();
+      showScreen('screen-start');
+      loadPersonalBests();
+    });
+    btnsEl.appendChild(exitBtn);
+
+    document.getElementById('modal-overlay').classList.remove('hidden');
+
+    let countdown = LEVEL_COMPLETE_COUNTDOWN_S;
+    const countdownEl = document.getElementById('level-complete-countdown');
+    function updateCountdown() {
+      if (countdownEl) countdownEl.textContent = `Auto-advancing in ${countdown}s…`;
+    }
+    updateCountdown();
+
     summaryTimer = setInterval(() => {
       countdown--;
       if (countdown <= 0) {
-        clearInterval(summaryTimer);
-        summaryTimer = null;
+        closeLevelModal();
         startNextLevel();
       } else {
-        timerEl.textContent = `Auto-advancing in ${countdown}s…`;
+        updateCountdown();
       }
     }, 1000);
-  } else {
-    title.textContent = 'Level Failed';
-    emoji.textContent = '😔';
-    nextBtn.style.display = 'none';
-    timerEl.textContent = '';
-    stats.innerHTML = `
-      <div class="summary-stat"><span>Level</span><strong>${state.level}</strong></div>
-      <div class="summary-stat"><span>Score</span><strong>${state.score.toLocaleString()}</strong></div>
-      <div class="summary-stat"><span>Target</span><strong>${state.scoreTarget.toLocaleString()}</strong></div>
-      <div class="summary-stat"><span>Logos Cleared</span><strong>${state.totalClearedThisLevel}</strong></div>
-    `;
-    updatePersonalBests();
-    trackEvent('game-over/' + state.level, 'Game Over');
-    showGameOver();
-    return;
-  }
 
-  showScreen('screen-level-summary');
+  } else {
+    updatePersonalBests();
+    showGameOver();
+  }
 }
 
 function startNextLevel() {
@@ -1181,6 +1945,7 @@ function updatePersonalBests() {
   localStorage.setItem(LS_HIGHSCORE, hs);
   localStorage.setItem(LS_HIGHESTLEVEL, hl);
   localStorage.setItem(LS_TOTALLOGOS, logos);
+  updateClippyVisibility();
 }
 
 function loadPersonalBests() {
@@ -1188,6 +1953,13 @@ function loadPersonalBests() {
   document.getElementById('pb-level').textContent = localStorage.getItem(LS_HIGHESTLEVEL) || '1';
   document.getElementById('pb-games').textContent = localStorage.getItem(LS_TOTALGAMES) || '0';
   document.getElementById('pb-logos').textContent = parseInt(localStorage.getItem(LS_TOTALLOGOS) || '0').toLocaleString();
+  // Re-evaluate which tag buttons are unlocked now that stats may have changed
+  applyTagUnlockRules();
+}
+
+function updateClippyVisibility() {
+  const bestLevel = parseInt(localStorage.getItem(LS_HIGHESTLEVEL) || '1');
+  document.getElementById('clippy-panel').classList.toggle('clippy-unlocked', bestLevel >= CLIPPY_UNLOCK_LEVEL);
 }
 
 // ─── Input handlers ───────────────────────────────────────────────────────────
@@ -1280,12 +2052,51 @@ function setupBoardListeners() {
   }, { passive: true });
 }
 
+// ─── Tag unlock rules ─────────────────────────────────────────────────────────
+function isTagUnlocked(rule) {
+  if (!rule || rule.always) return true;
+  const games = parseInt(localStorage.getItem(LS_TOTALGAMES)   || '0');
+  const level = parseInt(localStorage.getItem(LS_HIGHESTLEVEL) || '1');
+  if (rule.minGames && games < rule.minGames) return false;
+  if (rule.minLevel && level < rule.minLevel) return false;
+  return true;
+}
+
+function applyTagUnlockRules() {
+  const rules = window._tagRules || [];
+  if (!rules.length) return;
+  const container = document.getElementById('modeSelector');
+  for (const rule of rules) {
+    const btn = container.querySelector(`button[data-tag="${CSS.escape(rule.tag)}"]`);
+    if (!btn) continue;
+    const unlocked = isTagUnlocked(rule);
+    if (unlocked) {
+      btn.classList.remove('tag-locked');
+      btn.removeAttribute('disabled');
+      btn.removeAttribute('title');
+    } else {
+      btn.classList.add('tag-locked');
+      btn.setAttribute('disabled', '');
+      btn.setAttribute('title', rule.tooltip || 'Locked');
+      // If the locked tag was the active one, reset to 'all'
+      if (state.activeTag === rule.tag) {
+        state.activeTag = 'all';
+        localStorage.setItem(LS_ACTIVETAG, 'all');
+        container.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', 'false'));
+        const allBtn = container.querySelector('button[data-tag="all"]');
+        if (allBtn) allBtn.setAttribute('aria-pressed', 'true');
+      }
+    }
+  }
+}
+
 // ─── Mode selector ────────────────────────────────────────────────────────────
 function setupModeSelector() {
   const container = document.getElementById('modeSelector');
   container.addEventListener('click', e => {
     const btn = e.target.closest('button');
     if (!btn) return;
+    if (btn.classList.contains('tag-locked')) return; // locked: ignore
     container.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', 'false'));
     btn.setAttribute('aria-pressed', 'true');
     state.activeTag = btn.dataset.tag;
@@ -1304,16 +2115,42 @@ function restoreSavedTag() {
   state.activeTag = saved;
 }
 
+// ─── LinkedIn share ───────────────────────────────────────────────────────────
+function shareOnLinkedIn() {
+  const hs     = parseInt(localStorage.getItem(LS_HIGHSCORE)    || '0');
+  const hl     = parseInt(localStorage.getItem(LS_HIGHESTLEVEL) || '1');
+  const games  = parseInt(localStorage.getItem(LS_TOTALGAMES)   || '0');
+  const logos  = parseInt(localStorage.getItem(LS_TOTALLOGOS)   || '0');
+
+  const url     = 'https://fordosa90.github.io/logocrush.github.io/';
+  const title   = 'Check out my LogoCrush stats!';
+  const summary =
+    `🎮 I've matched ${logos.toLocaleString()} Microsoft logos across ${games} games, ` +
+    `smashed level ${hl} and scored ${hs.toLocaleString()} points in LogoCrush — ` +
+    `the cloud logo match-3 game. Think you can beat me? 😏`;
+  const source  = 'github.com/fordosa90';
+
+  const shareUrl =
+    'https://www.linkedin.com/shareArticle?mini=true' +
+    '&url='         + encodeURIComponent(url) +
+    '&title='       + encodeURIComponent(title) +
+    '&description=' + encodeURIComponent(summary) +
+    '&source='      + encodeURIComponent(source);
+
+  window.open(shareUrl, '_blank', 'noopener,noreferrer');
+}
+
 // ─── Play button ──────────────────────────────────────────────────────────────
 function setupPlayButton() {
   document.getElementById('btn-play').addEventListener('click', () => {
     localStorage.setItem(LS_ACTIVETAG, state.activeTag);
     const games = parseInt(localStorage.getItem(LS_TOTALGAMES) || '0') + 1;
     localStorage.setItem(LS_TOTALGAMES, games);
-    trackEvent('game-started/' + state.activeTag, 'Game Started');
     initLevel(1);
     showScreen('screen-playing');
   });
+
+  document.getElementById('btn-linkedin-share').addEventListener('click', shareOnLinkedIn);
 
   document.getElementById('btn-menu').addEventListener('click', () => {
     if (state.isAnimating) return;
@@ -1325,6 +2162,39 @@ function setupPlayButton() {
         { label: 'Back to Menu', className: 'btn-danger', action: () => { stopGameTimer(); showScreen('screen-start'); loadPersonalBests(); } },
       ]
     );
+  });
+
+  document.getElementById('btn-hint').addEventListener('click', () => {
+    if (state.isAnimating) return;
+    const hint = findHintMove();
+    if (!hint) return;
+
+    // Deduct the point value of the hinted combo (min 0) — even if the player doesn't play it
+    const cost = hint.matchSize * PER_TILE_PTS;
+    state.score = Math.max(0, state.score - cost);
+    updateHUD();
+
+    // Clear any previous hint highlights first
+    clearHintHighlights();
+
+    // Highlight the two tiles that should be swapped; auto-clear after HINT_ANIMATION_MS
+    const t1 = document.querySelector(`[data-row="${hint.r1}"][data-col="${hint.c1}"]`);
+    const t2 = document.querySelector(`[data-row="${hint.r2}"][data-col="${hint.c2}"]`);
+    if (t1) {
+      t1.classList.add('anim-hint');
+      hintTileEls.push(t1);
+      hintTimers.push(setTimeout(() => t1.classList.remove('anim-hint'), HINT_ANIMATION_MS));
+    }
+    if (t2) {
+      t2.classList.add('anim-hint');
+      hintTileEls.push(t2);
+      hintTimers.push(setTimeout(() => t2.classList.remove('anim-hint'), HINT_ANIMATION_MS));
+    }
+  });
+
+  // Clippy "Need a hint?" button — identical behaviour to btn-hint
+  document.getElementById('btn-clippy-hint').addEventListener('click', () => {
+    document.getElementById('btn-hint').click();
   });
 
   document.getElementById('btn-next-level').addEventListener('click', () => {
@@ -1390,6 +2260,7 @@ async function init() {
   loadPersonalBests();
   setupModeSelector();
   restoreSavedTag();
+  applyTagUnlockRules();  // grey out locked tags based on saved stats
   setupBoardListeners();
   setupPlayButton();
   showScreen('screen-start');

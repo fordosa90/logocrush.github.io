@@ -1,5 +1,7 @@
 # LogoCrush 🎮
 
+![LogoCrush banner](assets/socialbanner.png)
+
 The ultimate Microsoft cloud product logo match-3 puzzle game, inspired by Candy Crush.
 
 ## 🎮 Play Now
@@ -31,7 +33,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide on adding Microsoft pr
 
 ## 📊 Analytics
 
-This site uses [GoatCounter](https://www.goatcounter.com/) for anonymous, cookieless, GDPR-friendly visit counting. No personal data is collected or stored.
+This site uses [hits.sh](https://hits.sh/) for cookieless, privacy-friendly visit counting. The total visit count is displayed on the game's start screen. No personal data is collected or stored.
 
 ## 📄 License
 
