@@ -2122,20 +2122,20 @@ function shareOnLinkedIn() {
   const games  = parseInt(localStorage.getItem(LS_TOTALGAMES)   || '0');
   const logos  = parseInt(localStorage.getItem(LS_TOTALLOGOS)   || '0');
 
-  const url     = 'https://fordosa90.github.io/logocrush.github.io/';
-  const title   = 'Check out my LogoCrush stats!';
-  const summary =
-    `🎮 I've matched ${logos.toLocaleString()} Microsoft logos across ${games} games, ` +
-    `smashed level ${hl} and scored ${hs.toLocaleString()} points in LogoCrush — ` +
-    `the cloud logo match-3 game. Think you can beat me? 😏`;
-  const source  = 'github.com/fordosa90';
+  const gameUrl = 'https://fordosa90.github.io/logocrush.github.io/';
+  const text =
+    `🎮 Just played LogoCrush — the Microsoft cloud logo match-3 game!\n\n` +
+    `My stats:\n` +
+    `🏆 High score: ${hs.toLocaleString()} points\n` +
+    `📈 Highest level reached: ${hl}\n` +
+    `🎯 Total games played: ${games}\n` +
+    `🔷 Microsoft logos matched: ${logos.toLocaleString()}\n\n` +
+    `Think you can beat me? Come try! 😏\n` +
+    `👉 ${gameUrl}`;
 
   const shareUrl =
-    'https://www.linkedin.com/shareArticle?mini=true' +
-    '&url='         + encodeURIComponent(url) +
-    '&title='       + encodeURIComponent(title) +
-    '&description=' + encodeURIComponent(summary) +
-    '&source='      + encodeURIComponent(source);
+    'https://www.linkedin.com/feed/?shareActive=true' +
+    '&text=' + encodeURIComponent(text);
 
   window.open(shareUrl, '_blank', 'noopener,noreferrer');
 }
