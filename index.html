@@ -1032,11 +1032,42 @@ function hideModal() {
 }
 
 // ─── Timer helpers ────────────────────────────────────────────────────────────
-function stopGameTimer() {
+function startGameTimer() {
+  gameTimerInterval = setInterval(() => {
+    timeRemaining--;
+
+    // Score drain from level 8 — score slowly decreases over time
+    const drain = getScoreDrain(state.level);
+    if (drain > 0 && !state.isAnimating) {
+      state.score = Math.max(0, state.score - drain);
+    }
+
+    updateHUD();
+    if (timeRemaining <= 0) {
+      stopGameTimer();
+      state.isAnimating = true;
+      showModal(
+        "⏱ Time's Up!",
+        "You ran out of time!",
+        [
+          { label: 'Restart Level', className: 'btn-primary', action: () => { state.isAnimating = false; initLevel(state.level); showScreen('screen-playing'); } },
+          { label: 'Back to Menu', className: 'btn-secondary', action: () => { state.isAnimating = false; showScreen('screen-start'); loadPersonalBests(); } },
+        ]
+      );
+    }
+  }, 1000);
+}
+
+/** Pause only the countdown — does not stop the special-tile shake animation. */
+function pauseGameTimer() {
   if (gameTimerInterval) {
     clearInterval(gameTimerInterval);
     gameTimerInterval = null;
   }
+}
+
+function stopGameTimer() {
+  pauseGameTimer();
   stopSpecialShake();
 }
 
@@ -1079,12 +1110,14 @@ async function loadManifest() {
 
 // ─── Level config ─────────────────────────────────────────────────────────────
 function getLevelConfig(level) {
-  return {
-    // Much higher targets: level 1 needs ~17 good matches, grows by 2500 each level
-    target: 5000 + (level - 1) * 2500,
-    // More moves per level; decreases slowly
-    moves: Math.max(20, 30 - Math.floor((level - 1) / 2)),
-  };
+  const target = 5000 + (level - 1) * 2500;
+  // Levels 1-8: fixed decreasing scale (player is learning the ropes).
+  // Levels 9+: scale moves with target, assuming ~700 pts/swap — achievable with a mix
+  // of normal matches and occasional special-tile combos, without requiring perfection.
+  const moves = level < 9
+    ? Math.max(20, 30 - Math.floor((level - 1) / 2))
+    : Math.ceil(target / 700);
+  return { target, moves };
 }
 
 // ─── Pool building ────────────────────────────────────────────────────────────
@@ -1218,29 +1251,7 @@ function initLevel(level) {
   startSpecialShake();
   updateClippyVisibility();
 
-  gameTimerInterval = setInterval(() => {
-    timeRemaining--;
-
-    // Score drain from level 8 — score slowly decreases over time
-    const drain = getScoreDrain(state.level);
-    if (drain > 0 && !state.isAnimating) {
-      state.score = Math.max(0, state.score - drain);
-    }
-
-    updateHUD();
-    if (timeRemaining <= 0) {
-      stopGameTimer();
-      state.isAnimating = true;
-      showModal(
-        "⏱ Time's Up!",
-        "You ran out of time!",
-        [
-          { label: 'Restart Level', className: 'btn-primary', action: () => { state.isAnimating = false; initLevel(state.level); showScreen('screen-playing'); } },
-          { label: 'Back to Menu', className: 'btn-secondary', action: () => { state.isAnimating = false; showScreen('screen-start'); loadPersonalBests(); } },
-        ]
-      );
-    }
-  }, 1000);
+  startGameTimer();
 }
 
 // ─── Match detection ──────────────────────────────────────────────────────────
@@ -2154,11 +2165,12 @@ function setupPlayButton() {
 
   document.getElementById('btn-menu').addEventListener('click', () => {
     if (state.isAnimating) return;
+    pauseGameTimer();
     showModal(
       'Quit Game?',
       'Quit this game? Your progress will be lost.',
       [
-        { label: 'Cancel', className: 'btn-secondary', action: () => {} },
+        { label: 'Cancel', className: 'btn-secondary', action: () => { startGameTimer(); } },
         { label: 'Back to Menu', className: 'btn-danger', action: () => { stopGameTimer(); showScreen('screen-start'); loadPersonalBests(); } },
       ]
     );
