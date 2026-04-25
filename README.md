@@ -6,7 +6,7 @@ A Microsoft cloud logo match-3 puzzle game, inspired by Candy Crush. 56 product 
 
 ## 🎮 Play Now
 
-**[Play LogoCrush →](https://fordosa90.github.io/logocrush.github.io/)**
+**[Play LogoCrush →](https://logocrush.andrasfordos.com/)**
 
 ## How to Play
 
