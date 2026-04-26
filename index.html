@@ -60,6 +60,9 @@
     }
     .btn-primary:hover { background: #005a9e; }
     .btn-primary:active { transform: scale(0.97); }
+    /* Play button: gold matching the jar's max-point colour */
+    #btn-play { background: #ffd700; color: #000; }
+    #btn-play:hover { background: #e6c200; }
 
     /* Personal bests */
     .pb-display {
@@ -199,22 +202,14 @@
 
     /* Collapse columns on very narrow screens */
     @media (max-width: 480px) {
-      .menu-section-middle {
-        flex-direction: column;
-        align-items: center;
-        gap: 0;
-      }
-      .menu-col-ui, .menu-col-tags, .menu-col-swag {
+      /* Hide UI and Swag columns; only cloud picker remains */
+      .menu-col-ui, .menu-col-swag { display: none; }
+      .menu-col-tags {
         width: 100%;
         padding-left: 0;
         padding-right: 0;
-      }
-      .menu-col-ui, .menu-col-tags {
         border-right: none;
-        border-bottom: 1px solid var(--border);
-        padding-bottom: 1rem;
       }
-      .menu-col-swag { padding-top: 1rem; }
     }
 
     /* Game mode selector */
@@ -324,6 +319,7 @@
       display: flex;
       flex-direction: column;
       align-items: stretch;
+      gap: 1rem;
     }
     /* Row of tile board + stats panel */
     #boards-row {
