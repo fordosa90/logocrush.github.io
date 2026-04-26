@@ -125,7 +125,7 @@
     .menu-section-middle {
       flex-direction: row;
       align-items: flex-start;
-      gap: 1rem;
+      gap: 0;
     }
     .menu-col {
       display: flex;
@@ -133,9 +133,9 @@
       align-items: center;
       gap: 0.5rem;
     }
-    .menu-col-ui   { width: 30%; }
-    .menu-col-tags { width: 40%; }
-    .menu-col-swag { width: 30%; }
+    .menu-col-ui   { width: 30%; padding-right: 1rem; border-right: 1px solid var(--border); }
+    .menu-col-tags { width: 40%; padding: 0 1rem;     border-right: 1px solid var(--border); }
+    .menu-col-swag { width: 30%; padding-left: 1rem; }
 
     /* Narrower tag grid inside the 40% centre column */
     .menu-col-tags #modeSelector {
@@ -177,20 +177,21 @@
       bottom: calc(100% + 6px);
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(0, 0, 0, 0.78);
+      background: #2a2a2a;
       color: #fff;
       border-radius: 6px;
-      padding: 0.3rem 0.55rem;
+      padding: 0.3rem 0.6rem;
       font-size: 0.72rem;
-      line-height: 1.35;
+      line-height: 1.4;
       white-space: normal;
-      max-width: 180px;
+      max-width: 200px;
       width: max-content;
       pointer-events: none;
       opacity: 0;
       transition: opacity 0.15s;
-      z-index: 20;
+      z-index: 30;
       text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.35);
     }
     .has-tooltip:hover::after { opacity: 1; }
 
@@ -199,11 +200,56 @@
       .menu-section-middle {
         flex-direction: column;
         align-items: center;
+        gap: 0;
       }
       .menu-col-ui, .menu-col-tags, .menu-col-swag {
         width: 100%;
+        padding-left: 0;
+        padding-right: 0;
       }
+      .menu-col-ui, .menu-col-tags {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 1rem;
+      }
+      .menu-col-swag { padding-top: 1rem; }
     }
+
+    /* Game mode selector */
+    #gameModeSelector {
+      display: flex;
+      flex-direction: row;
+      gap: 0.6rem;
+      width: 100%;
+    }
+    .game-mode-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2rem;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.65rem 0.5rem;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      color: #444;
+    }
+    .game-mode-btn[aria-pressed="true"] {
+      background: var(--primary);
+      color: var(--white);
+      border-color: var(--primary);
+    }
+    .game-mode-label {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    .game-mode-sub {
+      font-size: 0.68rem;
+      opacity: 0.7;
+    }
+    .game-mode-btn[aria-pressed="true"] .game-mode-sub { opacity: 0.88; }
 
     /* Visit counter — inline: label + badge on same row */
     .visit-counter-wrap {
@@ -890,7 +936,7 @@
   <!-- Section 1: title, subtitle, stats, LinkedIn share -->
   <div class="menu-section">
     <h1>LogoCrush 🎮</h1>
-    <p>The Microsoft cloud logo match-3 game, built by <a href="https://www.linkedin.com/in/andrasfordos" target="_blank" rel="noopener noreferrer" style="color:var(--primary);font-weight:600;">András Fördős</a></p>
+    <p>The Microsoft cloud logo match-3 game, built by AI under peer-pressure from <a href="https://www.linkedin.com/in/andrasfordos" target="_blank" rel="noopener noreferrer" style="color:var(--primary);font-weight:600;">András Fördős</a></p>
 
     <div class="pb-share-row">
       <div class="pb-display">
@@ -927,8 +973,10 @@
     <div class="menu-col menu-col-ui">
       <h2 class="section-label">Choose your UI:</h2>
       <button class="selector-btn" aria-pressed="true">Default</button>
-      <button class="selector-btn selector-locked" disabled>Retro</button>
-      <button class="selector-btn selector-locked" disabled>AI Magic</button>
+      <button class="selector-btn selector-locked has-tooltip" disabled
+              data-tooltip="This is a production-ready preview, will arrive soon">Retro</button>
+      <button class="selector-btn selector-locked has-tooltip" disabled
+              data-tooltip="I hear you, will think about it">AI Magic</button>
     </div>
 
     <!-- Centre 40%: cloud / tag picker -->
@@ -953,19 +1001,37 @@
       <button class="selector-btn selector-locked has-tooltip" disabled
               data-tooltip="Good things come to those who are patient">Robo-raptor laser kittens</button>
       <button class="selector-btn selector-locked has-tooltip" disabled
-              data-tooltip="Good things come to those who are patient">Secret sauce</button>
+              data-tooltip="Let's double click on that in fullness of time">Secret sauce</button>
     </div>
 
   </div>
 
-  <!-- Section 3: play button and visitor counter -->
+  <!-- Section 3: game mode selector -->
+  <div class="menu-section">
+    <h2 class="section-label">Choose your mode:</h2>
+    <div id="gameModeSelector" role="group" aria-label="Game mode">
+      <button class="game-mode-btn" data-mode="classic" aria-pressed="true">
+        <span class="game-mode-label">Classic</span>
+        <span class="game-mode-sub">Prove your skills</span>
+      </button>
+      <button class="game-mode-btn" data-mode="timed" aria-pressed="false">
+        <span class="game-mode-label">Timed</span>
+        <span class="game-mode-sub">Beat the countdown</span>
+      </button>
+      <button class="game-mode-btn" data-mode="steps" aria-pressed="false">
+        <span class="game-mode-label">Steps</span>
+        <span class="game-mode-sub">Make your swaps count</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Section 4: play button and visitor counter -->
   <div class="menu-section">
     <button id="btn-play" class="btn-primary">Play!</button>
     <div class="visit-counter-wrap">
       <span class="visit-counter-label">All time statistics:</span>
       <img src="https://hits.sh/logocrush.andrasfordos.com.svg?label=visitors&color=0078D4&style=flat-square" alt="Visit counter" class="hits-badge" style="height:28px;">
     </div>
-    <p style="font-weight:normal;font-size:0.82rem;">Starting from level 10, unlock clippy and many more swags!</p>
   </div>
 </div>
 <div id="screen-playing" class="screen hidden">
@@ -1077,6 +1143,9 @@ let gameTimerInterval = null;
 let specialShakeInterval = null;
 let timeRemaining = 240;
 
+// Active game mode: 'classic' | 'timed' | 'steps'
+let gameMode = 'classic';
+
 // Hint highlight state — cleared on any player move
 let hintTimers = [];
 let hintTileEls = [];
@@ -1142,27 +1211,32 @@ function hideModal() {
 // ─── Timer helpers ────────────────────────────────────────────────────────────
 function startGameTimer() {
   gameTimerInterval = setInterval(() => {
-    timeRemaining--;
+    // In Steps mode the clock is frozen — don't decrement time.
+    if (gameMode !== 'steps') {
+      timeRemaining--;
 
-    // Score drain from level 8 — score slowly decreases over time
+      if (timeRemaining <= 0) {
+        stopGameTimer();
+        state.isAnimating = true;
+        showModal(
+          "⏱ Time's Up!",
+          "You ran out of time!",
+          [
+            { label: 'Restart Level', className: 'btn-primary', action: () => { state.isAnimating = false; initLevel(state.level); showScreen('screen-playing'); } },
+            { label: 'Back to Menu', className: 'btn-secondary', action: () => { state.isAnimating = false; showScreen('screen-start'); loadPersonalBests(); } },
+          ]
+        );
+        return;
+      }
+    }
+
+    // Score drain from level 8 — applies in all modes
     const drain = getScoreDrain(state.level);
     if (drain > 0 && !state.isAnimating) {
       state.score = Math.max(0, state.score - drain);
     }
 
     updateHUD();
-    if (timeRemaining <= 0) {
-      stopGameTimer();
-      state.isAnimating = true;
-      showModal(
-        "⏱ Time's Up!",
-        "You ran out of time!",
-        [
-          { label: 'Restart Level', className: 'btn-primary', action: () => { state.isAnimating = false; initLevel(state.level); showScreen('screen-playing'); } },
-          { label: 'Back to Menu', className: 'btn-secondary', action: () => { state.isAnimating = false; showScreen('screen-start'); loadPersonalBests(); } },
-        ]
-      );
-    }
   }, 1000);
 }
 
@@ -1177,6 +1251,13 @@ function pauseGameTimer() {
 function stopGameTimer() {
   pauseGameTimer();
   stopSpecialShake();
+}
+
+/** Show/hide HUD elements that depend on the current game mode. */
+function applyGameModeHUD() {
+  const movesWrap = document.getElementById('hud-moves-wrap');
+  // Timed mode: swaps are unlimited, so hide the moves counter entirely.
+  if (movesWrap) movesWrap.style.display = (gameMode === 'timed') ? 'none' : '';
 }
 
 function formatTime(s) {
@@ -1222,9 +1303,16 @@ function getLevelConfig(level) {
   // Levels 1-8: fixed decreasing scale (player is learning the ropes).
   // Levels 9+: scale moves with target, assuming ~700 pts/swap — achievable with a mix
   // of normal matches and occasional special-tile combos, without requiring perfection.
-  const moves = level < 9
+  const baseMoves = level < 9
     ? Math.max(20, 30 - Math.floor((level - 1) / 2))
     : Math.ceil(target / 700);
+
+  // In Steps mode, reduce available moves after level 11 to ramp up challenge.
+  let moves = baseMoves;
+  if (gameMode === 'steps' && level > 11) {
+    moves = Math.max(8, baseMoves - (level - 11) * 3);
+  }
+
   return { target, moves };
 }
 
@@ -1356,6 +1444,7 @@ function initLevel(level) {
   initBoard();
   renderBoard();
   updateHUD();
+  applyGameModeHUD();
   startSpecialShake();
   updateClippyVisibility();
 
@@ -1772,7 +1861,7 @@ async function attemptSwap(r1, c1, r2, c2) {
     await animateSwap(r1, c1, r2, c2, false);
   }
 
-  state.movesLeft--;
+  state.movesLeft -= (gameMode === 'timed') ? 0 : 1;
   state.comboCount = 0;
   state.selectedCell = null;
   renderBoard();
@@ -1829,7 +1918,7 @@ function hasAnyValidMove() {
 function checkWinLose() {
   if (state.score >= state.scoreTarget) {
     showLevelSummary(true);
-  } else if (state.movesLeft <= 0) {
+  } else if (gameMode !== 'timed' && state.movesLeft <= 0) {
     showLevelSummary(false);
   } else if (!hasAnyValidMove()) {
     state.isAnimating = true;
@@ -2190,13 +2279,15 @@ function applyTagUnlockRules() {
     if (!btn) continue;
     const unlocked = isTagUnlocked(rule);
     if (unlocked) {
-      btn.classList.remove('tag-locked');
+      btn.classList.remove('tag-locked', 'has-tooltip');
       btn.removeAttribute('disabled');
       btn.removeAttribute('title');
+      btn.removeAttribute('data-tooltip');
     } else {
-      btn.classList.add('tag-locked');
+      btn.classList.add('tag-locked', 'has-tooltip');
       btn.setAttribute('disabled', '');
-      btn.setAttribute('title', rule.tooltip || 'Locked');
+      btn.setAttribute('data-tooltip', rule.tooltip || 'Locked');
+      btn.removeAttribute('title');
       // If the locked tag was the active one, reset to 'all'
       if (state.activeTag === rule.tag) {
         state.activeTag = 'all';
@@ -2207,6 +2298,18 @@ function applyTagUnlockRules() {
       }
     }
   }
+}
+
+// ─── Game mode selector ───────────────────────────────────────────────────────
+function setupGameModeSelector() {
+  const container = document.getElementById('gameModeSelector');
+  container.addEventListener('click', e => {
+    const btn = e.target.closest('.game-mode-btn');
+    if (!btn) return;
+    container.querySelectorAll('.game-mode-btn').forEach(b => b.setAttribute('aria-pressed', 'false'));
+    btn.setAttribute('aria-pressed', 'true');
+    gameMode = btn.dataset.mode;
+  });
 }
 
 // ─── Mode selector ────────────────────────────────────────────────────────────
@@ -2378,6 +2481,7 @@ async function detectIconHues() {
 async function init() {
   await loadManifest();
   loadPersonalBests();
+  setupGameModeSelector();
   setupModeSelector();
   restoreSavedTag();
   applyTagUnlockRules();  // grey out locked tags based on saved stats
