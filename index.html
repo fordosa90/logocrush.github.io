@@ -177,23 +177,23 @@
       bottom: calc(100% + 6px);
       left: 50%;
       transform: translateX(-50%);
-      background: #2a2a2a;
+      background: #1a1a1a;
       color: #fff;
       border-radius: 6px;
-      padding: 0.3rem 0.6rem;
-      font-size: 0.72rem;
-      line-height: 1.4;
+      padding: 0.35rem 0.65rem;
+      font-size: 0.74rem;
+      font-weight: 500;
+      line-height: 1.45;
       white-space: normal;
-      max-width: 200px;
+      max-width: 210px;
       width: max-content;
       pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.15s;
+      visibility: hidden;
       z-index: 30;
       text-align: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+      box-shadow: 0 3px 10px #0005, 0 1px 3px #0008;
     }
-    .has-tooltip:hover::after { opacity: 1; }
+    .has-tooltip:hover::after { visibility: visible; }
 
     /* Collapse columns on very narrow screens */
     @media (max-width: 480px) {
@@ -304,10 +304,11 @@
       max-width: 100%;
       padding: 0;
       gap: 0;
-      align-items: stretch;
+      align-items: center;
     }
     header {
-      width: 100%;
+      width: calc(var(--board-full-h) * 4 / 3 + 1rem);
+      max-width: 100%;
       background: var(--white);
       border-bottom: 1px solid var(--border);
       padding: 0.4rem 0.75rem;
@@ -996,7 +997,7 @@
     <!-- Right 30%: swag selector -->
     <div class="menu-col menu-col-swag">
       <h2 class="section-label">Choose your swag:</h2>
-      <button class="selector-btn selector-locked has-tooltip" disabled
+      <button id="btn-swag-clippy" class="selector-btn selector-locked has-tooltip" disabled
               data-tooltip="Available once you've beaten level 10!">Clippy</button>
       <button class="selector-btn selector-locked has-tooltip" disabled
               data-tooltip="Good things come to those who are patient">Robo-raptor laser kittens</button>
@@ -1256,8 +1257,13 @@ function stopGameTimer() {
 /** Show/hide HUD elements that depend on the current game mode. */
 function applyGameModeHUD() {
   const movesWrap = document.getElementById('hud-moves-wrap');
+  const timerWrap = document.getElementById('hud-timer-wrap');
+  const mobileTimer = document.getElementById('timer-display-mobile');
   // Timed mode: swaps are unlimited, so hide the moves counter entirely.
   if (movesWrap) movesWrap.style.display = (gameMode === 'timed') ? 'none' : '';
+  // Steps mode: clock is frozen and irrelevant, hide it to avoid confusion.
+  if (timerWrap) timerWrap.style.display = (gameMode === 'steps') ? 'none' : '';
+  if (mobileTimer) mobileTimer.style.display = (gameMode === 'steps') ? 'none' : '';
 }
 
 function formatTime(s) {
@@ -2163,11 +2169,32 @@ function loadPersonalBests() {
   document.getElementById('pb-logos').textContent = parseInt(localStorage.getItem(LS_TOTALLOGOS) || '0').toLocaleString();
   // Re-evaluate which tag buttons are unlocked now that stats may have changed
   applyTagUnlockRules();
+  updateClippyVisibility();
 }
 
 function updateClippyVisibility() {
   const bestLevel = parseInt(localStorage.getItem(LS_HIGHESTLEVEL) || '1');
-  document.getElementById('clippy-panel').classList.toggle('clippy-unlocked', bestLevel >= CLIPPY_UNLOCK_LEVEL);
+  const unlocked = bestLevel >= CLIPPY_UNLOCK_LEVEL;
+  document.getElementById('clippy-panel').classList.toggle('clippy-unlocked', unlocked);
+
+  // Update the Clippy button in the landing-page swag section
+  const clippyBtn = document.getElementById('btn-swag-clippy');
+  if (!clippyBtn) return;
+  if (unlocked) {
+    clippyBtn.classList.remove('selector-locked');
+    clippyBtn.removeAttribute('disabled');
+    clippyBtn.setAttribute('aria-pressed', 'true');
+    clippyBtn.setAttribute('data-tooltip', 'Your buddy Clippy is always with you! 🎉');
+    clippyBtn.style.cursor = 'default';
+    clippyBtn.style.pointerEvents = 'none';
+  } else {
+    clippyBtn.classList.add('selector-locked');
+    clippyBtn.setAttribute('disabled', '');
+    clippyBtn.setAttribute('aria-pressed', 'false');
+    clippyBtn.setAttribute('data-tooltip', "Available once you've beaten level 10!");
+    clippyBtn.style.cursor = '';
+    clippyBtn.style.pointerEvents = '';
+  }
 }
 
 // ─── Input handlers ───────────────────────────────────────────────────────────
