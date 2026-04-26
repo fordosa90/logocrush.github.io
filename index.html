@@ -1016,7 +1016,8 @@
         <button data-tag="dynamics" aria-pressed="false">Dynamics</button>
         <button data-tag="security" aria-pressed="false">Security</button>
         <button data-tag="modern-workplace" aria-pressed="false">Modern Workplace</button>
-        <button data-tag="legacy" class="legacy-toggle" aria-pressed="false">+ Legacy</button>
+        <button data-tag="legacy" class="legacy-toggle tag-locked has-tooltip" aria-pressed="false"
+                data-tooltip="Unlock by beating level 15">+ Legacy</button>
       </div>
     </div>
 
@@ -1144,6 +1145,7 @@ const LS_TOTALLOGOS  = 'logocrush_totallogos';
 const LS_ACTIVETAG   = 'logocrush_activetag';
 const LS_INCLUDE_LEGACY = 'logocrush_includelegacy';
 const CLIPPY_UNLOCK_LEVEL = 10;
+const LEGACY_UNLOCK_LEVEL = 15;
 
 const PER_TILE_PTS             = 100;   // base score per matched tile
 const INITIAL_TIME_SECONDS     = 300;   // 5 minutes per level
@@ -2213,6 +2215,7 @@ function loadPersonalBests() {
   document.getElementById('pb-logos').textContent = parseInt(localStorage.getItem(LS_TOTALLOGOS) || '0').toLocaleString();
   // Re-evaluate which tag buttons are unlocked now that stats may have changed
   applyTagUnlockRules();
+  applyLegacyLockState();
   updateClippyVisibility();
 }
 
@@ -2419,11 +2422,36 @@ function restoreSavedTag() {
   state.activeTag = saved;
 }
 
+function applyLegacyLockState() {
+  const btn = document.querySelector('#modeSelector button.legacy-toggle');
+  if (!btn) return;
+  const highestLevel = parseInt(localStorage.getItem(LS_HIGHESTLEVEL) || '1');
+  const unlocked = highestLevel >= LEGACY_UNLOCK_LEVEL;
+  if (unlocked) {
+    btn.classList.remove('tag-locked', 'has-tooltip');
+    btn.removeAttribute('disabled');
+    btn.removeAttribute('data-tooltip');
+  } else {
+    btn.classList.add('tag-locked', 'has-tooltip');
+    btn.setAttribute('disabled', '');
+    btn.setAttribute('data-tooltip', 'Unlock by beating level 15');
+    // If legacy was on but now locked, turn it off
+    if (state.includeLegacy) {
+      state.includeLegacy = false;
+      btn.setAttribute('aria-pressed', 'false');
+      localStorage.setItem(LS_INCLUDE_LEGACY, 'false');
+    }
+  }
+}
+
 function restoreSavedLegacy() {
   if (localStorage.getItem(LS_INCLUDE_LEGACY) === 'true') {
-    state.includeLegacy = true;
-    const btn = document.querySelector('#modeSelector button.legacy-toggle');
-    if (btn) btn.setAttribute('aria-pressed', 'true');
+    const highestLevel = parseInt(localStorage.getItem(LS_HIGHESTLEVEL) || '1');
+    if (highestLevel >= LEGACY_UNLOCK_LEVEL) {
+      state.includeLegacy = true;
+      const btn = document.querySelector('#modeSelector button.legacy-toggle');
+      if (btn) btn.setAttribute('aria-pressed', 'true');
+    }
   }
 }
 
@@ -2576,6 +2604,7 @@ async function init() {
   restoreSavedTag();
   restoreSavedLegacy();
   applyTagUnlockRules();  // grey out locked tags based on saved stats
+  applyLegacyLockState(); // lock/unlock + Legacy based on highest level
   setupBoardListeners();
   setupPlayButton();
   showScreen('screen-start');
