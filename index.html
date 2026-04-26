@@ -60,8 +60,8 @@
     }
     .btn-primary:hover { background: #005a9e; }
     .btn-primary:active { transform: scale(0.97); }
-    /* Play button: gold matching the jar's max-point colour */
-    #btn-play { background: #ffd700; color: #000; }
+    /* Play button: gold matching the jar's max-point colour; full-width, same height as mode selectors */
+    #btn-play { background: #ffd700; color: #000; width: 100%; padding: 1rem 2rem; }
     #btn-play:hover { background: #e6c200; }
 
     /* Personal bests */
@@ -200,7 +200,10 @@
     }
     .has-tooltip:hover::after { visibility: visible; }
 
-    /* Collapse columns on very narrow screens */
+    /* Disclaimer below game description */
+    .disclaimer { font-size: 0.72rem; color: #888; font-style: italic; }
+
+    /* Collapse columns on very narrow screens; condense section gaps for single-screen fit */
     @media (max-width: 480px) {
       /* Hide UI and Swag columns; only cloud picker remains */
       .menu-col-ui, .menu-col-swag { display: none; }
@@ -210,6 +213,11 @@
         padding-right: 0;
         border-right: none;
       }
+      /* Condense the start screen to fit a single mobile viewport */
+      #screen-start { gap: 1.25rem; }
+      .menu-section { gap: 0.4rem; }
+      h1 { font-size: 1.5rem; }
+      .pb-display { gap: 0.3rem 0.75rem; }
     }
 
     /* Game mode selector */
@@ -363,7 +371,7 @@
       display: none;             /* hidden until level 10 is unlocked */
       align-items: center;       /* vertical centering within board height */
       justify-content: center;
-      height: var(--board-full-h);
+      align-self: center;
       width: 110px;
       flex-shrink: 0;
     }
@@ -951,6 +959,7 @@
   <div class="menu-section">
     <h1>LogoCrush 🎮</h1>
     <p>The Microsoft cloud logo match-3 game, built by AI under peer-pressure from <a href="https://www.linkedin.com/in/andrasfordos" target="_blank" rel="noopener noreferrer" style="color:var(--primary);font-weight:600;">András Fördős</a></p>
+    <p class="disclaimer">All logos are the property of Microsoft Corporation.</p>
 
     <div class="pb-share-row">
       <div class="pb-display">
@@ -1050,13 +1059,6 @@
 </div>
 <div id="screen-playing" class="screen hidden">
   <div id="game-area">
-    <!-- Clippy panel: hidden on mobile via CSS -->
-    <div id="clippy-panel">
-      <div id="clippy-wrap">
-        <img id="clippy-img" src="assets/clippy.png" alt="Clippy the assistant">
-        <button id="btn-clippy-hint" class="btn-hint">💡 Need a hint?</button>
-      </div>
-    </div>
     <!-- Main boards wrapper: header + tile board + stats panel -->
     <div id="boards-wrap">
       <header>
@@ -1068,6 +1070,13 @@
         <button id="btn-hint" class="btn-hint">💡 Hint</button>
       </header>
       <div id="boards-row">
+        <!-- Clippy panel: hidden on mobile, centered vs tile board -->
+        <div id="clippy-panel">
+          <div id="clippy-wrap">
+            <img id="clippy-img" src="assets/clippy.png" alt="Clippy the assistant">
+            <button id="btn-clippy-hint" class="btn-hint">💡 Need a hint?</button>
+          </div>
+        </div>
         <div id="board-column">
           <div id="board-area">
             <div id="board" role="grid" aria-label="Game board"></div>
