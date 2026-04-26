@@ -312,25 +312,23 @@
       align-items: center;
     }
 
-    /* Game area: clippy panel | boards-wrap */
+    /* Game area: CSS grid — row 1: [empty] | header; row 2: clippy | boards-row */
     #game-area {
-      display: flex;
-      flex-direction: row;
-      align-items: flex-start;
-      justify-content: center;
+      display: grid;
+      grid-template-columns: auto auto;
+      grid-template-rows: auto auto;
       gap: 1rem;
       padding: 1rem;
+      justify-content: center;
     }
 
-    /* Boards wrapper: header stacked above the two boards */
-    #boards-wrap {
-      display: flex;
-      flex-direction: column;
-      align-items: stretch;
-      gap: 1rem;
-    }
-    /* Row of tile board + stats panel */
+    /* Header spans only the boards column (col 2) */
+    #game-area > header { grid-column: 2; grid-row: 1; }
+
+    /* Boards row sits in col 2, row 2 */
     #boards-row {
+      grid-column: 2;
+      grid-row: 2;
       display: flex;
       flex-direction: row;
       align-items: flex-start;
@@ -366,12 +364,15 @@
     }
     .header-visits-wrap .hits-badge { height: 16px; }
 
-    /* Clippy panel — left of the board; hidden on mobile */
+    /* Clippy panel — grid col 1 row 2; centers vertically against the tile board */
     #clippy-panel {
       display: none;             /* hidden until level 10 is unlocked */
-      align-items: center;       /* vertical centering within board height */
+      align-items: center;
       justify-content: center;
       align-self: center;
+      justify-self: center;
+      grid-column: 1;
+      grid-row: 2;
       width: 110px;
       flex-shrink: 0;
     }
@@ -631,9 +632,8 @@
     #progress-level-num { color: var(--primary); }
 
     @media (max-width: 640px) {
-      #game-area { flex-direction: column; align-items: center; padding: 0.5rem; gap: 0.5rem; }
-      #clippy-panel { display: none; }
-      #boards-wrap { width: 100%; }
+      #game-area { display: flex; flex-direction: column; align-items: center; padding: 0.5rem; gap: 0.5rem; }
+      #clippy-panel { display: none !important; }
       #boards-row { flex-direction: column; align-items: center; width: 100%; }
       #stats-panel {
         width: 100%;
@@ -1059,29 +1059,29 @@
 </div>
 <div id="screen-playing" class="screen hidden">
   <div id="game-area">
-    <!-- Main boards wrapper: header + tile board + stats panel -->
-    <div id="boards-wrap">
-      <header>
-        <button id="btn-menu" class="btn-menu">⬅ Menu</button>
-        <div class="header-visits-wrap">
-          <span class="header-visits-label">All time statistics:</span>
-          <img src="https://hits.sh/logocrush.andrasfordos.com.svg?label=visitors&color=0078D4&style=flat-square" alt="Visit counter" class="hits-badge" style="height:16px;">
+    <!-- Header: spans only the boards column (col 2) -->
+    <header>
+      <button id="btn-menu" class="btn-menu">⬅ Menu</button>
+      <div class="header-visits-wrap">
+        <span class="header-visits-label">All time statistics:</span>
+        <img src="https://hits.sh/logocrush.andrasfordos.com.svg?label=visitors&color=0078D4&style=flat-square" alt="Visit counter" class="hits-badge" style="height:16px;">
+      </div>
+      <button id="btn-hint" class="btn-hint">💡 Hint</button>
+    </header>
+    <!-- Clippy panel: col 1 row 2, centered vs tile board; hidden on mobile -->
+    <div id="clippy-panel">
+      <div id="clippy-wrap">
+        <img id="clippy-img" src="assets/clippy.png" alt="Clippy the assistant">
+        <button id="btn-clippy-hint" class="btn-hint">💡 Need a hint?</button>
+      </div>
+    </div>
+    <!-- Boards row: col 2 row 2 -->
+    <div id="boards-row">
+      <div id="board-column">
+        <div id="board-area">
+          <div id="board" role="grid" aria-label="Game board"></div>
         </div>
-        <button id="btn-hint" class="btn-hint">💡 Hint</button>
-      </header>
-      <div id="boards-row">
-        <!-- Clippy panel: hidden on mobile, centered vs tile board -->
-        <div id="clippy-panel">
-          <div id="clippy-wrap">
-            <img id="clippy-img" src="assets/clippy.png" alt="Clippy the assistant">
-            <button id="btn-clippy-hint" class="btn-hint">💡 Need a hint?</button>
-          </div>
-        </div>
-        <div id="board-column">
-          <div id="board-area">
-            <div id="board" role="grid" aria-label="Game board"></div>
-          </div>
-        </div>
+      </div>
         <div id="stats-panel">
           <div id="hud-moves-wrap">
             <div id="moves-display">30</div>
@@ -1101,7 +1101,6 @@
           </div>
           <div id="level-label-paper">LEVEL <span id="progress-level-num">1</span><span id="timer-display-mobile"></span></div>
         </div>
-      </div>
     </div>
   </div>
 </div>
