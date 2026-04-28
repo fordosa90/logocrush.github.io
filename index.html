@@ -960,6 +960,17 @@
 
     /* Countdown line inside level-complete modal */
     .modal-countdown { font-size: 0.8rem; color: #888; margin-top: 0.4rem; text-align: center; }
+
+    /* Desktop-only game background image */
+    @media (min-width: 641px) {
+      body.game-active {
+        background-image: url('assets/background.png');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+      }
+    }
   </style>
 </head>
 <body>
@@ -2216,6 +2227,7 @@ function updateHUD() {
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(el => el.classList.add('hidden'));
   document.getElementById(id).classList.remove('hidden');
+  document.body.classList.toggle('game-active', id === 'screen-playing');
 }
 
 let summaryTimer = null;
