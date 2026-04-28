@@ -1181,6 +1181,8 @@ let state = {
   comboCount: 0,
   totalClearedThisLevel: 0,
   prevLevelPool: new Set(), // IDs of the pool used in the previous level (for freshness bias)
+  isCopilotLevel: false,   // true when the current bonus Copilot level is active
+  nextLevelAfterCopilot: null, // level to advance to after beating a Copilot level
 };
 
 let gameTimerInterval = null;
@@ -1362,10 +1364,10 @@ function getLevelConfig(level) {
 
 // ─── Pool building ────────────────────────────────────────────────────────────
 function buildPool(tag, level) {
-  // Base pool: matching tag, always excluding legacy icons
+  // Base pool: matching tag, always excluding legacy and copilot icons
   let filtered = tag === 'all'
-    ? allIcons.filter(ic => !ic.tags.includes('legacy'))
-    : allIcons.filter(ic => ic.tags.includes(tag) && !ic.tags.includes('legacy'));
+    ? allIcons.filter(ic => !ic.tags.includes('legacy') && !ic.tags.includes('copilot'))
+    : allIcons.filter(ic => ic.tags.includes(tag) && !ic.tags.includes('legacy') && !ic.tags.includes('copilot'));
 
   // When legacy toggle is on, add legacy icons of the matching category
   if (state.includeLegacy) {
@@ -1582,7 +1584,38 @@ function initLevel(level) {
   startGameTimer();
 }
 
-// ─── Match detection ──────────────────────────────────────────────────────────
+// ─── Copilot bonus level init ─────────────────────────────────────────────────
+// Called instead of initLevel when a Copilot bonus level is due.
+// Uses the cfg of the just-beaten level (returnTo - 1) so difficulty is identical.
+// The pool is fixed to the 6 copilot-tagged logos — no hue/category selection.
+function initCopilotLevel(returnTo) {
+  const cfg = getLevelConfig(returnTo - 1);
+  state.prevLevelPool = new Set(state.activePool.map(ic => ic.id));
+  state.isCopilotLevel = true;
+  state.nextLevelAfterCopilot = returnTo;
+  state.level = returnTo - 1; // keep numeric for score-drain & other level-based logic
+  state.score = 0;
+  state.movesLeft = cfg.moves;
+  state.scoreTarget = cfg.target;
+  state.selectedCell = null;
+  state.isAnimating = false;
+  state.comboCount = 0;
+  state.totalClearedThisLevel = 0;
+  // Fixed pool: exactly the 6 copilot-tagged logos (no randomiser)
+  state.activePool = allIcons.filter(ic => ic.tags.includes('copilot'));
+
+  stopGameTimer();
+  timeRemaining = INITIAL_TIME_SECONDS;
+
+  initBoard();
+  renderBoard();
+  updateHUD();
+  applyGameModeHUD();
+  startSpecialShake();
+  updateClippyVisibility();
+
+  startGameTimer();
+}
 // Returns Map<"r,c", cellInfo>.  swapEndR/C: destination tile of the player's swap
 // (used to place the created special at the correct position).  Pass -1,-1 for cascades.
 function findMatches(swapEndR = -1, swapEndC = -1) {
@@ -2157,7 +2190,7 @@ function updateHUD() {
   // Progress jar: scaleY from 0→1 reveals the blue-to-gold gradient bottom-up
   const pct = Math.min(100, (state.score / state.scoreTarget) * 100);
   document.getElementById('progress-jar-fill').style.transform = `scaleY(${pct / 100})`;
-  document.getElementById('progress-level-num').textContent = state.level;
+  document.getElementById('progress-level-num').textContent = state.isCopilotLevel ? 'Copilot' : state.level;
   document.getElementById('jar-target-score').textContent = state.scoreTarget.toLocaleString();
 
   // Mobile horizontal score bar — fills left to right
@@ -2195,8 +2228,9 @@ function showLevelSummary(won) {
     const btnsEl   = document.getElementById('modal-buttons');
 
     titleEl.textContent = '🎉 Level Complete!';
+    const levelLabel = state.isCopilotLevel ? 'Copilot' : state.level;
     bodyEl.innerHTML =
-      `<div class="summary-stat"><span>Level</span><strong>${state.level}</strong></div>` +
+      `<div class="summary-stat"><span>Level</span><strong>${levelLabel}</strong></div>` +
       `<div class="summary-stat"><span>Score</span><strong>${state.score.toLocaleString()}</strong></div>` +
       `<div class="summary-stat"><span>Target</span><strong>${state.scoreTarget.toLocaleString()}</strong></div>` +
       `<div class="summary-stat"><span>Logos Matched</span><strong>${state.totalClearedThisLevel}</strong></div>` +
@@ -2254,6 +2288,25 @@ function showLevelSummary(won) {
 
 function startNextLevel() {
   if (summaryTimer) { clearInterval(summaryTimer); summaryTimer = null; }
+
+  // Coming back from a Copilot bonus level — go to the real next level.
+  if (state.isCopilotLevel) {
+    const returnTo = state.nextLevelAfterCopilot;
+    state.isCopilotLevel = false;
+    state.nextLevelAfterCopilot = null;
+    initLevel(returnTo);
+    showScreen('screen-playing');
+    return;
+  }
+
+  // After levels 9, 14, 19: insert a Copilot bonus level before advancing.
+  const COPILOT_AFTER = [9, 14, 19];
+  if (COPILOT_AFTER.includes(state.level)) {
+    initCopilotLevel(state.level + 1);
+    showScreen('screen-playing');
+    return;
+  }
+
   const nextLevel = state.level + 1;
   initLevel(nextLevel);
   showScreen('screen-playing');
@@ -2278,12 +2331,18 @@ function showGameOver() {
 // ─── Personal bests ───────────────────────────────────────────────────────────
 function updatePersonalBests() {
   const hs = Math.max(state.score, parseInt(localStorage.getItem(LS_HIGHSCORE) || '0'));
-  const hl = Math.max(state.level, parseInt(localStorage.getItem(LS_HIGHESTLEVEL) || '1'));
   const logos = parseInt(localStorage.getItem(LS_TOTALLOGOS) || '0') + state.totalClearedThisLevel;
 
   localStorage.setItem(LS_HIGHSCORE, hs);
-  localStorage.setItem(LS_HIGHESTLEVEL, hl);
   localStorage.setItem(LS_TOTALLOGOS, logos);
+
+  // Copilot bonus levels do not count toward the highest level reached;
+  // unlock rules are tied to real numbered levels only.
+  if (!state.isCopilotLevel) {
+    const hl = Math.max(state.level, parseInt(localStorage.getItem(LS_HIGHESTLEVEL) || '1'));
+    localStorage.setItem(LS_HIGHESTLEVEL, hl);
+  }
+
   updateClippyVisibility();
 }
 

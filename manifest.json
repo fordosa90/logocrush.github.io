@@ -1197,6 +1197,42 @@
       "tags": [
         "businessapps"
       ]
+    },
+    {
+      "id": "copilot-in-excel",
+      "name": "Copilot in Excel",
+      "file": "icons/copilot-in-excel.png",
+      "tags": ["copilot"]
+    },
+    {
+      "id": "copilot-in-powerpoint",
+      "name": "Copilot in PowerPoint",
+      "file": "icons/copilot-in-powerpoint.png",
+      "tags": ["copilot"]
+    },
+    {
+      "id": "copilot-in-teams",
+      "name": "Copilot in Teams",
+      "file": "icons/copilot-in-teams.png",
+      "tags": ["copilot"]
+    },
+    {
+      "id": "copilot-in-word",
+      "name": "Copilot in Word",
+      "file": "icons/copilot-in-word.png",
+      "tags": ["copilot"]
+    },
+    {
+      "id": "copilot-m365",
+      "name": "Copilot M365",
+      "file": "icons/copilot-m365.png",
+      "tags": ["copilot"]
+    },
+    {
+      "id": "copilot-studio",
+      "name": "Copilot Studio",
+      "file": "icons/copilot-studio.png",
+      "tags": ["copilot"]
     }
   ]
 }
