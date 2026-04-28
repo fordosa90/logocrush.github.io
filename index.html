@@ -1397,13 +1397,11 @@ function buildPool(tag, level) {
     } else if (level <= 4) {
       // Moderate: sample randomly
       chosen = shuffle(sorted).slice(0, 6);
-    } else {
-      // Similar hues: pick a random center hue, then progressively narrow the pool
-      // as level rises so icons become ever more confusingly similar.
-      // Pool shrinks from 14 candidates (level 5, wide band) down to 6 (level 11+, tightest band).
-      // poolSize = max(MIN_POOL, MAX_POOL - floor((level - 5) * SCALE))
-      // Level 5→14, 6→13, 7→11, 8→10, 9→8, 10→7, 11+→6
-      const MIN_POOL = 6;
+    } else if (level <= 7) {
+      // Levels 5-7: pick a fresh random center hue each round, progressively narrowing
+      // the candidate pool so colours become more similar as levels rise.
+      // Pool shrinks from 14 (level 5) → 11 (level 7).
+      const MIN_POOL = 11;
       const MAX_POOL = 14;
       const POOL_SCALE = 1.5;
       const centerHue = Math.random() * 360;
@@ -1414,6 +1412,33 @@ function buildPool(tag, level) {
       withDist.sort((a, b) => a.dist - b.dist);
       const poolSize = Math.max(MIN_POOL, MAX_POOL - Math.floor((level - 5) * POOL_SCALE));
       chosen = shuffle(withDist.slice(0, poolSize)).slice(0, 6).map(x => x.ic);
+    } else {
+      // Level 8+: densest-cluster approach.
+      // Bucket the filtered logos into 30° hue slices, find the most populous bucket,
+      // then expand outward to adjacent buckets (circularly) until we have ≥ 6 candidates.
+      // This guarantees the 6 in-game logos are as close in colour as the filtered pool allows,
+      // without padding with off-colour logos just to hit the count.
+      const BUCKET_DEG = 30;
+      const NUM_BUCKETS = Math.ceil(360 / BUCKET_DEG); // 12
+      const buckets = Array.from({ length: NUM_BUCKETS }, () => []);
+      for (const ic of withHue) {
+        buckets[Math.floor(ic.hue / BUCKET_DEG) % NUM_BUCKETS].push(ic);
+      }
+      // Pick the single most populous bucket as the starting centre.
+      let bestBucket = 0;
+      for (let i = 1; i < NUM_BUCKETS; i++) {
+        if (buckets[i].length > buckets[bestBucket].length) bestBucket = i;
+      }
+      // Expand outward (nearest neighbours first) until the pool reaches ≥ 6.
+      let pool = [...buckets[bestBucket]];
+      let radius = 1;
+      while (pool.length < 6 && radius <= Math.floor(NUM_BUCKETS / 2)) {
+        const left = (bestBucket - radius + NUM_BUCKETS) % NUM_BUCKETS;
+        const right = (bestBucket + radius) % NUM_BUCKETS;
+        pool = pool.concat(buckets[left], left !== right ? buckets[right] : []);
+        radius++;
+      }
+      chosen = shuffle(pool).slice(0, 6);
     }
   } else {
     chosen = shuffle(filtered).slice(0, 6);
