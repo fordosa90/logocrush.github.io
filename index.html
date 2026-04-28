@@ -1180,6 +1180,7 @@ let state = {
   isAnimating: false,
   comboCount: 0,
   totalClearedThisLevel: 0,
+  prevLevelPool: new Set(), // IDs of the pool used in the previous level (for freshness bias)
 };
 
 let gameTimerInterval = null;
@@ -1381,6 +1382,35 @@ function buildPool(tag, level) {
     filtered = filtered.concat(extra);
   }
 
+  // ─── Helpers ──────────────────────────────────────────────────────────────────
+  // freshFirst: for levels 1-4, re-orders arr so logos NOT seen in the previous
+  // level come first (each group internally shuffled), giving a higher chance of
+  // encountering new logos each level.  Both groups are shuffled independently so
+  // the ordering within each group stays random.
+  function freshFirst(arr) {
+    const fresh = shuffle(arr.filter(ic => !state.prevLevelPool.has(ic.id)));
+    const seen  = shuffle(arr.filter(ic =>  state.prevLevelPool.has(ic.id)));
+    return fresh.concat(seen);
+  }
+
+  // enforcePriorityQuota: when playing in 'all' mode, guarantees ≥60% (at least
+  // 4 of 6) of the chosen logos are from businessapps or modernwork.  Swaps out
+  // the minimum number of non-priority logos for priority ones drawn from the
+  // already-built filtered pool so no extra pool expansion is needed.
+  function enforcePriorityQuota(chosen6) {
+    if (tag !== 'all') return chosen6;
+    const isPriority = ic => ic.tags.includes('businessapps') || ic.tags.includes('modernwork');
+    const need = Math.max(0, 4 - chosen6.filter(isPriority).length);
+    if (need === 0) return chosen6;
+    const usedIds = new Set(chosen6.map(ic => ic.id));
+    const extras = shuffle(filtered.filter(ic => isPriority(ic) && !usedIds.has(ic.id)));
+    const add = extras.slice(0, need);
+    if (add.length === 0) return chosen6; // no priority extras available, keep as-is
+    const nonPriority = shuffle(chosen6.filter(ic => !isPriority(ic)));
+    const dropIds = new Set(nonPriority.slice(0, add.length).map(ic => ic.id));
+    return shuffle([...chosen6.filter(ic => !dropIds.has(ic.id)), ...add]);
+  }
+
   // Hue-based diversity selection
   const withHue = filtered.filter(ic => ic.hue !== undefined);
 
@@ -1395,8 +1425,9 @@ function buildPool(tag, level) {
         chosen.push(sorted[Math.floor(i * step)]);
       }
     } else if (level <= 4) {
-      // Moderate: sample randomly
-      chosen = shuffle(sorted).slice(0, 6);
+      // Moderate: freshness-biased selection — prefer logos not seen in the
+      // previous level, still drawn from the hue-sorted candidate list.
+      chosen = freshFirst(sorted).slice(0, 6);
     } else {
       // Levels 5+: densest-cluster approach.
       // Bucket the filtered logos into 30° hue slices (12 buckets), find the most
@@ -1453,8 +1484,12 @@ function buildPool(tag, level) {
       chosen = shuffle(pool).slice(0, 6);
     }
   } else {
-    chosen = shuffle(filtered).slice(0, 6);
+    // No hue data yet: freshness-biased random for levels 1-4, plain shuffle for 5+.
+    chosen = (level && level <= 4) ? freshFirst(filtered).slice(0, 6) : shuffle(filtered).slice(0, 6);
   }
+
+  // For 'all' tag: ensure ≥60% of the chosen logos are businessapps or modernwork.
+  chosen = enforcePriorityQuota(chosen);
 
   return chosen.slice(0, 6);
 }
@@ -1521,6 +1556,9 @@ function resolveInitialMatches() {
 // ─── Level init ───────────────────────────────────────────────────────────────
 function initLevel(level) {
   const cfg = getLevelConfig(level);
+  // Capture the current pool as the "previous level" reference for freshness bias.
+  // Reset to an empty set when starting a new game (level 1) so all logos are fresh.
+  state.prevLevelPool = level === 1 ? new Set() : new Set(state.activePool.map(ic => ic.id));
   state.level = level;
   state.score = 0;
   state.movesLeft = cfg.moves;
