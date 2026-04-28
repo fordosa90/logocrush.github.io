@@ -72,11 +72,12 @@ jobs:
             else:
               seen_ids[icon_id] = idx
 
-            # file must be in icons/ and match id (svg or png allowed)
-            expected_svg = f"icons/{icon_id}.svg"
-            expected_png = f"icons/{icon_id}.png"
-            if icon_file not in (expected_svg, expected_png):
-              errors.append(f"{prefix}: file '{icon_file}' does not match expected '{expected_svg}' or '{expected_png}'")
+            # file must be in icons/ (svg or png) or assets/ (png only), and match id
+            expected_svg        = f"icons/{icon_id}.svg"
+            expected_png        = f"icons/{icon_id}.png"
+            expected_assets_png = f"assets/{icon_id}.png"
+            if icon_file not in (expected_svg, expected_png, expected_assets_png):
+              errors.append(f"{prefix}: file '{icon_file}' does not match expected '{expected_svg}', '{expected_png}', or '{expected_assets_png}'")
 
             # duplicate file check
             if icon_file in seen_files:
