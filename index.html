@@ -82,7 +82,7 @@
     /* Mode selector — "All" on its own row, then 3 per row */
     #modeSelector {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: 1fr;
       gap: 0.4rem;
       width: 100%;
     }
@@ -97,12 +97,6 @@
       color: #444;
       text-align: center;
       width: 100%;
-    }
-    #modeSelector button:first-child {
-      grid-column: 1 / -1; /* "All" spans full width */
-    }
-    #modeSelector button.legacy-toggle {
-      grid-column: 1 / -1; /* "+ Legacy" spans full width */
     }
     #modeSelector button[aria-pressed="true"] {
       background: var(--primary);
@@ -143,11 +137,6 @@
     .menu-col-ui   { width: 30%; padding-right: 1rem; border-right: 1px solid var(--border); }
     .menu-col-tags { width: 40%; padding: 0 1rem;     border-right: 1px solid var(--border); }
     .menu-col-swag { width: 30%; padding-left: 1rem; }
-
-    /* Narrower tag grid inside the 40% centre column */
-    .menu-col-tags #modeSelector {
-      grid-template-columns: repeat(2, 1fr);
-    }
 
     /* Selector pill buttons — same look as tag buttons */
     .selector-btn {
@@ -1029,13 +1018,13 @@
       <h2 class="section-label">Choose your cloud:</h2>
       <div id="modeSelector" role="group" aria-label="Cloud filter">
         <button data-tag="all" aria-pressed="true">All</button>
-        <button data-tag="azure" aria-pressed="false">Azure</button>
-        <button data-tag="m365" aria-pressed="false">M365</button>
-        <button data-tag="power-platform" aria-pressed="false">Power Platform</button>
-        <button data-tag="dynamics" aria-pressed="false">Dynamics</button>
-        <button data-tag="security" aria-pressed="false">Security</button>
-        <button data-tag="modern-workplace" aria-pressed="false">Modern Workplace</button>
-        <button data-tag="legacy" class="legacy-toggle tag-locked has-tooltip" aria-pressed="false"
+        <button data-tag="businessapps" aria-pressed="false" class="tag-locked has-tooltip" disabled
+                data-tooltip="Unlock when beating level 5">Business Applications</button>
+        <button data-tag="azure" aria-pressed="false" class="tag-locked has-tooltip" disabled
+                data-tooltip="Unlock once achieved 20,000 points">Azure</button>
+        <button data-tag="modernwork" aria-pressed="false" class="tag-locked has-tooltip" disabled
+                data-tooltip="Unlock, once played 20 games">Modern Work</button>
+        <button data-tag="legacy" class="legacy-toggle tag-locked has-tooltip" aria-pressed="false" disabled
                 data-tooltip="Unlock by beating level 15">+ Legacy logos</button>
       </div>
     </div>
@@ -1327,14 +1316,12 @@ function formatTime(s) {
 
 // ─── Manifest loading ─────────────────────────────────────────────────────────
 const FALLBACK_ICONS = [
-  {id:'azure',name:'Azure',file:'icons/azure.svg',tags:['azure']},
-  {id:'teams',name:'Teams',file:'icons/teams.svg',tags:['m365','modern-workplace']},
-  {id:'github',name:'GitHub',file:'icons/github.svg',tags:['developer']},
-  {id:'word',name:'Word',file:'icons/word.svg',tags:['m365']},
-  {id:'excel',name:'Excel',file:'icons/excel.svg',tags:['m365','data']},
-  {id:'power-bi',name:'Power BI',file:'icons/power-bi.svg',tags:['power-platform','data','m365']},
-  {id:'sharepoint',name:'SharePoint',file:'icons/sharepoint.svg',tags:['m365','modern-workplace']},
-  {id:'onedrive',name:'OneDrive',file:'icons/onedrive.svg',tags:['m365','modern-workplace']},
+  {id:'azure_202302',name:'Azure',file:'icons/azure_202302.svg',tags:['azure']},
+  {id:'msft-teams2026',name:'Teams',file:'icons/msft-teams2026.svg',tags:['modernwork']},
+  {id:'msft-excel_2026',name:'Excel',file:'icons/msft-excel_2026.svg',tags:['modernwork']},
+  {id:'powerplatform_202601',name:'Power Platform',file:'icons/powerplatform_202601.svg',tags:['businessapps']},
+  {id:'dynamics365_2026',name:'Dynamics 365',file:'icons/dynamics365_2026.svg',tags:['businessapps']},
+  {id:'fabric_202401',name:'Microsoft Fabric',file:'icons/fabric_202401.svg',tags:[]},
 ];
 
 async function loadManifest() {
@@ -1344,15 +1331,12 @@ async function loadManifest() {
     const data = await res.json();
     if (Array.isArray(data.icons) && data.icons.length >= 6) {
       allIcons = data.icons;
-      // Store tag unlock rules globally for later use
-      window._tagRules = Array.isArray(data.tagRules) ? data.tagRules : [];
       return;
     }
     throw new Error('invalid manifest');
   } catch (e) {
     console.warn('manifest.json load failed, using fallback:', e.message);
     allIcons = FALLBACK_ICONS;
-    window._tagRules = [];
   }
 }
 
@@ -1377,17 +1361,18 @@ function getLevelConfig(level) {
 
 // ─── Pool building ────────────────────────────────────────────────────────────
 function buildPool(tag, level) {
-  let filtered = tag === 'all' ? allIcons.slice() : allIcons.filter(ic => ic.tags.includes(tag));
+  // Base pool: matching tag, always excluding legacy icons
+  let filtered = tag === 'all'
+    ? allIcons.filter(ic => !ic.tags.includes('legacy'))
+    : allIcons.filter(ic => ic.tags.includes(tag) && !ic.tags.includes('legacy'));
 
-  // When legacy is on and a specific (non-all) tag is selected, also add legacy-tagged icons
-  if (state.includeLegacy && tag !== 'all') {
-    const tagIds = new Set(filtered.map(ic => ic.id));
-    const legacyExtra = allIcons.filter(ic => ic.tags.includes('legacy') && !tagIds.has(ic.id));
-    filtered = filtered.concat(legacyExtra);
-  }
-  // When legacy is off, exclude any legacy-tagged icons from the pool
-  if (!state.includeLegacy) {
-    filtered = filtered.filter(ic => !ic.tags.includes('legacy'));
+  // When legacy toggle is on, add legacy icons of the matching category
+  if (state.includeLegacy) {
+    const ids = new Set(filtered.map(ic => ic.id));
+    const legacyToAdd = tag === 'all'
+      ? allIcons.filter(ic => ic.tags.includes('legacy') && !ids.has(ic.id))
+      : allIcons.filter(ic => ic.tags.includes('legacy') && ic.tags.includes(tag) && !ids.has(ic.id));
+    filtered = filtered.concat(legacyToAdd);
   }
 
   if (filtered.length < 6) {
@@ -2354,34 +2339,40 @@ function setupBoardListeners() {
 }
 
 // ─── Tag unlock rules ─────────────────────────────────────────────────────────
-function isTagUnlocked(rule) {
-  if (!rule || rule.always) return true;
-  const games = parseInt(localStorage.getItem(LS_TOTALGAMES)   || '0');
-  const level = parseInt(localStorage.getItem(LS_HIGHESTLEVEL) || '1');
-  if (rule.minGames && games < rule.minGames) return false;
-  if (rule.minLevel && level < rule.minLevel) return false;
-  return true;
-}
+// Hardcoded unlock conditions per tag
+const TAG_UNLOCK_RULES = [
+  {
+    tag: 'businessapps',
+    tooltip: 'Unlock when beating level 5',
+    check: () => parseInt(localStorage.getItem(LS_HIGHESTLEVEL) || '1') >= 5
+  },
+  {
+    tag: 'azure',
+    tooltip: 'Unlock once achieved 20,000 points',
+    check: () => parseInt(localStorage.getItem(LS_HIGHSCORE) || '0') >= 20000
+  },
+  {
+    tag: 'modernwork',
+    tooltip: 'Unlock, once played 20 games',
+    check: () => parseInt(localStorage.getItem(LS_TOTALGAMES) || '0') >= 20
+  },
+];
 
 function applyTagUnlockRules() {
-  const rules = window._tagRules || [];
-  if (!rules.length) return;
   const container = document.getElementById('modeSelector');
-  for (const rule of rules) {
+  for (const rule of TAG_UNLOCK_RULES) {
     const btn = container.querySelector(`button[data-tag="${CSS.escape(rule.tag)}"]`);
     if (!btn) continue;
-    const unlocked = isTagUnlocked(rule);
+    const unlocked = rule.check();
     if (unlocked) {
       btn.classList.remove('tag-locked', 'has-tooltip');
       btn.removeAttribute('disabled');
-      btn.removeAttribute('title');
       btn.removeAttribute('data-tooltip');
     } else {
       btn.classList.add('tag-locked', 'has-tooltip');
       btn.setAttribute('disabled', '');
-      btn.setAttribute('data-tooltip', rule.tooltip || 'Locked');
-      btn.removeAttribute('title');
-      // If the locked tag was the active one, reset to 'all'
+      btn.setAttribute('data-tooltip', rule.tooltip);
+      // If this locked tag was active, reset to 'all'
       if (state.activeTag === rule.tag) {
         state.activeTag = 'all';
         localStorage.setItem(LS_ACTIVETAG, 'all');
