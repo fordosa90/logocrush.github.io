@@ -377,7 +377,7 @@
 
     /* Clippy panel — grid col 1 row 2; centers vertically against the tile board */
     #clippy-panel {
-      display: none;             /* hidden until 3000 logos are matched */
+      display: none;             /* hidden until 3500 logos are matched */
       align-items: center;
       justify-content: center;
       align-self: center;
@@ -1033,7 +1033,7 @@
     <div class="menu-col menu-col-swag">
       <h2 class="section-label">Choose your swag:</h2>
       <button id="btn-swag-clippy" class="selector-btn selector-locked has-tooltip" disabled
-              data-tooltip="Match 3000 logos to unlock">Clippy</button>
+              data-tooltip="Match 3500 logos to unlock">Clippy</button>
       <button class="selector-btn selector-locked has-tooltip" disabled
               data-tooltip="Good things come to those who are patient">Robo-raptor laser kittens</button>
       <button class="selector-btn selector-locked has-tooltip" disabled
@@ -1152,7 +1152,7 @@ const LS_TOTALGAMES  = 'logocrush_totalgames';
 const LS_TOTALLOGOS  = 'logocrush_totallogos';
 const LS_ACTIVETAG   = 'logocrush_activetag';
 const LS_INCLUDE_LEGACY = 'logocrush_includelegacy';
-const CLIPPY_UNLOCK_LOGOS = 3000;
+const CLIPPY_UNLOCK_LOGOS = 3500;
 const LEGACY_UNLOCK_LEVEL = 15;
 
 const PER_TILE_PTS             = 100;   // base score per matched tile
@@ -1434,6 +1434,21 @@ function buildPool(tag, level) {
         const right = (bestBucket + radius) % NUM_BUCKETS;
         pool = pool.concat(buckets[left], left !== right ? buckets[right] : []);
         radius++;
+      }
+      // If pool is still short (very small specialty-tag set) and this is a specific tag
+      // (not 'all'), silently pad with the closest-hue legacy icon(s) from the same tag.
+      // This guarantees 6 playable logos regardless of pool size or legacy unlock state.
+      if (pool.length < 6 && tag !== 'all') {
+        const clusterCentreHue = bestBucket * BUCKET_DEG + BUCKET_DEG / 2;
+        const existingIds = new Set(pool.map(ic => ic.id));
+        const legacyPad = allIcons
+          .filter(ic => ic.tags.includes('legacy') && ic.tags.includes(tag)
+                     && ic.hue !== undefined && !existingIds.has(ic.id))
+          .map(ic => { const d = Math.abs(ic.hue - clusterCentreHue); return { ic, dist: Math.min(d, 360 - d) }; })
+          .sort((a, b) => a.dist - b.dist)
+          .slice(0, 6 - pool.length)
+          .map(x => x.ic);
+        pool = pool.concat(legacyPad);
       }
       chosen = shuffle(pool).slice(0, 6);
     }
@@ -2264,7 +2279,7 @@ function updateClippyVisibility() {
     clippyBtn.classList.add('selector-locked');
     clippyBtn.setAttribute('disabled', '');
     clippyBtn.setAttribute('aria-pressed', 'false');
-    clippyBtn.setAttribute('data-tooltip', 'Match 3000 logos to unlock');
+    clippyBtn.setAttribute('data-tooltip', 'Match 3500 logos to unlock');
     clippyBtn.style.cursor = '';
     clippyBtn.style.pointerEvents = '';
   }
