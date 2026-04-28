@@ -2,7 +2,7 @@
 
 ![LogoCrush banner](assets/socialbanner.png)
 
-A Microsoft cloud logo match-3 puzzle game, inspired by Candy Crush. 56 product logos, no install, no dependencies.
+A Microsoft cloud logo match-3 puzzle game, inspired by Candy Crush. 154 product logos, no install, no dependencies.
 
 ## 🎮 Play Now
 
@@ -35,7 +35,8 @@ Your **best score** and **best level** are saved locally. Share your stats direc
 ```
 index.html        — complete game (single file, no build step, no dependencies)
 manifest.json     — icon registry with metadata and tags
-/icons/           — SVG logo files (one per Microsoft product)
+/icons/           — SVG logo files (one per Microsoft product or version)
+/assets/          — PNG icons (Copilot family) and static images (banner, Clippy)
 CONTRIBUTING.md   — how to add new icons
 NOTICE.md         — project and trademark notice
 ```
