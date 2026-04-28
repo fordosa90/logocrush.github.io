@@ -375,7 +375,8 @@
       "name": "Dynamics 365 Businesscentral (2019)",
       "file": "icons/dynamics365-businesscentral_2019.svg",
       "tags": [
-        "businessapps"
+        "businessapps",
+        "legacy"
       ]
     },
     {
@@ -533,7 +534,8 @@
       "name": "Dynamics 365 Marketing (202302)",
       "file": "icons/dynamics365-marketing_202302.svg",
       "tags": [
-        "businessapps"
+        "businessapps",
+        "legacy"
       ]
     },
     {
@@ -977,7 +979,7 @@
       "name": "Translator (202302)",
       "file": "icons/msft-translator_202302.svg",
       "tags": [
-        "modernwork"
+        "azure"
       ]
     },
     {
@@ -1049,7 +1051,8 @@
       "name": "Viva Sales (2023)",
       "file": "icons/msft-viva-sales_2023.svg",
       "tags": [
-        "modernwork"
+        "modernwork",
+        "legacy"
       ]
     },
     {
@@ -1115,7 +1118,8 @@
       "name": "Powerapps (202302)",
       "file": "icons/powerplatform-powerapps_202302.svg",
       "tags": [
-        "businessapps"
+        "businessapps",
+        "legacy"
       ]
     },
     {
@@ -1173,7 +1177,8 @@
       "name": "Powervirtualagents (202302)",
       "file": "icons/powerplatform-powervirtualagents_202302.svg",
       "tags": [
-        "businessapps"
+        "businessapps",
+        "legacy"
       ]
     },
     {
