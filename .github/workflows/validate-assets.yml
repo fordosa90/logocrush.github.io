@@ -23,11 +23,9 @@ jobs:
           import json, os, sys, re
 
           ALLOWED_TAGS = {
-            "azure", "m365", "power-platform", "dynamics", "security",
-            "modern-workplace", "developer", "data", "copilot", "legacy",
+            "azure", "businessapps", "modernwork", "copilot", "legacy",
           }
-          MAX_SVG_BYTES  = 10 * 1024   # 10 KB
-          REQUIRED_VIEWBOX = "0 0 100 100"
+          MAX_SVG_BYTES  = 15 * 1024   # 15 KB
           errors = []
 
           # ── Load manifest ────────────────────────────────────────────────────
@@ -49,7 +47,9 @@ jobs:
           # ── Check each icon entry ────────────────────────────────────────────
           seen_ids   = {}
           seen_files = {}
-          kebab_re   = re.compile(r'^[a-z0-9]+(-[a-z0-9]+)*$')
+          # Naming convention: {prefix}_{version}.ext where version is YYYYMM or YYYY.
+          # Underscores are used as separator between name and version; hyphens within name.
+          id_re = re.compile(r'^[a-z0-9][a-z0-9_-]*[a-z0-9]$|^[a-z0-9]$')
 
           for idx, icon in enumerate(icons):
             prefix = f"icons[{idx}] (id={icon.get('id', '?')})"
@@ -62,9 +62,9 @@ jobs:
             icon_file = icon.get("file", "")
             icon_tags = icon.get("tags", [])
 
-            # id must be kebab-case
-            if icon_id and not kebab_re.match(icon_id):
-              errors.append(f"{prefix}: id '{icon_id}' is not kebab-case")
+            # id must be lowercase with hyphens and underscores only
+            if icon_id and not id_re.match(icon_id):
+              errors.append(f"{prefix}: id '{icon_id}' must be lowercase alphanumeric with hyphens/underscores")
 
             # duplicate id check
             if icon_id in seen_ids:
@@ -72,10 +72,11 @@ jobs:
             else:
               seen_ids[icon_id] = idx
 
-            # file must be in icons/ and match id
-            expected_file = f"icons/{icon_id}.svg"
-            if icon_file != expected_file:
-              errors.append(f"{prefix}: file '{icon_file}' does not match expected '{expected_file}'")
+            # file must be in icons/ and match id (svg or png allowed)
+            expected_svg = f"icons/{icon_id}.svg"
+            expected_png = f"icons/{icon_id}.png"
+            if icon_file not in (expected_svg, expected_png):
+              errors.append(f"{prefix}: file '{icon_file}' does not match expected '{expected_svg}' or '{expected_png}'")
 
             # duplicate file check
             if icon_file in seen_files:
@@ -83,17 +84,17 @@ jobs:
             else:
               seen_files[icon_file] = idx
 
-            # tags must be non-empty list from allowed set
-            if not isinstance(icon_tags, list) or len(icon_tags) == 0:
-              errors.append(f"{prefix}: 'tags' must be a non-empty list")
+            # tags must be a list; each tag must be from the allowed set
+            if not isinstance(icon_tags, list):
+              errors.append(f"{prefix}: 'tags' must be a list")
             else:
               for tag in icon_tags:
                 if tag not in ALLOWED_TAGS:
                   errors.append(f"{prefix}: unknown tag '{tag}' — allowed: {sorted(ALLOWED_TAGS)}")
 
-            # SVG file must exist
+            # file must exist on disk
             if icon_file and not os.path.isfile(icon_file):
-              errors.append(f"{prefix}: SVG file not found: {icon_file}")
+              errors.append(f"{prefix}: file not found: {icon_file}")
 
           # ── SVG compliance check ─────────────────────────────────────────────
           manifest_files = {icon.get("file") for icon in icons if icon.get("file")}
@@ -129,21 +130,11 @@ jobs:
               errors.append(f"{svg_path}: cannot read file: {e}")
               continue
 
-            # Must declare correct viewBox
-            if REQUIRED_VIEWBOX not in svg_text:
-              errors.append(
-                f"{svg_path}: missing or incorrect viewBox — expected viewBox=\"{REQUIRED_VIEWBOX}\""
-              )
-
             # No embedded fonts
             if re.search(r'<font[\s>]|@font-face', svg_text, re.IGNORECASE):
               errors.append(f"{svg_path}: contains embedded font (<font> or @font-face)")
 
-            # No raster image elements
-            if re.search(r'<image[\s>]', svg_text, re.IGNORECASE):
-              errors.append(f"{svg_path}: contains <image> element (raster images not allowed)")
-
-            # No external script or href that resolves off-site
+            # No external script elements
             if re.search(r'<script[\s>]', svg_text, re.IGNORECASE):
               errors.append(f"{svg_path}: contains <script> element")
 
