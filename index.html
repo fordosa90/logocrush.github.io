@@ -1166,6 +1166,10 @@ const GOLDEN_TILE_CHANCE         = 0.03; // 3% chance a newly filled tile is gol
 
 // ─── State ───────────────────────────────────────────────────────────────────
 let allIcons = []; // loaded from manifest.json
+let iconMap  = new Map(); // id → icon; rebuilt after manifest loads for O(1) lookup
+
+// Cached once — avoids creating a new MediaQueryList on every swap/match
+const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 
 let state = {
   board: [],
@@ -1297,6 +1301,7 @@ function pauseGameTimer() {
 function stopGameTimer() {
   pauseGameTimer();
   stopSpecialShake();
+  clearHintHighlights();
 }
 
 /** Show/hide HUD elements that depend on the current game mode. */
@@ -1334,12 +1339,14 @@ async function loadManifest() {
     const data = await res.json();
     if (Array.isArray(data.icons) && data.icons.length >= 6) {
       allIcons = data.icons;
+      iconMap  = new Map(allIcons.map(ic => [ic.id, ic]));
       return;
     }
     throw new Error('invalid manifest');
   } catch (e) {
     console.warn('manifest.json load failed, using fallback:', e.message);
     allIcons = FALLBACK_ICONS;
+    iconMap  = new Map(allIcons.map(ic => [ic.id, ic]));
   }
 }
 
@@ -1772,7 +1779,7 @@ function fillNewTiles() {
 async function processMatches(matches) {
   const extraCount = expandMatchesForSpecials(matches);
 
-  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const prefersReduced = reducedMotionQuery.matches;
 
   // Scoring: each matched tile is worth PER_TILE_PTS, multiplied by (comboCount + 1).
   const specialBonus = extraCount * 200;
@@ -1994,7 +2001,7 @@ async function attemptSwap(r1, c1, r2, c2) {
   if (!((dr === 1 && dc === 0) || (dr === 0 && dc === 1))) return;
 
   state.isAnimating = true;
-  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const prefersReduced = reducedMotionQuery.matches;
 
   // Swap data first so findMatches can evaluate the new state
   [state.board[r1][c1], state.board[r2][c2]] = [state.board[r2][c2], state.board[r1][c1]];
@@ -2099,7 +2106,7 @@ function checkWinLose() {
 
 // ─── Render ───────────────────────────────────────────────────────────────────
 function iconById(id) {
-  return allIcons.find(ic => ic.id === id) || null;
+  return iconMap.get(id) || null;
 }
 
 function renderBoard() {
