@@ -10,14 +10,14 @@ A Microsoft cloud logo match-3 puzzle game, inspired by Candy Crush. 154 product
 
 ## How to Play
 
-1. Pick a **"Your Cloud"** filter — choose a Microsoft product category (Azure, M365, Copilot, …) or play with all logos
+1. Pick a **"Your Cloud"** filter — choose a Microsoft product category (Azure, Business Applications, Modern Workplace, …) or play with all logos
 2. **Swap** adjacent tiles by dragging (mobile) or clicking (desktop)
 3. **Match 3 or more** identical logos in a row or column to clear them
 4. **Combos** earn bonus score multipliers — the longer the chain, the higher the reward
-5. Hit the **score target** before moves run out to advance to the next level
+5. Hit the **score target** before either moves or time run out to advance to the next level
 6. **Special tiles** — see the table below for how to create them and what they do
 7. Use the **💡 Hint** button if you're stuck — it highlights a valid move
-8. From **level 10**, unlock **Clippy** as a side-panel hint assistant
+8. From **3500** logos matched, unlock **Clippy** as a side-panel hint assistant
 
 Your **best score** and **best level** are saved locally. Share your stats directly to LinkedIn from the start screen.
 
