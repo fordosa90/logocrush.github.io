@@ -2,25 +2,38 @@
 
 ![LogoCrush banner](assets/socialbanner.png)
 
-The ultimate Microsoft cloud product logo match-3 puzzle game, inspired by Candy Crush.
+A Microsoft cloud logo match-3 puzzle game, inspired by Candy Crush. 56 product logos, no install, no dependencies.
 
 ## 🎮 Play Now
 
-**[Play LogoCrush →](https://fordosa90.github.io/logocrush.github.io/)**
+**[Play LogoCrush →](https://logocrush.andrasfordos.com/)**
 
 ## How to Play
 
-1. Choose your **"Your Cloud"** filter — pick a Microsoft product category or play with all logos
+1. Pick a **"Your Cloud"** filter — choose a Microsoft product category (Azure, M365, Copilot, …) or play with all logos
 2. **Swap** adjacent tiles by dragging (mobile) or clicking (desktop)
 3. **Match 3 or more** identical logos in a row or column to clear them
-4. **Chain reactions** score bonus multipliers — the longer the combo, the higher the score
-5. Reach the **score target** before running out of moves to advance to the next level
-6. **Special tiles**: match 4 in a line to create a row-clear tile, match 5+ for a board bomb!
+4. **Combos** earn bonus score multipliers — the longer the chain, the higher the reward
+5. Hit the **score target** before moves run out to advance to the next level
+6. **Special tiles** — see the table below for how to create them and what they do
+7. Use the **💡 Hint** button if you're stuck — it highlights a valid move
+8. From **level 10**, unlock **Clippy** as a side-panel hint assistant
+
+Your **best score** and **best level** are saved locally. Share your stats directly to LinkedIn from the start screen.
+
+## ✨ Special Tiles
+
+| Tile | Appearance | How to create | Effect |
+|------|-----------|---------------|--------|
+| 🟠 **Golden** | Orange radial glow | Drops randomly (3 % chance) when new tiles fall in | Clears all 8 surrounding neighbours (3 × 3 minus itself) |
+| 🟥🟨 **Striped — row** | Horizontal red / yellow stripes | Match **4** in a horizontal line | Clears the entire **row** |
+| 🟨🟥 **Striped — column** | Vertical yellow / red stripes | Match **4** in a vertical line | Clears the entire **column** |
+| 💎 **Shiny** | Blue-white crystal glow | Match **5+** in an L, T, or + shape | Clears every copy of that logo from the whole board |
 
 ## 📦 Repository Structure
 
 ```
-index.html        — complete game (no build step, no dependencies)
+index.html        — complete game (single file, no build step, no dependencies)
 manifest.json     — icon registry with metadata and tags
 /icons/           — SVG logo files (one per Microsoft product)
 CONTRIBUTING.md   — how to add new icons
@@ -33,7 +46,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide on adding Microsoft pr
 
 ## 📊 Analytics
 
-This site uses [hits.sh](https://hits.sh/) for cookieless, privacy-friendly visit counting. The total visit count is displayed on the game's start screen. No personal data is collected or stored.
+This site uses [hits.sh](https://hits.sh/) for cookieless, privacy-friendly visit counting. No personal data is collected or stored.
 
 ## 📄 License
 

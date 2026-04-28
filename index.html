@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LogoCrush</title>
-  <meta name="description" content="Match Microsoft cloud product logos in this browser-based match-3 puzzle game. How far can you get?">
+  <meta name="description" content="The fan-made match-3 game for the Microsoft community. Match product logos, beat levels, and see how far you can get!">
   <!-- Open Graph / LinkedIn sharing tags -->
   <meta property="og:type"        content="website">
-  <meta property="og:url"         content="https://fordosa90.github.io/logocrush.github.io/">
+  <meta property="og:url"         content="https://logocrush.andrasfordos.com/">
   <meta property="og:title"       content="LogoCrush">
-  <meta property="og:description" content="Match Microsoft cloud product logos in this browser-based match-3 puzzle game. How far can you get?">
+  <meta property="og:description" content="The fan-made match-3 game for the Microsoft community. Match product logos, beat levels, and see how far you can get!">
   <meta property="og:site_name"   content="LogoCrush">
-  <meta property="og:image"       content="https://fordosa90.github.io/logocrush.github.io/assets/socialbanner.png">
+  <meta property="og:image"       content="https://logocrush.andrasfordos.com/assets/socialbanner.png">
   <meta property="og:author"      content="András Fördős">
   <link rel="icon" href="data:,">
   <style>
@@ -60,6 +60,9 @@
     }
     .btn-primary:hover { background: #005a9e; }
     .btn-primary:active { transform: scale(0.97); }
+    /* Play button: gold matching the jar's max-point colour; full-width, same height as mode selectors */
+    #btn-play { background: #ffd700; color: #000; width: 100%; padding: 1rem 2rem; }
+    #btn-play:hover { background: #e6c200; }
 
     /* Personal bests */
     .pb-display {
@@ -79,7 +82,7 @@
     /* Mode selector — "All" on its own row, then 3 per row */
     #modeSelector {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: 1fr;
       gap: 0.4rem;
       width: 100%;
     }
@@ -95,9 +98,6 @@
       text-align: center;
       width: 100%;
     }
-    #modeSelector button:first-child {
-      grid-column: 1 / -1; /* "All" spans full width */
-    }
     #modeSelector button[aria-pressed="true"] {
       background: var(--primary);
       color: var(--white);
@@ -105,9 +105,10 @@
     }
     /* Locked tag buttons — greyed out, not-allowed cursor */
     #modeSelector button.tag-locked {
-      opacity: 0.42;
+      background: #f5f5f5;
+      color: #b0b0b0;
+      border-color: #ddd;
       cursor: not-allowed;
-      filter: grayscale(60%);
     }
 
     /* Menu sections — three visual groups on the start screen */
@@ -119,7 +120,152 @@
       width: 100%;
     }
     /* Larger gap between sections than within them */
-    #screen-start { gap: 1.75rem; }
+    #screen-start { gap: 3.5rem; }
+
+    /* Middle section — 3 horizontal columns */
+    .menu-section-middle {
+      flex-direction: row;
+      align-items: flex-start;
+      gap: 0;
+    }
+    .menu-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .menu-col-ui   { width: 30%; padding-right: 1rem; border-right: 1px solid var(--border); }
+    .menu-col-tags { width: 40%; padding: 0 1rem;     border-right: 1px solid var(--border); }
+    .menu-col-swag { width: 30%; padding-left: 1rem; }
+
+    /* Selector pill buttons — same look as tag buttons */
+    .selector-btn {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 0.35rem 0.6rem;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      color: #444;
+      text-align: center;
+      width: 100%;
+    }
+    .selector-btn[aria-pressed="true"] {
+      background: var(--primary);
+      color: var(--white);
+      border-color: var(--primary);
+    }
+    .selector-btn.selector-locked {
+      background: #f5f5f5;
+      color: #b0b0b0;
+      border-color: #ddd;
+      cursor: not-allowed;
+      pointer-events: auto; /* keep pointer-events so tooltip still fires */
+    }
+
+    /* Tooltip system */
+    .has-tooltip {
+      position: relative;
+    }
+    .has-tooltip::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1a1a1a;
+      color: #fff;
+      border-radius: 6px;
+      padding: 0.35rem 0.65rem;
+      font-size: 0.74rem;
+      font-weight: 500;
+      line-height: 1.45;
+      white-space: normal;
+      max-width: 210px;
+      width: max-content;
+      pointer-events: none;
+      visibility: hidden;
+      z-index: 30;
+      text-align: center;
+      box-shadow: 0 3px 10px #0005, 0 1px 3px #0008;
+    }
+    .has-tooltip:hover::after { visibility: visible; }
+
+    /* Disclaimer below game description */
+    .disclaimer { font-size: 0.72rem; color: #888; font-style: italic; }
+
+    /* Short desktop screens (e.g. 1521×695 laptop) — keep 3-column layout but tighten spacing */
+    @media (max-height: 760px) and (min-width: 481px) {
+      #screen-start { gap: 1.2rem; }
+      .screen { padding: 0.5rem; gap: 0.5rem; }
+      .menu-section { gap: 0.35rem; }
+      h1 { font-size: 1.4rem; }
+      h2, .section-label { font-size: 0.82rem; }
+      p { font-size: 0.82rem; }
+      .pb-display { padding: 0.35rem 0.8rem; gap: 0.3rem 1rem; }
+      .pb-value { font-size: 0.95rem; }
+      .pb-label { font-size: 0.62rem; }
+      #btn-play { padding: 0.55rem 2rem; font-size: 0.95rem; }
+      .btn-primary { padding: 0.55rem 1.5rem; font-size: 0.95rem; }
+      .game-mode-btn { padding: 0.35rem 0.5rem; gap: 0.1rem; }
+      .game-mode-label { font-size: 0.82rem; }
+      .game-mode-sub { font-size: 0.62rem; }
+      .menu-col { gap: 0.3rem; }
+    }
+
+    /* Collapse columns on very narrow screens; condense section gaps for single-screen fit */
+    @media (max-width: 480px) {
+      /* Hide UI and Swag columns; only cloud picker remains */
+      .menu-col-ui, .menu-col-swag { display: none; }
+      .menu-col-tags {
+        width: 100%;
+        padding-left: 0;
+        padding-right: 0;
+        border-right: none;
+      }
+      /* Condense the start screen to fit a single mobile viewport */
+      #screen-start { gap: 1.25rem; }
+      .menu-section { gap: 0.4rem; }
+      h1 { font-size: 1.5rem; }
+      .pb-display { gap: 0.3rem 0.75rem; }
+    }
+
+    /* Game mode selector */
+    #gameModeSelector {
+      display: flex;
+      flex-direction: row;
+      gap: 0.6rem;
+      width: 100%;
+    }
+    .game-mode-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2rem;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.65rem 0.5rem;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      color: #444;
+    }
+    .game-mode-btn[aria-pressed="true"] {
+      background: var(--primary);
+      color: var(--white);
+      border-color: var(--primary);
+    }
+    .game-mode-label {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    .game-mode-sub {
+      font-size: 0.68rem;
+      opacity: 0.7;
+    }
+    .game-mode-btn[aria-pressed="true"] .game-mode-sub { opacity: 0.88; }
 
     /* Visit counter — inline: label + badge on same row */
     .visit-counter-wrap {
@@ -174,10 +320,33 @@
       max-width: 100%;
       padding: 0;
       gap: 0;
-      align-items: stretch;
+      align-items: center;
     }
+
+    /* Game area: CSS grid — row 1: [empty] | header; row 2: clippy | boards-row */
+    #game-area {
+      display: grid;
+      grid-template-columns: auto auto;
+      grid-template-rows: auto auto;
+      gap: 1rem;
+      padding: 1rem;
+      justify-content: center;
+    }
+
+    /* Header spans only the boards column (col 2) */
+    #game-area > header { grid-column: 2; grid-row: 1; }
+
+    /* Boards row sits in col 2, row 2 */
+    #boards-row {
+      grid-column: 2;
+      grid-row: 2;
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
     header {
-      width: 100%;
       background: var(--white);
       border-bottom: 1px solid var(--border);
       padding: 0.4rem 0.75rem;
@@ -206,22 +375,15 @@
     }
     .header-visits-wrap .hits-badge { height: 16px; }
 
-    /* Game area: board column + stats panel */
-    #game-area {
-      display: flex;
-      flex-direction: row;
-      align-items: flex-start;
-      justify-content: center;
-      gap: 1rem;
-      padding: 1rem;
-    }
-
-    /* Clippy panel — left of the board; hidden on mobile */
+    /* Clippy panel — grid col 1 row 2; centers vertically against the tile board */
     #clippy-panel {
-      display: none;             /* hidden until level 20 is unlocked */
-      align-items: center;       /* vertical centering within board height */
+      display: none;             /* hidden until 3500 logos are matched */
+      align-items: center;
       justify-content: center;
-      height: var(--board-full-h);
+      align-self: center;
+      justify-self: center;
+      grid-column: 1;
+      grid-row: 2;
       width: 110px;
       flex-shrink: 0;
     }
@@ -481,8 +643,9 @@
     #progress-level-num { color: var(--primary); }
 
     @media (max-width: 640px) {
-      #game-area { flex-direction: column; align-items: center; padding: 0.5rem; gap: 0.5rem; }
-      #clippy-panel { display: none; }
+      #game-area { display: flex; flex-direction: column; align-items: center; padding: 0.5rem; gap: 0.5rem; }
+      #clippy-panel { display: none !important; }
+      #boards-row { flex-direction: column; align-items: center; width: 100%; }
       #stats-panel {
         width: 100%;
         height: auto;
@@ -806,7 +969,8 @@
   <!-- Section 1: title, subtitle, stats, LinkedIn share -->
   <div class="menu-section">
     <h1>LogoCrush 🎮</h1>
-    <p>The Microsoft cloud logo match-3 game, built by <a href="https://www.linkedin.com/in/andrasfordos" target="_blank" rel="noopener noreferrer" style="color:var(--primary);font-weight:600;">András Fördős</a></p>
+    <p>The fan-made match-3 game for the Microsoft community, built by AI under peer-pressure from <a href="https://www.linkedin.com/in/andrasfordos" target="_blank" rel="noopener noreferrer" style="color:var(--primary);font-weight:600;">András Fördős</a></p>
+    <p class="disclaimer">All logos are the property of Microsoft Corporation.</p>
 
     <div class="pb-share-row">
       <div class="pb-display">
@@ -824,7 +988,7 @@
         </div>
         <div class="pb-item">
           <span class="pb-value" id="pb-logos">0</span>
-          <span class="pb-label">Logos Cleared</span>
+          <span class="pb-label">Logos Matched</span>
         </div>
       </div>
       <button id="btn-linkedin-share" class="btn-linkedin-share">
@@ -836,70 +1000,120 @@
     </div>
   </div>
 
-  <!-- Section 2: cloud picker -->
+  <!-- Section 2: UI selector | cloud picker | swag selector -->
+  <div class="menu-section menu-section-middle">
+
+    <!-- Left 30%: UI theme selector -->
+    <div class="menu-col menu-col-ui">
+      <h2 class="section-label">Choose your UI:</h2>
+      <button class="selector-btn" aria-pressed="true">Default</button>
+      <button class="selector-btn selector-locked has-tooltip" disabled
+              data-tooltip="This is a production-ready preview, will arrive soon">Retro</button>
+      <button class="selector-btn selector-locked has-tooltip" disabled
+              data-tooltip="I hear you, will think about it">AI Magic</button>
+    </div>
+
+    <!-- Centre 40%: cloud / tag picker -->
+    <div class="menu-col menu-col-tags">
+      <h2 class="section-label">Choose your cloud:</h2>
+      <div id="modeSelector" role="group" aria-label="Cloud filter">
+        <button data-tag="all" aria-pressed="true">All</button>
+        <button data-tag="businessapps" aria-pressed="false" class="tag-locked has-tooltip" disabled
+                data-tooltip="Unlock when beating level 5">Business Applications</button>
+        <button data-tag="azure" aria-pressed="false" class="tag-locked has-tooltip" disabled
+                data-tooltip="Unlock once achieved 20,000 points">Azure</button>
+        <button data-tag="modernwork" aria-pressed="false" class="tag-locked has-tooltip" disabled
+                data-tooltip="Unlock, once played 20 games">Modern Work</button>
+        <button data-tag="legacy" class="legacy-toggle tag-locked has-tooltip" aria-pressed="false" disabled
+                data-tooltip="Unlock by beating level 15">+ Legacy logos</button>
+      </div>
+    </div>
+
+    <!-- Right 30%: swag selector -->
+    <div class="menu-col menu-col-swag">
+      <h2 class="section-label">Choose your swag:</h2>
+      <button id="btn-swag-clippy" class="selector-btn selector-locked has-tooltip" disabled
+              data-tooltip="Match 3500 logos to unlock">Clippy</button>
+      <button class="selector-btn selector-locked has-tooltip" disabled
+              data-tooltip="Good things come to those who are patient">Robo-raptor laser kittens</button>
+      <button class="selector-btn selector-locked has-tooltip" disabled
+              data-tooltip="Let's double click on that in fullness of time">Secret sauce</button>
+    </div>
+
+  </div>
+
+  <!-- Section 3: game mode selector -->
   <div class="menu-section">
-    <h2 class="section-label">Choose your cloud:</h2>
-    <div id="modeSelector" role="group" aria-label="Cloud filter">
-      <button data-tag="all" aria-pressed="true">All</button>
-      <button data-tag="azure" aria-pressed="false">Azure</button>
-      <button data-tag="m365" aria-pressed="false">M365</button>
-      <button data-tag="power-platform" aria-pressed="false">Power Platform</button>
-      <button data-tag="dynamics" aria-pressed="false">Dynamics</button>
-      <button data-tag="security" aria-pressed="false">Security</button>
-      <button data-tag="modern-workplace" aria-pressed="false">Modern Workplace</button>
+    <h2 class="section-label">Choose your mode:</h2>
+    <div id="gameModeSelector" role="group" aria-label="Game mode">
+      <button class="game-mode-btn" data-mode="classic" aria-pressed="true">
+        <span class="game-mode-label">Classic</span>
+        <span class="game-mode-sub">Prove your skills</span>
+      </button>
+      <button class="game-mode-btn" data-mode="timed" aria-pressed="false">
+        <span class="game-mode-label">Timed</span>
+        <span class="game-mode-sub">Beat the countdown</span>
+      </button>
+      <button class="game-mode-btn" data-mode="steps" aria-pressed="false">
+        <span class="game-mode-label">Steps</span>
+        <span class="game-mode-sub">Make your swaps count</span>
+      </button>
     </div>
   </div>
 
-  <!-- Section 3: play button and visitor counter -->
+  <!-- Section 4: play button and visitor counter -->
   <div class="menu-section">
     <button id="btn-play" class="btn-primary">Play!</button>
     <div class="visit-counter-wrap">
       <span class="visit-counter-label">All time statistics:</span>
-      <img src="https://hits.sh/fordosa90.github.io/logocrush.github.io.svg?label=visitors&color=0078D4&style=flat-square" alt="Visit counter" class="hits-badge" style="height:28px;">
+      <img src="https://hits.sh/logocrush.andrasfordos.com.svg?label=visitors&color=0078D4&style=flat-square" alt="Visit counter" class="hits-badge" style="height:28px;">
     </div>
-    <p style="font-weight:normal;font-size:0.82rem;">Starting from level 20, unlock clippy and many more swags!</p>
   </div>
 </div>
 <div id="screen-playing" class="screen hidden">
-  <header>
-    <button id="btn-menu" class="btn-menu">⬅ Menu</button>
-    <div class="header-visits-wrap">
-      <span class="header-visits-label">All time statistics:</span>
-      <img src="https://hits.sh/fordosa90.github.io/logocrush.github.io.svg?label=visitors&color=0078D4&style=flat-square" alt="Visit counter" class="hits-badge" style="height:16px;">
-    </div>
-    <button id="btn-hint" class="btn-hint">💡 Hint</button>
-  </header>
   <div id="game-area">
-    <!-- Clippy panel: hidden on mobile via CSS -->
+    <!-- Header: spans only the boards column (col 2) -->
+    <header>
+      <button id="btn-menu" class="btn-menu">⬅ Menu</button>
+      <div class="header-visits-wrap">
+        <span class="header-visits-label">All time statistics:</span>
+        <img src="https://hits.sh/logocrush.andrasfordos.com.svg?label=visitors&color=0078D4&style=flat-square" alt="Visit counter" class="hits-badge" style="height:16px;">
+      </div>
+      <button id="btn-hint" class="btn-hint">💡 Hint</button>
+    </header>
+    <!-- Clippy panel: col 1 row 2, centered vs tile board; hidden on mobile -->
     <div id="clippy-panel">
       <div id="clippy-wrap">
         <img id="clippy-img" src="assets/clippy.png" alt="Clippy the assistant">
         <button id="btn-clippy-hint" class="btn-hint">💡 Need a hint?</button>
       </div>
     </div>
-    <div id="board-column">
-      <div id="board-area">
-        <div id="board" role="grid" aria-label="Game board"></div>
-      </div>
-    </div>
-    <div id="stats-panel">
-      <div id="hud-moves-wrap">
-        <div id="moves-display">30</div>
-        <span class="hud-moves-label">moves left</span>
-      </div>
-      <div id="hud-timer-wrap">
-        <div id="timer-display">5:00</div>
-        <!-- Mobile: horizontal score bar replacing timer background -->
-        <div id="mobile-score-bar"><div id="mobile-score-bar-fill"></div></div>
-      </div>
-      <div id="jar-region">
-        <div id="progress-jar">
-          <div id="progress-jar-fill"></div>
-          <div id="jar-target-score"  class="jar-label jar-label-target"></div>
+    <!-- Boards row: col 2 row 2 -->
+    <div id="boards-row">
+      <div id="board-column">
+        <div id="board-area">
+          <div id="board" role="grid" aria-label="Game board"></div>
         </div>
-        <div id="jar-current-score" class="jar-label jar-label-current"></div>
       </div>
-      <div id="level-label-paper">LEVEL <span id="progress-level-num">1</span><span id="timer-display-mobile"></span></div>
+        <div id="stats-panel">
+          <div id="hud-moves-wrap">
+            <div id="moves-display">30</div>
+            <span class="hud-moves-label">moves left</span>
+          </div>
+          <div id="hud-timer-wrap">
+            <div id="timer-display">5:00</div>
+            <!-- Mobile: horizontal score bar replacing timer background -->
+            <div id="mobile-score-bar"><div id="mobile-score-bar-fill"></div></div>
+          </div>
+          <div id="jar-region">
+            <div id="progress-jar">
+              <div id="progress-jar-fill"></div>
+              <div id="jar-target-score"  class="jar-label jar-label-target"></div>
+            </div>
+            <div id="jar-current-score" class="jar-label jar-label-current"></div>
+          </div>
+          <div id="level-label-paper">LEVEL <span id="progress-level-num">1</span><span id="timer-display-mobile"></span></div>
+        </div>
     </div>
   </div>
 </div>
@@ -937,7 +1151,9 @@ const LS_HIGHESTLEVEL = 'logocrush_highestlevel';
 const LS_TOTALGAMES  = 'logocrush_totalgames';
 const LS_TOTALLOGOS  = 'logocrush_totallogos';
 const LS_ACTIVETAG   = 'logocrush_activetag';
-const CLIPPY_UNLOCK_LEVEL = 20;
+const LS_INCLUDE_LEGACY = 'logocrush_includelegacy';
+const CLIPPY_UNLOCK_LOGOS = 3500;
+const LEGACY_UNLOCK_LEVEL = 15;
 
 const PER_TILE_PTS             = 100;   // base score per matched tile
 const INITIAL_TIME_SECONDS     = 300;   // 5 minutes per level
@@ -950,6 +1166,10 @@ const GOLDEN_TILE_CHANCE         = 0.03; // 3% chance a newly filled tile is gol
 
 // ─── State ───────────────────────────────────────────────────────────────────
 let allIcons = []; // loaded from manifest.json
+let iconMap  = new Map(); // id → icon; rebuilt after manifest loads for O(1) lookup
+
+// Cached once — avoids creating a new MediaQueryList on every swap/match
+const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 
 let state = {
   board: [],
@@ -960,14 +1180,21 @@ let state = {
   selectedCell: null,
   activePool: [],
   activeTag: 'all',
+  includeLegacy: false,
   isAnimating: false,
   comboCount: 0,
   totalClearedThisLevel: 0,
+  prevLevelPool: new Set(), // IDs of the pool used in the previous level (for freshness bias)
+  isCopilotLevel: false,   // true when the current bonus Copilot level is active
+  nextLevelAfterCopilot: null, // level to advance to after beating a Copilot level
 };
 
 let gameTimerInterval = null;
 let specialShakeInterval = null;
 let timeRemaining = 240;
+
+// Active game mode: 'classic' | 'timed' | 'steps'
+let gameMode = 'classic';
 
 // Hint highlight state — cleared on any player move
 let hintTimers = [];
@@ -1032,12 +1259,61 @@ function hideModal() {
 }
 
 // ─── Timer helpers ────────────────────────────────────────────────────────────
-function stopGameTimer() {
+function startGameTimer() {
+  gameTimerInterval = setInterval(() => {
+    // In Steps mode the clock is frozen — don't decrement time.
+    if (gameMode !== 'steps') {
+      timeRemaining--;
+
+      if (timeRemaining <= 0) {
+        stopGameTimer();
+        state.isAnimating = true;
+        showModal(
+          "⏱ Time's Up!",
+          "You ran out of time!",
+          [
+            { label: 'Restart Level', className: 'btn-primary', action: () => { state.isAnimating = false; initLevel(state.level); showScreen('screen-playing'); } },
+            { label: 'Back to Menu', className: 'btn-secondary', action: () => { state.isAnimating = false; showScreen('screen-start'); loadPersonalBests(); } },
+          ]
+        );
+        return;
+      }
+    }
+
+    // Score drain from level 8 — applies in all modes
+    const drain = getScoreDrain(state.level);
+    if (drain > 0 && !state.isAnimating) {
+      state.score = Math.max(0, state.score - drain);
+    }
+
+    updateHUD();
+  }, 1000);
+}
+
+/** Pause only the countdown — does not stop the special-tile shake animation. */
+function pauseGameTimer() {
   if (gameTimerInterval) {
     clearInterval(gameTimerInterval);
     gameTimerInterval = null;
   }
+}
+
+function stopGameTimer() {
+  pauseGameTimer();
   stopSpecialShake();
+  clearHintHighlights();
+}
+
+/** Show/hide HUD elements that depend on the current game mode. */
+function applyGameModeHUD() {
+  const movesWrap = document.getElementById('hud-moves-wrap');
+  const timerWrap = document.getElementById('hud-timer-wrap');
+  const mobileTimer = document.getElementById('timer-display-mobile');
+  // Timed mode: swaps are unlimited, so hide the moves counter entirely.
+  if (movesWrap) movesWrap.style.display = (gameMode === 'timed') ? 'none' : '';
+  // Steps mode: clock is frozen and irrelevant, hide it to avoid confusion.
+  if (timerWrap) timerWrap.style.display = (gameMode === 'steps') ? 'none' : '';
+  if (mobileTimer) mobileTimer.style.display = (gameMode === 'steps') ? 'none' : '';
 }
 
 function formatTime(s) {
@@ -1048,14 +1324,12 @@ function formatTime(s) {
 
 // ─── Manifest loading ─────────────────────────────────────────────────────────
 const FALLBACK_ICONS = [
-  {id:'azure',name:'Azure',file:'icons/azure.svg',tags:['azure']},
-  {id:'teams',name:'Teams',file:'icons/teams.svg',tags:['m365','modern-workplace']},
-  {id:'github',name:'GitHub',file:'icons/github.svg',tags:['developer']},
-  {id:'word',name:'Word',file:'icons/word.svg',tags:['m365']},
-  {id:'excel',name:'Excel',file:'icons/excel.svg',tags:['m365','data']},
-  {id:'power-bi',name:'Power BI',file:'icons/power-bi.svg',tags:['power-platform','data','m365']},
-  {id:'sharepoint',name:'SharePoint',file:'icons/sharepoint.svg',tags:['m365','modern-workplace']},
-  {id:'onedrive',name:'OneDrive',file:'icons/onedrive.svg',tags:['m365','modern-workplace']},
+  {id:'azure_202302',name:'Azure',file:'icons/azure_202302.svg',tags:['azure']},
+  {id:'msft-teams2026',name:'Teams',file:'icons/msft-teams2026.svg',tags:['modernwork']},
+  {id:'msft-excel_2026',name:'Excel',file:'icons/msft-excel_2026.svg',tags:['modernwork']},
+  {id:'powerplatform_202601',name:'Power Platform',file:'icons/powerplatform_202601.svg',tags:['businessapps']},
+  {id:'dynamics365_2026',name:'Dynamics 365',file:'icons/dynamics365_2026.svg',tags:['businessapps']},
+  {id:'fabric_202401',name:'Microsoft Fabric',file:'icons/fabric_202401.svg',tags:[]},
 ];
 
 async function loadManifest() {
@@ -1065,35 +1339,85 @@ async function loadManifest() {
     const data = await res.json();
     if (Array.isArray(data.icons) && data.icons.length >= 6) {
       allIcons = data.icons;
-      // Store tag unlock rules globally for later use
-      window._tagRules = Array.isArray(data.tagRules) ? data.tagRules : [];
+      iconMap  = new Map(allIcons.map(ic => [ic.id, ic]));
       return;
     }
     throw new Error('invalid manifest');
   } catch (e) {
     console.warn('manifest.json load failed, using fallback:', e.message);
     allIcons = FALLBACK_ICONS;
-    window._tagRules = [];
+    iconMap  = new Map(allIcons.map(ic => [ic.id, ic]));
   }
 }
 
 // ─── Level config ─────────────────────────────────────────────────────────────
 function getLevelConfig(level) {
-  return {
-    // Much higher targets: level 1 needs ~17 good matches, grows by 2500 each level
-    target: 5000 + (level - 1) * 2500,
-    // More moves per level; decreases slowly
-    moves: Math.max(20, 30 - Math.floor((level - 1) / 2)),
-  };
+  const target = 5000 + (level - 1) * 2500;
+  // Levels 1-8: fixed decreasing scale (player is learning the ropes).
+  // Levels 9+: scale moves with target, assuming ~700 pts/swap — achievable with a mix
+  // of normal matches and occasional special-tile combos, without requiring perfection.
+  const baseMoves = level < 9
+    ? Math.max(20, 30 - Math.floor((level - 1) / 2))
+    : Math.ceil(target / 700);
+
+  // In Steps mode, reduce available moves after level 11 to ramp up challenge.
+  let moves = baseMoves;
+  if (gameMode === 'steps' && level > 11) {
+    moves = Math.max(8, baseMoves - (level - 11) * 3);
+  }
+
+  return { target, moves };
 }
 
 // ─── Pool building ────────────────────────────────────────────────────────────
 function buildPool(tag, level) {
-  let filtered = tag === 'all' ? allIcons.slice() : allIcons.filter(ic => ic.tags.includes(tag));
+  // Base pool: matching tag, always excluding legacy and copilot icons
+  let filtered = tag === 'all'
+    ? allIcons.filter(ic => !ic.tags.includes('legacy') && !ic.tags.includes('copilot'))
+    : allIcons.filter(ic => ic.tags.includes(tag) && !ic.tags.includes('legacy') && !ic.tags.includes('copilot'));
+
+  // When legacy toggle is on, add legacy icons of the matching category
+  if (state.includeLegacy) {
+    const ids = new Set(filtered.map(ic => ic.id));
+    const legacyToAdd = tag === 'all'
+      ? allIcons.filter(ic => ic.tags.includes('legacy') && !ids.has(ic.id))
+      : allIcons.filter(ic => ic.tags.includes('legacy') && ic.tags.includes(tag) && !ids.has(ic.id));
+    filtered = filtered.concat(legacyToAdd);
+  }
+
   if (filtered.length < 6) {
     const ids = new Set(filtered.map(ic => ic.id));
     const extra = shuffle(allIcons.filter(ic => !ids.has(ic.id)));
     filtered = filtered.concat(extra);
+  }
+
+  // ─── Helpers ──────────────────────────────────────────────────────────────────
+  // freshFirst: for levels 1-4, re-orders arr so logos NOT seen in the previous
+  // level come first (each group internally shuffled), giving a higher chance of
+  // encountering new logos each level.  Both groups are shuffled independently so
+  // the ordering within each group stays random.
+  function freshFirst(arr) {
+    const fresh = shuffle(arr.filter(ic => !state.prevLevelPool.has(ic.id)));
+    const seen  = shuffle(arr.filter(ic =>  state.prevLevelPool.has(ic.id)));
+    return fresh.concat(seen);
+  }
+
+  // enforcePriorityQuota: when playing in 'all' mode, guarantees ≥60% (at least
+  // 4 of 6) of the chosen logos are from businessapps or modernwork.  Swaps out
+  // the minimum number of non-priority logos for priority ones drawn from the
+  // already-built filtered pool so no extra pool expansion is needed.
+  function enforcePriorityQuota(chosen6) {
+    if (tag !== 'all') return chosen6;
+    const isPriority = ic => ic.tags.includes('businessapps') || ic.tags.includes('modernwork');
+    const need = Math.max(0, 4 - chosen6.filter(isPriority).length);
+    if (need === 0) return chosen6;
+    const usedIds = new Set(chosen6.map(ic => ic.id));
+    const extras = shuffle(filtered.filter(ic => isPriority(ic) && !usedIds.has(ic.id)));
+    const add = extras.slice(0, need);
+    if (add.length === 0) return chosen6; // no priority extras available, keep as-is
+    const nonPriority = shuffle(chosen6.filter(ic => !isPriority(ic)));
+    const dropIds = new Set(nonPriority.slice(0, add.length).map(ic => ic.id));
+    return shuffle([...chosen6.filter(ic => !dropIds.has(ic.id)), ...add]);
   }
 
   // Hue-based diversity selection
@@ -1110,29 +1434,71 @@ function buildPool(tag, level) {
         chosen.push(sorted[Math.floor(i * step)]);
       }
     } else if (level <= 4) {
-      // Moderate: sample randomly
-      chosen = shuffle(sorted).slice(0, 6);
+      // Moderate: freshness-biased selection — prefer logos not seen in the
+      // previous level, still drawn from the hue-sorted candidate list.
+      chosen = freshFirst(sorted).slice(0, 6);
     } else {
-      // Similar hues: pick a random center hue, then progressively narrow the pool
-      // as level rises so icons become ever more confusingly similar.
-      // Pool shrinks from 14 candidates (level 5, wide band) down to 6 (level 11+, tightest band).
-      // poolSize = max(MIN_POOL, MAX_POOL - floor((level - 5) * SCALE))
-      // Level 5→14, 6→13, 7→11, 8→10, 9→8, 10→7, 11+→6
-      const MIN_POOL = 6;
-      const MAX_POOL = 14;
-      const POOL_SCALE = 1.5;
-      const centerHue = Math.random() * 360;
-      const withDist = sorted.map(ic => {
-        const d = Math.abs(ic.hue - centerHue);
-        return { ic, dist: Math.min(d, 360 - d) };
-      });
-      withDist.sort((a, b) => a.dist - b.dist);
-      const poolSize = Math.max(MIN_POOL, MAX_POOL - Math.floor((level - 5) * POOL_SCALE));
-      chosen = shuffle(withDist.slice(0, poolSize)).slice(0, 6).map(x => x.ic);
+      // Levels 5+: densest-cluster approach.
+      // Bucket the filtered logos into 30° hue slices (12 buckets), find the most
+      // populous bucket, then expand outward to neighbouring buckets (circularly)
+      // until the candidate pool is large enough to pick 6 from.
+      //
+      // The key difference per level is the MAX RADIUS allowed before we stop
+      // expanding — smaller radius = tighter colour spread = harder to distinguish.
+      // Level 5 → max 5 buckets radius (±150°, fairly wide)
+      // Level 6 → max 4 (±120°)
+      // Level 7 → max 3 (±90°)
+      // Level 8+ → no cap — expand only as far as strictly needed to reach 6
+      //             (always picks the tightest possible cluster in the pool)
+      const BUCKET_DEG = 30;
+      const NUM_BUCKETS = Math.ceil(360 / BUCKET_DEG); // 12
+      const buckets = Array.from({ length: NUM_BUCKETS }, () => []);
+      for (const ic of withHue) {
+        buckets[Math.floor(ic.hue / BUCKET_DEG) % NUM_BUCKETS].push(ic);
+      }
+      // Find the most populous bucket as the colour anchor.
+      let bestBucket = 0;
+      for (let i = 1; i < NUM_BUCKETS; i++) {
+        if (buckets[i].length > buckets[bestBucket].length) bestBucket = i;
+      }
+      // Compute per-level expansion cap.
+      // For level 8+ maxRadius stays at NUM_BUCKETS/2 (expand as needed, tightest cluster).
+      const maxRadius = level <= 5 ? 5
+                      : level <= 6 ? 4
+                      : level <= 7 ? 3
+                      : Math.floor(NUM_BUCKETS / 2);
+      let pool = [...buckets[bestBucket]];
+      let radius = 1;
+      while (pool.length < 6 && radius <= maxRadius) {
+        const left = (bestBucket - radius + NUM_BUCKETS) % NUM_BUCKETS;
+        const right = (bestBucket + radius) % NUM_BUCKETS;
+        pool = pool.concat(buckets[left], left !== right ? buckets[right] : []);
+        radius++;
+      }
+      // If pool is still short (very small specialty-tag set) and this is a specific tag
+      // (not 'all'), silently pad with the closest-hue legacy icon(s) from the same tag.
+      // This guarantees 6 playable logos regardless of pool size or legacy unlock state.
+      if (pool.length < 6 && tag !== 'all') {
+        const clusterCentreHue = bestBucket * BUCKET_DEG + BUCKET_DEG / 2;
+        const existingIds = new Set(pool.map(ic => ic.id));
+        const legacyPad = allIcons
+          .filter(ic => ic.tags.includes('legacy') && ic.tags.includes(tag)
+                     && ic.hue !== undefined && !existingIds.has(ic.id))
+          .map(ic => { const d = Math.abs(ic.hue - clusterCentreHue); return { ic, dist: Math.min(d, 360 - d) }; })
+          .sort((a, b) => a.dist - b.dist)
+          .slice(0, 6 - pool.length)
+          .map(x => x.ic);
+        pool = pool.concat(legacyPad);
+      }
+      chosen = shuffle(pool).slice(0, 6);
     }
   } else {
-    chosen = shuffle(filtered).slice(0, 6);
+    // No hue data yet: freshness-biased random for levels 1-4, plain shuffle for 5+.
+    chosen = (level && level <= 4) ? freshFirst(filtered).slice(0, 6) : shuffle(filtered).slice(0, 6);
   }
+
+  // For 'all' tag: ensure ≥60% of the chosen logos are businessapps or modernwork.
+  chosen = enforcePriorityQuota(chosen);
 
   return chosen.slice(0, 6);
 }
@@ -1199,6 +1565,9 @@ function resolveInitialMatches() {
 // ─── Level init ───────────────────────────────────────────────────────────────
 function initLevel(level) {
   const cfg = getLevelConfig(level);
+  // Capture the current pool as the "previous level" reference for freshness bias.
+  // Reset to an empty set when starting a new game (level 1) so all logos are fresh.
+  state.prevLevelPool = level === 1 ? new Set() : new Set(state.activePool.map(ic => ic.id));
   state.level = level;
   state.score = 0;
   state.movesLeft = cfg.moves;
@@ -1215,35 +1584,45 @@ function initLevel(level) {
   initBoard();
   renderBoard();
   updateHUD();
+  applyGameModeHUD();
   startSpecialShake();
   updateClippyVisibility();
 
-  gameTimerInterval = setInterval(() => {
-    timeRemaining--;
-
-    // Score drain from level 8 — score slowly decreases over time
-    const drain = getScoreDrain(state.level);
-    if (drain > 0 && !state.isAnimating) {
-      state.score = Math.max(0, state.score - drain);
-    }
-
-    updateHUD();
-    if (timeRemaining <= 0) {
-      stopGameTimer();
-      state.isAnimating = true;
-      showModal(
-        "⏱ Time's Up!",
-        "You ran out of time!",
-        [
-          { label: 'Restart Level', className: 'btn-primary', action: () => { state.isAnimating = false; initLevel(state.level); showScreen('screen-playing'); } },
-          { label: 'Back to Menu', className: 'btn-secondary', action: () => { state.isAnimating = false; showScreen('screen-start'); loadPersonalBests(); } },
-        ]
-      );
-    }
-  }, 1000);
+  startGameTimer();
 }
 
-// ─── Match detection ──────────────────────────────────────────────────────────
+// ─── Copilot bonus level init ─────────────────────────────────────────────────
+// Called instead of initLevel when a Copilot bonus level is due.
+// Uses the cfg of the just-beaten level (returnTo - 1) so difficulty is identical.
+// The pool is fixed to the 6 copilot-tagged logos — no hue/category selection.
+function initCopilotLevel(returnTo) {
+  const cfg = getLevelConfig(returnTo - 1);
+  state.prevLevelPool = new Set(state.activePool.map(ic => ic.id));
+  state.isCopilotLevel = true;
+  state.nextLevelAfterCopilot = returnTo;
+  state.level = returnTo - 1; // keep numeric for score-drain & other level-based logic
+  state.score = 0;
+  state.movesLeft = cfg.moves;
+  state.scoreTarget = cfg.target;
+  state.selectedCell = null;
+  state.isAnimating = false;
+  state.comboCount = 0;
+  state.totalClearedThisLevel = 0;
+  // Fixed pool: exactly the 6 copilot-tagged logos (no randomiser)
+  state.activePool = allIcons.filter(ic => ic.tags.includes('copilot'));
+
+  stopGameTimer();
+  timeRemaining = INITIAL_TIME_SECONDS;
+
+  initBoard();
+  renderBoard();
+  updateHUD();
+  applyGameModeHUD();
+  startSpecialShake();
+  updateClippyVisibility();
+
+  startGameTimer();
+}
 // Returns Map<"r,c", cellInfo>.  swapEndR/C: destination tile of the player's swap
 // (used to place the created special at the correct position).  Pass -1,-1 for cascades.
 function findMatches(swapEndR = -1, swapEndC = -1) {
@@ -1400,7 +1779,7 @@ function fillNewTiles() {
 async function processMatches(matches) {
   const extraCount = expandMatchesForSpecials(matches);
 
-  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const prefersReduced = reducedMotionQuery.matches;
 
   // Scoring: each matched tile is worth PER_TILE_PTS, multiplied by (comboCount + 1).
   const specialBonus = extraCount * 200;
@@ -1622,7 +2001,7 @@ async function attemptSwap(r1, c1, r2, c2) {
   if (!((dr === 1 && dc === 0) || (dr === 0 && dc === 1))) return;
 
   state.isAnimating = true;
-  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const prefersReduced = reducedMotionQuery.matches;
 
   // Swap data first so findMatches can evaluate the new state
   [state.board[r1][c1], state.board[r2][c2]] = [state.board[r2][c2], state.board[r1][c1]];
@@ -1653,7 +2032,7 @@ async function attemptSwap(r1, c1, r2, c2) {
     await animateSwap(r1, c1, r2, c2, false);
   }
 
-  state.movesLeft--;
+  state.movesLeft -= (gameMode === 'timed') ? 0 : 1;
   state.comboCount = 0;
   state.selectedCell = null;
   renderBoard();
@@ -1710,7 +2089,7 @@ function hasAnyValidMove() {
 function checkWinLose() {
   if (state.score >= state.scoreTarget) {
     showLevelSummary(true);
-  } else if (state.movesLeft <= 0) {
+  } else if (gameMode !== 'timed' && state.movesLeft <= 0) {
     showLevelSummary(false);
   } else if (!hasAnyValidMove()) {
     state.isAnimating = true;
@@ -1727,7 +2106,7 @@ function checkWinLose() {
 
 // ─── Render ───────────────────────────────────────────────────────────────────
 function iconById(id) {
-  return allIcons.find(ic => ic.id === id) || null;
+  return iconMap.get(id) || null;
 }
 
 function renderBoard() {
@@ -1818,7 +2197,7 @@ function updateHUD() {
   // Progress jar: scaleY from 0→1 reveals the blue-to-gold gradient bottom-up
   const pct = Math.min(100, (state.score / state.scoreTarget) * 100);
   document.getElementById('progress-jar-fill').style.transform = `scaleY(${pct / 100})`;
-  document.getElementById('progress-level-num').textContent = state.level;
+  document.getElementById('progress-level-num').textContent = state.isCopilotLevel ? 'Copilot' : state.level;
   document.getElementById('jar-target-score').textContent = state.scoreTarget.toLocaleString();
 
   // Mobile horizontal score bar — fills left to right
@@ -1856,11 +2235,12 @@ function showLevelSummary(won) {
     const btnsEl   = document.getElementById('modal-buttons');
 
     titleEl.textContent = '🎉 Level Complete!';
+    const levelLabel = state.isCopilotLevel ? 'Copilot' : state.level;
     bodyEl.innerHTML =
-      `<div class="summary-stat"><span>Level</span><strong>${state.level}</strong></div>` +
+      `<div class="summary-stat"><span>Level</span><strong>${levelLabel}</strong></div>` +
       `<div class="summary-stat"><span>Score</span><strong>${state.score.toLocaleString()}</strong></div>` +
       `<div class="summary-stat"><span>Target</span><strong>${state.scoreTarget.toLocaleString()}</strong></div>` +
-      `<div class="summary-stat"><span>Logos Cleared</span><strong>${state.totalClearedThisLevel}</strong></div>` +
+      `<div class="summary-stat"><span>Logos Matched</span><strong>${state.totalClearedThisLevel}</strong></div>` +
       `<div class="summary-stat"><span>Moves Left</span><strong>${state.movesLeft}</strong></div>` +
       `<div id="level-complete-countdown" class="modal-countdown"></div>`;
 
@@ -1915,6 +2295,25 @@ function showLevelSummary(won) {
 
 function startNextLevel() {
   if (summaryTimer) { clearInterval(summaryTimer); summaryTimer = null; }
+
+  // Coming back from a Copilot bonus level — go to the real next level.
+  if (state.isCopilotLevel) {
+    const returnTo = state.nextLevelAfterCopilot;
+    state.isCopilotLevel = false;
+    state.nextLevelAfterCopilot = null;
+    initLevel(returnTo);
+    showScreen('screen-playing');
+    return;
+  }
+
+  // After levels 9, 14, 19: insert a Copilot bonus level before advancing.
+  const COPILOT_AFTER = [9, 14, 19];
+  if (COPILOT_AFTER.includes(state.level)) {
+    initCopilotLevel(state.level + 1);
+    showScreen('screen-playing');
+    return;
+  }
+
   const nextLevel = state.level + 1;
   initLevel(nextLevel);
   showScreen('screen-playing');
@@ -1939,12 +2338,18 @@ function showGameOver() {
 // ─── Personal bests ───────────────────────────────────────────────────────────
 function updatePersonalBests() {
   const hs = Math.max(state.score, parseInt(localStorage.getItem(LS_HIGHSCORE) || '0'));
-  const hl = Math.max(state.level, parseInt(localStorage.getItem(LS_HIGHESTLEVEL) || '1'));
   const logos = parseInt(localStorage.getItem(LS_TOTALLOGOS) || '0') + state.totalClearedThisLevel;
 
   localStorage.setItem(LS_HIGHSCORE, hs);
-  localStorage.setItem(LS_HIGHESTLEVEL, hl);
   localStorage.setItem(LS_TOTALLOGOS, logos);
+
+  // Copilot bonus levels do not count toward the highest level reached;
+  // unlock rules are tied to real numbered levels only.
+  if (!state.isCopilotLevel) {
+    const hl = Math.max(state.level, parseInt(localStorage.getItem(LS_HIGHESTLEVEL) || '1'));
+    localStorage.setItem(LS_HIGHESTLEVEL, hl);
+  }
+
   updateClippyVisibility();
 }
 
@@ -1955,11 +2360,33 @@ function loadPersonalBests() {
   document.getElementById('pb-logos').textContent = parseInt(localStorage.getItem(LS_TOTALLOGOS) || '0').toLocaleString();
   // Re-evaluate which tag buttons are unlocked now that stats may have changed
   applyTagUnlockRules();
+  applyLegacyLockState();
+  updateClippyVisibility();
 }
 
 function updateClippyVisibility() {
-  const bestLevel = parseInt(localStorage.getItem(LS_HIGHESTLEVEL) || '1');
-  document.getElementById('clippy-panel').classList.toggle('clippy-unlocked', bestLevel >= CLIPPY_UNLOCK_LEVEL);
+  const totalLogos = parseInt(localStorage.getItem(LS_TOTALLOGOS) || '0');
+  const unlocked = totalLogos >= CLIPPY_UNLOCK_LOGOS;
+  document.getElementById('clippy-panel').classList.toggle('clippy-unlocked', unlocked);
+
+  // Update the Clippy button in the landing-page swag section
+  const clippyBtn = document.getElementById('btn-swag-clippy');
+  if (!clippyBtn) return;
+  if (unlocked) {
+    clippyBtn.classList.remove('selector-locked');
+    clippyBtn.removeAttribute('disabled');
+    clippyBtn.setAttribute('aria-pressed', 'true');
+    clippyBtn.setAttribute('data-tooltip', 'Your buddy Clippy is always with you! 🎉');
+    clippyBtn.style.cursor = 'default';
+    clippyBtn.style.pointerEvents = 'none';
+  } else {
+    clippyBtn.classList.add('selector-locked');
+    clippyBtn.setAttribute('disabled', '');
+    clippyBtn.setAttribute('aria-pressed', 'false');
+    clippyBtn.setAttribute('data-tooltip', 'Match 3500 logos to unlock');
+    clippyBtn.style.cursor = '';
+    clippyBtn.style.pointerEvents = '';
+  }
 }
 
 // ─── Input handlers ───────────────────────────────────────────────────────────
@@ -2053,41 +2480,61 @@ function setupBoardListeners() {
 }
 
 // ─── Tag unlock rules ─────────────────────────────────────────────────────────
-function isTagUnlocked(rule) {
-  if (!rule || rule.always) return true;
-  const games = parseInt(localStorage.getItem(LS_TOTALGAMES)   || '0');
-  const level = parseInt(localStorage.getItem(LS_HIGHESTLEVEL) || '1');
-  if (rule.minGames && games < rule.minGames) return false;
-  if (rule.minLevel && level < rule.minLevel) return false;
-  return true;
-}
+// Hardcoded unlock conditions per tag
+const TAG_UNLOCK_RULES = [
+  {
+    tag: 'businessapps',
+    tooltip: 'Unlock when beating level 5',
+    check: () => parseInt(localStorage.getItem(LS_HIGHESTLEVEL) || '1') >= 5
+  },
+  {
+    tag: 'azure',
+    tooltip: 'Unlock once achieved 20,000 points',
+    check: () => parseInt(localStorage.getItem(LS_HIGHSCORE) || '0') >= 20000
+  },
+  {
+    tag: 'modernwork',
+    tooltip: 'Unlock, once played 20 games',
+    check: () => parseInt(localStorage.getItem(LS_TOTALGAMES) || '0') >= 20
+  },
+];
 
 function applyTagUnlockRules() {
-  const rules = window._tagRules || [];
-  if (!rules.length) return;
   const container = document.getElementById('modeSelector');
-  for (const rule of rules) {
+  for (const rule of TAG_UNLOCK_RULES) {
     const btn = container.querySelector(`button[data-tag="${CSS.escape(rule.tag)}"]`);
     if (!btn) continue;
-    const unlocked = isTagUnlocked(rule);
+    const unlocked = rule.check();
     if (unlocked) {
-      btn.classList.remove('tag-locked');
+      btn.classList.remove('tag-locked', 'has-tooltip');
       btn.removeAttribute('disabled');
-      btn.removeAttribute('title');
+      btn.removeAttribute('data-tooltip');
     } else {
-      btn.classList.add('tag-locked');
+      btn.classList.add('tag-locked', 'has-tooltip');
       btn.setAttribute('disabled', '');
-      btn.setAttribute('title', rule.tooltip || 'Locked');
-      // If the locked tag was the active one, reset to 'all'
+      btn.setAttribute('data-tooltip', rule.tooltip);
+      // If this locked tag was active, reset to 'all'
       if (state.activeTag === rule.tag) {
         state.activeTag = 'all';
         localStorage.setItem(LS_ACTIVETAG, 'all');
-        container.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', 'false'));
+        container.querySelectorAll('button:not(.legacy-toggle)').forEach(b => b.setAttribute('aria-pressed', 'false'));
         const allBtn = container.querySelector('button[data-tag="all"]');
         if (allBtn) allBtn.setAttribute('aria-pressed', 'true');
       }
     }
   }
+}
+
+// ─── Game mode selector ───────────────────────────────────────────────────────
+function setupGameModeSelector() {
+  const container = document.getElementById('gameModeSelector');
+  container.addEventListener('click', e => {
+    const btn = e.target.closest('.game-mode-btn');
+    if (!btn) return;
+    container.querySelectorAll('.game-mode-btn').forEach(b => b.setAttribute('aria-pressed', 'false'));
+    btn.setAttribute('aria-pressed', 'true');
+    gameMode = btn.dataset.mode;
+  });
 }
 
 // ─── Mode selector ────────────────────────────────────────────────────────────
@@ -2097,7 +2544,18 @@ function setupModeSelector() {
     const btn = e.target.closest('button');
     if (!btn) return;
     if (btn.classList.contains('tag-locked')) return; // locked: ignore
-    container.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', 'false'));
+
+    if (btn.classList.contains('legacy-toggle')) {
+      // Independent toggle — does not affect the active tag
+      const nowPressed = btn.getAttribute('aria-pressed') !== 'true';
+      btn.setAttribute('aria-pressed', String(nowPressed));
+      state.includeLegacy = nowPressed;
+      localStorage.setItem(LS_INCLUDE_LEGACY, String(nowPressed));
+      return;
+    }
+
+    // Regular tag buttons — radio behaviour (only one active at a time)
+    container.querySelectorAll('button:not(.legacy-toggle)').forEach(b => b.setAttribute('aria-pressed', 'false'));
     btn.setAttribute('aria-pressed', 'true');
     state.activeTag = btn.dataset.tag;
     localStorage.setItem(LS_ACTIVETAG, state.activeTag);
@@ -2109,10 +2567,43 @@ function restoreSavedTag() {
   if (!saved) return;
   const container = document.getElementById('modeSelector');
   const btn = container.querySelector(`button[data-tag="${CSS.escape(saved)}"]`);
-  if (!btn) return;
-  container.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', 'false'));
+  if (!btn || btn.classList.contains('legacy-toggle')) return;
+  container.querySelectorAll('button:not(.legacy-toggle)').forEach(b => b.setAttribute('aria-pressed', 'false'));
   btn.setAttribute('aria-pressed', 'true');
   state.activeTag = saved;
+}
+
+function applyLegacyLockState() {
+  const btn = document.querySelector('#modeSelector button.legacy-toggle');
+  if (!btn) return;
+  const highestLevel = parseInt(localStorage.getItem(LS_HIGHESTLEVEL) || '1');
+  const unlocked = highestLevel >= LEGACY_UNLOCK_LEVEL;
+  if (unlocked) {
+    btn.classList.remove('tag-locked', 'has-tooltip');
+    btn.removeAttribute('disabled');
+    btn.removeAttribute('data-tooltip');
+  } else {
+    btn.classList.add('tag-locked', 'has-tooltip');
+    btn.setAttribute('disabled', '');
+    btn.setAttribute('data-tooltip', 'Unlock by beating level 15');
+    // If legacy was on but now locked, turn it off
+    if (state.includeLegacy) {
+      state.includeLegacy = false;
+      btn.setAttribute('aria-pressed', 'false');
+      localStorage.setItem(LS_INCLUDE_LEGACY, 'false');
+    }
+  }
+}
+
+function restoreSavedLegacy() {
+  if (localStorage.getItem(LS_INCLUDE_LEGACY) === 'true') {
+    const highestLevel = parseInt(localStorage.getItem(LS_HIGHESTLEVEL) || '1');
+    if (highestLevel >= LEGACY_UNLOCK_LEVEL) {
+      state.includeLegacy = true;
+      const btn = document.querySelector('#modeSelector button.legacy-toggle');
+      if (btn) btn.setAttribute('aria-pressed', 'true');
+    }
+  }
 }
 
 // ─── LinkedIn share ───────────────────────────────────────────────────────────
@@ -2122,20 +2613,20 @@ function shareOnLinkedIn() {
   const games  = parseInt(localStorage.getItem(LS_TOTALGAMES)   || '0');
   const logos  = parseInt(localStorage.getItem(LS_TOTALLOGOS)   || '0');
 
-  const url     = 'https://fordosa90.github.io/logocrush.github.io/';
-  const title   = 'Check out my LogoCrush stats!';
-  const summary =
-    `🎮 I've matched ${logos.toLocaleString()} Microsoft logos across ${games} games, ` +
-    `smashed level ${hl} and scored ${hs.toLocaleString()} points in LogoCrush — ` +
-    `the cloud logo match-3 game. Think you can beat me? 😏`;
-  const source  = 'github.com/fordosa90';
+  const gameUrl = 'https://logocrush.andrasfordos.com/';
+  const text =
+    `🎮 Just played LogoCrush — the fan-made match-3 game for the Microsoft community!\n\n` +
+    `My stats:\n` +
+    `🏆 High score: ${hs.toLocaleString()} points\n` +
+    `📈 Highest level reached: ${hl}\n` +
+    `🎯 Total games played: ${games}\n` +
+    `🔷 Microsoft logos matched: ${logos.toLocaleString()}\n\n` +
+    `Think you can beat me? Come try! 😏\n` +
+    `👉 ${gameUrl}`;
 
   const shareUrl =
-    'https://www.linkedin.com/shareArticle?mini=true' +
-    '&url='         + encodeURIComponent(url) +
-    '&title='       + encodeURIComponent(title) +
-    '&description=' + encodeURIComponent(summary) +
-    '&source='      + encodeURIComponent(source);
+    'https://www.linkedin.com/feed/?shareActive=true' +
+    '&text=' + encodeURIComponent(text);
 
   window.open(shareUrl, '_blank', 'noopener,noreferrer');
 }
@@ -2154,11 +2645,12 @@ function setupPlayButton() {
 
   document.getElementById('btn-menu').addEventListener('click', () => {
     if (state.isAnimating) return;
+    pauseGameTimer();
     showModal(
       'Quit Game?',
       'Quit this game? Your progress will be lost.',
       [
-        { label: 'Cancel', className: 'btn-secondary', action: () => {} },
+        { label: 'Cancel', className: 'btn-secondary', action: () => { startGameTimer(); } },
         { label: 'Back to Menu', className: 'btn-danger', action: () => { stopGameTimer(); showScreen('screen-start'); loadPersonalBests(); } },
       ]
     );
@@ -2258,9 +2750,12 @@ async function detectIconHues() {
 async function init() {
   await loadManifest();
   loadPersonalBests();
+  setupGameModeSelector();
   setupModeSelector();
   restoreSavedTag();
+  restoreSavedLegacy();
   applyTagUnlockRules();  // grey out locked tags based on saved stats
+  applyLegacyLockState(); // lock/unlock + Legacy based on highest level
   setupBoardListeners();
   setupPlayButton();
   showScreen('screen-start');

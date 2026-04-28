@@ -1,75 +1,1238 @@
 {
-  "namingConvention": "{product-name}.svg  |  {product-family}-{product-name}.svg  —  kebab-case, no version dates",
-  "tagRules": [
-    { "tag": "all",              "always": true },
-    { "tag": "azure",            "minGames": 3,  "tooltip": "Unlock by playing 3 games" },
-    { "tag": "m365",             "minGames": 5,  "tooltip": "Unlock by playing 5 games" },
-    { "tag": "power-platform",   "minLevel": 3,  "tooltip": "Unlock by beating level 3" },
-    { "tag": "dynamics",         "minLevel": 5,  "tooltip": "Unlock by beating level 5" },
-    { "tag": "security",         "minGames": 10, "tooltip": "Unlock by playing 10 games" },
-    { "tag": "modern-workplace", "minLevel": 10, "tooltip": "Unlock by beating level 10" }
-  ],
+  "namingConvention": "{prefix}_{version}.svg \u2014 prefix indicates product family, version is YYYYMM or YYYY",
   "icons": [
-    {"id": "microsoft-365",                   "name": "Microsoft 365",                   "file": "icons/microsoft-365.svg",                   "tags": ["m365", "modern-workplace"]},
-    {"id": "teams",                           "name": "Teams",                           "file": "icons/teams.svg",                           "tags": ["m365", "modern-workplace"]},
-    {"id": "outlook",                         "name": "Outlook",                         "file": "icons/outlook.svg",                         "tags": ["m365", "modern-workplace"]},
-    {"id": "sharepoint",                      "name": "SharePoint",                      "file": "icons/sharepoint.svg",                      "tags": ["m365", "modern-workplace"]},
-    {"id": "onedrive",                        "name": "OneDrive",                        "file": "icons/onedrive.svg",                        "tags": ["m365", "modern-workplace"]},
-    {"id": "word",                            "name": "Word",                            "file": "icons/word.svg",                            "tags": ["m365"]},
-    {"id": "excel",                           "name": "Excel",                           "file": "icons/excel.svg",                           "tags": ["m365", "data"]},
-    {"id": "powerpoint",                      "name": "PowerPoint",                      "file": "icons/powerpoint.svg",                      "tags": ["m365"]},
-    {"id": "onenote",                         "name": "OneNote",                         "file": "icons/onenote.svg",                         "tags": ["m365"]},
-    {"id": "access",                          "name": "Access",                          "file": "icons/access.svg",                          "tags": ["m365", "data"]},
-    {"id": "forms",                           "name": "Forms",                           "file": "icons/forms.svg",                           "tags": ["m365"]},
-    {"id": "exchange",                        "name": "Exchange",                        "file": "icons/exchange.svg",                        "tags": ["m365", "modern-workplace"]},
-    {"id": "microsoft-loop",                  "name": "Microsoft Loop",                  "file": "icons/microsoft-loop.svg",                  "tags": ["m365", "modern-workplace"]},
-
-    {"id": "microsoft-copilot",               "name": "Microsoft Copilot",               "file": "icons/microsoft-copilot.svg",               "tags": ["copilot"]},
-    {"id": "copilot-studio",                  "name": "Copilot Studio",                  "file": "icons/copilot-studio.svg",                  "tags": ["copilot", "power-platform"]},
-
-    {"id": "power-platform",                  "name": "Power Platform",                  "file": "icons/power-platform.svg",                  "tags": ["power-platform"]},
-    {"id": "power-bi",                        "name": "Power BI",                        "file": "icons/power-bi.svg",                        "tags": ["power-platform", "data"]},
-    {"id": "power-apps",                      "name": "Power Apps",                      "file": "icons/power-apps.svg",                      "tags": ["power-platform"]},
-    {"id": "power-automate",                  "name": "Power Automate",                  "file": "icons/power-automate.svg",                  "tags": ["power-platform"]},
-    {"id": "power-pages",                     "name": "Power Pages",                     "file": "icons/power-pages.svg",                     "tags": ["power-platform"]},
-    {"id": "ai-builder",                      "name": "AI Builder",                      "file": "icons/ai-builder.svg",                      "tags": ["power-platform", "copilot"]},
-    {"id": "power-virtual-agents",            "name": "Power Virtual Agents",            "file": "icons/power-virtual-agents.svg",            "tags": ["power-platform", "copilot"]},
-    {"id": "dataverse",                       "name": "Dataverse",                       "file": "icons/dataverse.svg",                       "tags": ["power-platform", "data"]},
-
-    {"id": "microsoft-fabric",                "name": "Microsoft Fabric",                "file": "icons/microsoft-fabric.svg",                "tags": ["azure", "data"]},
-    {"id": "fabric-onelake",                  "name": "OneLake",                         "file": "icons/fabric-onelake.svg",                  "tags": ["azure", "data"]},
-    {"id": "fabric-data-factory",             "name": "Fabric Data Factory",             "file": "icons/fabric-data-factory.svg",             "tags": ["azure", "data"]},
-    {"id": "fabric-data-engineering",         "name": "Fabric Data Engineering",         "file": "icons/fabric-data-engineering.svg",         "tags": ["azure", "data"]},
-    {"id": "fabric-data-science",             "name": "Fabric Data Science",             "file": "icons/fabric-data-science.svg",             "tags": ["azure", "data"]},
-    {"id": "fabric-data-warehouse",           "name": "Fabric Data Warehouse",           "file": "icons/fabric-data-warehouse.svg",           "tags": ["azure", "data"]},
-    {"id": "fabric-real-time-analytics",      "name": "Fabric Real-Time Analytics",      "file": "icons/fabric-real-time-analytics.svg",      "tags": ["azure", "data"]},
-
-    {"id": "azure",                           "name": "Azure",                           "file": "icons/azure.svg",                           "tags": ["azure"]},
-    {"id": "azure-devops",                    "name": "Azure DevOps",                    "file": "icons/azure-devops.svg",                    "tags": ["azure", "developer"]},
-    {"id": "azure-functions",                 "name": "Azure Functions",                 "file": "icons/azure-functions.svg",                 "tags": ["azure", "developer"]},
-    {"id": "azure-data-factory",              "name": "Azure Data Factory",              "file": "icons/azure-data-factory.svg",              "tags": ["azure", "data"]},
-    {"id": "azure-synapse",                   "name": "Azure Synapse",                   "file": "icons/azure-synapse.svg",                   "tags": ["azure", "data"]},
-    {"id": "azure-application-insights",      "name": "Azure Application Insights",      "file": "icons/azure-application-insights.svg",      "tags": ["azure", "developer"]},
-    {"id": "azure-document-intelligence",     "name": "Azure Document Intelligence",     "file": "icons/azure-document-intelligence.svg",     "tags": ["azure", "copilot"]},
-    {"id": "azure-event-hub",                 "name": "Azure Event Hub",                 "file": "icons/azure-event-hub.svg",                 "tags": ["azure", "data"]},
-    {"id": "azure-key-vault",                 "name": "Azure Key Vault",                 "file": "icons/azure-key-vault.svg",                 "tags": ["azure", "security"]},
-    {"id": "azure-log-analytics",             "name": "Azure Log Analytics",             "file": "icons/azure-log-analytics.svg",             "tags": ["azure", "data"]},
-    {"id": "azure-logic-apps",                "name": "Azure Logic Apps",                "file": "icons/azure-logic-apps.svg",                "tags": ["azure", "developer"]},
-    {"id": "azure-service-bus",               "name": "Azure Service Bus",               "file": "icons/azure-service-bus.svg",               "tags": ["azure"]},
-    {"id": "azure-virtual-network",           "name": "Azure Virtual Network",           "file": "icons/azure-virtual-network.svg",           "tags": ["azure"]},
-    {"id": "entra-id",                        "name": "Entra ID",                        "file": "icons/entra-id.svg",                        "tags": ["azure", "security"]},
-    {"id": "microsoft-purview",               "name": "Microsoft Purview",               "file": "icons/microsoft-purview.svg",               "tags": ["azure", "data", "security"]},
-
-    {"id": "dynamics-365",                    "name": "Dynamics 365",                    "file": "icons/dynamics-365.svg",                    "tags": ["dynamics"]},
-    {"id": "dynamics-365-sales",              "name": "Dynamics 365 Sales",              "file": "icons/dynamics-365-sales.svg",              "tags": ["dynamics"]},
-    {"id": "dynamics-365-customer-service",   "name": "Dynamics 365 Customer Service",   "file": "icons/dynamics-365-customer-service.svg",   "tags": ["dynamics"]},
-    {"id": "dynamics-365-customer-insights",  "name": "Dynamics 365 Customer Insights",  "file": "icons/dynamics-365-customer-insights.svg",  "tags": ["dynamics", "data"]},
-    {"id": "dynamics-365-customer-voice",     "name": "Dynamics 365 Customer Voice",     "file": "icons/dynamics-365-customer-voice.svg",     "tags": ["dynamics"]},
-    {"id": "dynamics-365-field-service",      "name": "Dynamics 365 Field Service",      "file": "icons/dynamics-365-field-service.svg",      "tags": ["dynamics"]},
-    {"id": "dynamics-365-contact-center",     "name": "Dynamics 365 Contact Center",     "file": "icons/dynamics-365-contact-center.svg",     "tags": ["dynamics"]},
-    {"id": "dynamics-365-finance-operations", "name": "Dynamics 365 Finance & Operations","file": "icons/dynamics-365-finance-operations.svg", "tags": ["dynamics"]},
-    {"id": "dynamics-365-supply-chain",       "name": "Dynamics 365 Supply Chain",       "file": "icons/dynamics-365-supply-chain.svg",       "tags": ["dynamics"]},
-    {"id": "dynamics-365-marketing",          "name": "Dynamics 365 Marketing",          "file": "icons/dynamics-365-marketing.svg",          "tags": ["dynamics"]},
-    {"id": "dynamics-365-project-operations", "name": "Dynamics 365 Project Operations", "file": "icons/dynamics-365-project-operations.svg", "tags": ["dynamics"]}
+    {
+      "id": "ado-azure-boards_202312",
+      "name": "Azure Boards (202312)",
+      "file": "icons/ado-azure-boards_202312.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "ado-azure-pipelines_202302",
+      "name": "Azure Pipelines (202302)",
+      "file": "icons/ado-azure-pipelines_202302.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "ado-azure-repos_202302",
+      "name": "Azure Repos (202302)",
+      "file": "icons/ado-azure-repos_202302.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "ado-azure-test-plans_202302",
+      "name": "Azure Test Plans (202302)",
+      "file": "icons/ado-azure-test-plans_202302.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-active-directory_202302",
+      "name": "Azure Active Directory (202302)",
+      "file": "icons/azure-active-directory_202302.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-ad-app-registrations_202403",
+      "name": "Azure Ad App Registrations (202403)",
+      "file": "icons/azure-ad-app-registrations_202403.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-api-management_202401",
+      "name": "Azure Api Management (202401)",
+      "file": "icons/azure-api-management_202401.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-application-insights_202302",
+      "name": "Azure Application Insights (202302)",
+      "file": "icons/azure-application-insights_202302.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-appservices_202401",
+      "name": "Azure Appservices (202401)",
+      "file": "icons/azure-appservices_202401.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-cms_202302",
+      "name": "Azure Cms (202302)",
+      "file": "icons/azure-cms_202302.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-cognitivesearch_202401",
+      "name": "Azure Cognitivesearch (202401)",
+      "file": "icons/azure-cognitivesearch_202401.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-cognitiveservices_202412",
+      "name": "Azure Cognitiveservices (202412)",
+      "file": "icons/azure-cognitiveservices_202412.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-communication-services_202412",
+      "name": "Azure Communication Services (202412)",
+      "file": "icons/azure-communication-services_202412.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-cosmos-db_202302",
+      "name": "Azure Cosmos Db (202302)",
+      "file": "icons/azure-cosmos-db_202302.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-data-factory_202302",
+      "name": "Azure Data Factory (202302)",
+      "file": "icons/azure-data-factory_202302.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-datalake_202401",
+      "name": "Azure Datalake (202401)",
+      "file": "icons/azure-datalake_202401.svg",
+      "tags": [
+        "azure",
+        "legacy"
+      ]
+    },
+    {
+      "id": "azure-datalake_2025",
+      "name": "Azure Datalake (2025)",
+      "file": "icons/azure-datalake_2025.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-defenderforcloud_202412",
+      "name": "Azure Defenderforcloud (202412)",
+      "file": "icons/azure-defenderforcloud_202412.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-devops_2018",
+      "name": "Azure Devops (2018)",
+      "file": "icons/azure-devops_2018.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-documentintelligence",
+      "name": "Azure Documentintelligence",
+      "file": "icons/azure-documentintelligence.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-event-grid-domains_202405",
+      "name": "Azure Event Grid Domains (202405)",
+      "file": "icons/azure-event-grid-domains_202405.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-event-hub_202405",
+      "name": "Azure Event Hub (202405)",
+      "file": "icons/azure-event-hub_202405.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-functions_202302",
+      "name": "Azure Functions (202302)",
+      "file": "icons/azure-functions_202302.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-key-vault_202302",
+      "name": "Azure Key Vault (202302)",
+      "file": "icons/azure-key-vault_202302.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-log-analytics_202405",
+      "name": "Azure Log Analytics (202405)",
+      "file": "icons/azure-log-analytics_202405.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-logic-apps_202302",
+      "name": "Azure Logic Apps (202302)",
+      "file": "icons/azure-logic-apps_202302.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-managedidentities_202501",
+      "name": "Azure Managedidentities (202501)",
+      "file": "icons/azure-managedidentities_202501.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-maps_202307",
+      "name": "Azure Maps (202307)",
+      "file": "icons/azure-maps_202307.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-ml_202405",
+      "name": "Azure Ml (202405)",
+      "file": "icons/azure-ml_202405.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-monitor_202405",
+      "name": "Azure Monitor (202405)",
+      "file": "icons/azure-monitor_202405.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-onprem-gateway_202302",
+      "name": "Azure Onprem Gateway (202302)",
+      "file": "icons/azure-onprem-gateway_202302.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-privatelink_202412",
+      "name": "Azure Privatelink (202412)",
+      "file": "icons/azure-privatelink_202412.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-pureview_202405",
+      "name": "Azure Pureview (202405)",
+      "file": "icons/azure-pureview_202405.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-resource-group_202302",
+      "name": "Azure Resource Group (202302)",
+      "file": "icons/azure-resource-group_202302.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-servicebus_202312",
+      "name": "Azure Servicebus (202312)",
+      "file": "icons/azure-servicebus_202312.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-sql-database_202302",
+      "name": "Azure Sql Database (202302)",
+      "file": "icons/azure-sql-database_202302.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-sql-datawarehouses",
+      "name": "Azure Sql Datawarehouses",
+      "file": "icons/azure-sql-datawarehouses.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-sql-elasticpools_202401",
+      "name": "Azure Sql Elasticpools (202401)",
+      "file": "icons/azure-sql-elasticpools_202401.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-static-apps",
+      "name": "Azure Static Apps",
+      "file": "icons/azure-static-apps.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-storage-blob_202412",
+      "name": "Azure Storage Blob (202412)",
+      "file": "icons/azure-storage-blob_202412.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-storageaccount_202501",
+      "name": "Azure Storageaccount (202501)",
+      "file": "icons/azure-storageaccount_202501.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-synapse_202405",
+      "name": "Azure Synapse (202405)",
+      "file": "icons/azure-synapse_202405.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-virtualmachine",
+      "name": "Azure Virtualmachine",
+      "file": "icons/azure-virtualmachine.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure-vnet_202401",
+      "name": "Azure Vnet (202401)",
+      "file": "icons/azure-vnet_202401.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "azure_202302",
+      "name": "Azure (202302)",
+      "file": "icons/azure_202302.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "dynamics365-businesscental_202601",
+      "name": "Dynamics 365 Businesscental (202601)",
+      "file": "icons/dynamics365-businesscental_202601.svg",
+      "tags": [
+        "businessapps"
+      ]
+    },
+    {
+      "id": "dynamics365-businesscentral_2019",
+      "name": "Dynamics 365 Businesscentral (2019)",
+      "file": "icons/dynamics365-businesscentral_2019.svg",
+      "tags": [
+        "businessapps",
+        "legacy"
+      ]
+    },
+    {
+      "id": "dynamics365-commerce_2021",
+      "name": "Dynamics 365 Commerce (2021)",
+      "file": "icons/dynamics365-commerce_2021.svg",
+      "tags": [
+        "businessapps",
+        "legacy"
+      ]
+    },
+    {
+      "id": "dynamics365-commerce_202601",
+      "name": "Dynamics 365 Commerce (202601)",
+      "file": "icons/dynamics365-commerce_202601.svg",
+      "tags": [
+        "businessapps"
+      ]
+    },
+    {
+      "id": "dynamics365-connectedstore_202601",
+      "name": "Dynamics 365 Connectedstore (202601)",
+      "file": "icons/dynamics365-connectedstore_202601.svg",
+      "tags": [
+        "businessapps"
+      ]
+    },
+    {
+      "id": "dynamics365-contactcenter_202601",
+      "name": "Dynamics 365 Contactcenter (202601)",
+      "file": "icons/dynamics365-contactcenter_202601.svg",
+      "tags": [
+        "businessapps"
+      ]
+    },
+    {
+      "id": "dynamics365-customerinsights_202302",
+      "name": "Dynamics 365 Customerinsights (202302)",
+      "file": "icons/dynamics365-customerinsights_202302.svg",
+      "tags": [
+        "businessapps",
+        "legacy"
+      ]
+    },
+    {
+      "id": "dynamics365-customerinsights_202601",
+      "name": "Dynamics 365 Customerinsights (202601)",
+      "file": "icons/dynamics365-customerinsights_202601.svg",
+      "tags": [
+        "businessapps"
+      ]
+    },
+    {
+      "id": "dynamics365-customerservice_202302",
+      "name": "Dynamics 365 Customerservice (202302)",
+      "file": "icons/dynamics365-customerservice_202302.svg",
+      "tags": [
+        "businessapps",
+        "legacy"
+      ]
+    },
+    {
+      "id": "dynamics365-customerservice_202601",
+      "name": "Dynamics 365 Customerservice (202601)",
+      "file": "icons/dynamics365-customerservice_202601.svg",
+      "tags": [
+        "businessapps"
+      ]
+    },
+    {
+      "id": "dynamics365-customerserviceinsights_202601",
+      "name": "Dynamics 365 Customerserviceinsights (202601)",
+      "file": "icons/dynamics365-customerserviceinsights_202601.svg",
+      "tags": [
+        "businessapps"
+      ]
+    },
+    {
+      "id": "dynamics365-customervoice_202601",
+      "name": "Dynamics 365 Customervoice (202601)",
+      "file": "icons/dynamics365-customervoice_202601.svg",
+      "tags": [
+        "businessapps"
+      ]
+    },
+    {
+      "id": "dynamics365-fieldservice_202302",
+      "name": "Dynamics 365 Fieldservice (202302)",
+      "file": "icons/dynamics365-fieldservice_202302.svg",
+      "tags": [
+        "businessapps",
+        "legacy"
+      ]
+    },
+    {
+      "id": "dynamics365-fieldservice_202601",
+      "name": "Dynamics 365 Fieldservice (202601)",
+      "file": "icons/dynamics365-fieldservice_202601.svg",
+      "tags": [
+        "businessapps"
+      ]
+    },
+    {
+      "id": "dynamics365-finance_2019",
+      "name": "Dynamics 365 Finance (2019)",
+      "file": "icons/dynamics365-finance_2019.svg",
+      "tags": [
+        "businessapps",
+        "legacy"
+      ]
+    },
+    {
+      "id": "dynamics365-finance_202601",
+      "name": "Dynamics 365 Finance (202601)",
+      "file": "icons/dynamics365-finance_202601.svg",
+      "tags": [
+        "businessapps"
+      ]
+    },
+    {
+      "id": "dynamics365-finops_202312",
+      "name": "Dynamics 365 Finops (202312)",
+      "file": "icons/dynamics365-finops_202312.svg",
+      "tags": [
+        "businessapps",
+        "legacy"
+      ]
+    },
+    {
+      "id": "dynamics365-finops_202601",
+      "name": "Dynamics 365 Finops (202601)",
+      "file": "icons/dynamics365-finops_202601.svg",
+      "tags": [
+        "businessapps"
+      ]
+    },
+    {
+      "id": "dynamics365-humanresources_202601",
+      "name": "Dynamics 365 Humanresources (202601)",
+      "file": "icons/dynamics365-humanresources_202601.svg",
+      "tags": [
+        "businessapps"
+      ]
+    },
+    {
+      "id": "dynamics365-intelligentordermanagement_202601",
+      "name": "Dynamics 365 Intelligentordermanagement (202601)",
+      "file": "icons/dynamics365-intelligentordermanagement_202601.svg",
+      "tags": [
+        "businessapps"
+      ]
+    },
+    {
+      "id": "dynamics365-marketing_202302",
+      "name": "Dynamics 365 Marketing (202302)",
+      "file": "icons/dynamics365-marketing_202302.svg",
+      "tags": [
+        "businessapps",
+        "legacy"
+      ]
+    },
+    {
+      "id": "dynamics365-product-insights_202601",
+      "name": "Dynamics 365 Product Insights (202601)",
+      "file": "icons/dynamics365-product-insights_202601.svg",
+      "tags": [
+        "businessapps"
+      ]
+    },
+    {
+      "id": "dynamics365-projectoperations_202302",
+      "name": "Dynamics 365 Projectoperations (202302)",
+      "file": "icons/dynamics365-projectoperations_202302.svg",
+      "tags": [
+        "businessapps",
+        "legacy"
+      ]
+    },
+    {
+      "id": "dynamics365-projectoperations_202601",
+      "name": "Dynamics 365 Projectoperations (202601)",
+      "file": "icons/dynamics365-projectoperations_202601.svg",
+      "tags": [
+        "businessapps"
+      ]
+    },
+    {
+      "id": "dynamics365-remoteassist_202601",
+      "name": "Dynamics 365 Remoteassist (202601)",
+      "file": "icons/dynamics365-remoteassist_202601.svg",
+      "tags": [
+        "businessapps"
+      ]
+    },
+    {
+      "id": "dynamics365-sales_202302",
+      "name": "Dynamics 365 Sales (202302)",
+      "file": "icons/dynamics365-sales_202302.svg",
+      "tags": [
+        "businessapps",
+        "legacy"
+      ]
+    },
+    {
+      "id": "dynamics365-sales_202601",
+      "name": "Dynamics 365 Sales (202601)",
+      "file": "icons/dynamics365-sales_202601.svg",
+      "tags": [
+        "businessapps"
+      ]
+    },
+    {
+      "id": "dynamics365-salesinsights_202601",
+      "name": "Dynamics 365 Salesinsights (202601)",
+      "file": "icons/dynamics365-salesinsights_202601.svg",
+      "tags": [
+        "businessapps"
+      ]
+    },
+    {
+      "id": "dynamics365-supplychainmgmt_202312",
+      "name": "Dynamics 365 Supplychainmgmt (202312)",
+      "file": "icons/dynamics365-supplychainmgmt_202312.svg",
+      "tags": [
+        "businessapps",
+        "legacy"
+      ]
+    },
+    {
+      "id": "dynamics365-supplychainmgmt_202601",
+      "name": "Dynamics 365 Supplychainmgmt (202601)",
+      "file": "icons/dynamics365-supplychainmgmt_202601.svg",
+      "tags": [
+        "businessapps"
+      ]
+    },
+    {
+      "id": "dynamics365-sustainabilitycalculator_202204",
+      "name": "Dynamics 365 Sustainabilitycalculator (202204)",
+      "file": "icons/dynamics365-sustainabilitycalculator_202204.svg",
+      "tags": [
+        "businessapps"
+      ]
+    },
+    {
+      "id": "dynamics365-talent_202601",
+      "name": "Dynamics 365 Talent (202601)",
+      "file": "icons/dynamics365-talent_202601.svg",
+      "tags": [
+        "businessapps"
+      ]
+    },
+    {
+      "id": "dynamics365_2017",
+      "name": "Dynamics 365 (2017)",
+      "file": "icons/dynamics365_2017.svg",
+      "tags": [
+        "businessapps",
+        "legacy"
+      ]
+    },
+    {
+      "id": "dynamics365_202302",
+      "name": "Dynamics 365 (202302)",
+      "file": "icons/dynamics365_202302.svg",
+      "tags": [
+        "businessapps",
+        "legacy"
+      ]
+    },
+    {
+      "id": "dynamics365_2026",
+      "name": "Dynamics 365 (2026)",
+      "file": "icons/dynamics365_2026.svg",
+      "tags": [
+        "businessapps"
+      ]
+    },
+    {
+      "id": "fabric-databases_202601",
+      "name": "Fabric Databases (202601)",
+      "file": "icons/fabric-databases_202601.svg",
+      "tags": []
+    },
+    {
+      "id": "fabric-datafactory_202401",
+      "name": "Fabric Datafactory (202401)",
+      "file": "icons/fabric-datafactory_202401.svg",
+      "tags": []
+    },
+    {
+      "id": "fabric-industrysolutions_202601",
+      "name": "Fabric Industrysolutions (202601)",
+      "file": "icons/fabric-industrysolutions_202601.svg",
+      "tags": []
+    },
+    {
+      "id": "fabric-onelake_202401",
+      "name": "Fabric Onelake (202401)",
+      "file": "icons/fabric-onelake_202401.svg",
+      "tags": []
+    },
+    {
+      "id": "fabric-purview_202601",
+      "name": "Fabric Purview (202601)",
+      "file": "icons/fabric-purview_202601.svg",
+      "tags": []
+    },
+    {
+      "id": "fabric-synapse-dataengineering_202401",
+      "name": "Fabric Synapse Dataengineering (202401)",
+      "file": "icons/fabric-synapse-dataengineering_202401.svg",
+      "tags": []
+    },
+    {
+      "id": "fabric-synapse-datascience_202401",
+      "name": "Fabric Synapse Datascience (202401)",
+      "file": "icons/fabric-synapse-datascience_202401.svg",
+      "tags": []
+    },
+    {
+      "id": "fabric-synapse-datawarehouse_202308",
+      "name": "Fabric Synapse Datawarehouse (202308)",
+      "file": "icons/fabric-synapse-datawarehouse_202308.svg",
+      "tags": []
+    },
+    {
+      "id": "fabric-synapse-realtimeanalytics_202308",
+      "name": "Fabric Synapse Realtimeanalytics (202308)",
+      "file": "icons/fabric-synapse-realtimeanalytics_202308.svg",
+      "tags": [
+        "legacy"
+      ]
+    },
+    {
+      "id": "fabric-synapse-realtimeanalytics_202601",
+      "name": "Fabric Synapse Realtimeanalytics (202601)",
+      "file": "icons/fabric-synapse-realtimeanalytics_202601.svg",
+      "tags": []
+    },
+    {
+      "id": "fabric_202401",
+      "name": "Microsoft Fabric (202401)",
+      "file": "icons/fabric_202401.svg",
+      "tags": []
+    },
+    {
+      "id": "msft-365_202212",
+      "name": "365 (202212)",
+      "file": "icons/msft-365_202212.svg",
+      "tags": [
+        "modernwork"
+      ]
+    },
+    {
+      "id": "msft-access_202405",
+      "name": "Access (202405)",
+      "file": "icons/msft-access_202405.svg",
+      "tags": [
+        "modernwork"
+      ]
+    },
+    {
+      "id": "msft-copilot_2022",
+      "name": "Copilot (2022)",
+      "file": "icons/msft-copilot_2022.svg",
+      "tags": [
+        "modernwork",
+        "legacy"
+      ]
+    },
+    {
+      "id": "msft-copilot_202312",
+      "name": "Copilot (202312)",
+      "file": "icons/msft-copilot_202312.svg",
+      "tags": [
+        "modernwork"
+      ]
+    },
+    {
+      "id": "msft-delve2026",
+      "name": "Delve (2026)",
+      "file": "icons/msft-delve2026.svg",
+      "tags": [
+        "modernwork"
+      ]
+    },
+    {
+      "id": "msft-entraid_202402",
+      "name": "Entraid (202402)",
+      "file": "icons/msft-entraid_202402.svg",
+      "tags": [
+        "modernwork",
+        "legacy"
+      ]
+    },
+    {
+      "id": "msft-entraid_202501",
+      "name": "Entraid (202501)",
+      "file": "icons/msft-entraid_202501.svg",
+      "tags": [
+        "modernwork"
+      ]
+    },
+    {
+      "id": "msft-excel_2019",
+      "name": "Excel (2019)",
+      "file": "icons/msft-excel_2019.svg",
+      "tags": [
+        "modernwork",
+        "legacy"
+      ]
+    },
+    {
+      "id": "msft-excel_2026",
+      "name": "Excel (2026)",
+      "file": "icons/msft-excel_2026.svg",
+      "tags": [
+        "modernwork"
+      ]
+    },
+    {
+      "id": "msft-exchange2019",
+      "name": "Exchange (2019)",
+      "file": "icons/msft-exchange2019.svg",
+      "tags": [
+        "modernwork"
+      ]
+    },
+    {
+      "id": "msft-forms_201909",
+      "name": "Forms (201909)",
+      "file": "icons/msft-forms_201909.svg",
+      "tags": [
+        "modernwork"
+      ]
+    },
+    {
+      "id": "msft-loop_202210",
+      "name": "Loop (202210)",
+      "file": "icons/msft-loop_202210.svg",
+      "tags": [
+        "modernwork"
+      ]
+    },
+    {
+      "id": "msft-office-onedrive_201904",
+      "name": "Onedrive (201904)",
+      "file": "icons/msft-office-onedrive_201904.svg",
+      "tags": [
+        "modernwork",
+        "legacy"
+      ]
+    },
+    {
+      "id": "msft-office-onedrive_202601",
+      "name": "Onedrive (202601)",
+      "file": "icons/msft-office-onedrive_202601.svg",
+      "tags": [
+        "modernwork"
+      ]
+    },
+    {
+      "id": "msft-office-onenote_201904",
+      "name": "Onenote (201904)",
+      "file": "icons/msft-office-onenote_201904.svg",
+      "tags": [
+        "modernwork",
+        "legacy"
+      ]
+    },
+    {
+      "id": "msft-office-onenote_202601",
+      "name": "Onenote (202601)",
+      "file": "icons/msft-office-onenote_202601.svg",
+      "tags": [
+        "modernwork"
+      ]
+    },
+    {
+      "id": "msft-office-powerpoint_201904",
+      "name": "Powerpoint (201904)",
+      "file": "icons/msft-office-powerpoint_201904.svg",
+      "tags": [
+        "modernwork",
+        "legacy"
+      ]
+    },
+    {
+      "id": "msft-office-powerpoint_202601",
+      "name": "Powerpoint (202601)",
+      "file": "icons/msft-office-powerpoint_202601.svg",
+      "tags": [
+        "modernwork"
+      ]
+    },
+    {
+      "id": "msft-office-word_201903",
+      "name": "Word (201903)",
+      "file": "icons/msft-office-word_201903.svg",
+      "tags": [
+        "modernwork",
+        "legacy"
+      ]
+    },
+    {
+      "id": "msft-office-word_202601",
+      "name": "Word (202601)",
+      "file": "icons/msft-office-word_202601.svg",
+      "tags": [
+        "modernwork"
+      ]
+    },
+    {
+      "id": "msft-office_2012",
+      "name": "Office (2012)",
+      "file": "icons/msft-office_2012.svg",
+      "tags": [
+        "modernwork",
+        "legacy"
+      ]
+    },
+    {
+      "id": "msft-office_202412",
+      "name": "Office (202412)",
+      "file": "icons/msft-office_202412.svg",
+      "tags": [
+        "modernwork"
+      ]
+    },
+    {
+      "id": "msft-outlook2018",
+      "name": "Outlook (2018)",
+      "file": "icons/msft-outlook2018.svg",
+      "tags": [
+        "modernwork",
+        "legacy"
+      ]
+    },
+    {
+      "id": "msft-outlook2026",
+      "name": "Outlook (2026)",
+      "file": "icons/msft-outlook2026.svg",
+      "tags": [
+        "modernwork"
+      ]
+    },
+    {
+      "id": "msft-project2026",
+      "name": "Project (2026)",
+      "file": "icons/msft-project2026.svg",
+      "tags": [
+        "modernwork"
+      ]
+    },
+    {
+      "id": "msft-sharepoint_201904",
+      "name": "Sharepoint (201904)",
+      "file": "icons/msft-sharepoint_201904.svg",
+      "tags": [
+        "modernwork",
+        "legacy"
+      ]
+    },
+    {
+      "id": "msft-sharepoint_202601",
+      "name": "Sharepoint (202601)",
+      "file": "icons/msft-sharepoint_202601.svg",
+      "tags": [
+        "modernwork"
+      ]
+    },
+    {
+      "id": "msft-sway2026",
+      "name": "Sway (2026)",
+      "file": "icons/msft-sway2026.svg",
+      "tags": [
+        "modernwork"
+      ]
+    },
+    {
+      "id": "msft-teams2018",
+      "name": "Teams (2018)",
+      "file": "icons/msft-teams2018.svg",
+      "tags": [
+        "modernwork",
+        "legacy"
+      ]
+    },
+    {
+      "id": "msft-teams2026",
+      "name": "Teams (2026)",
+      "file": "icons/msft-teams2026.svg",
+      "tags": [
+        "modernwork"
+      ]
+    },
+    {
+      "id": "msft-translator_202302",
+      "name": "Translator (202302)",
+      "file": "icons/msft-translator_202302.svg",
+      "tags": [
+        "azure"
+      ]
+    },
+    {
+      "id": "msft-visio2026",
+      "name": "Visio (2026)",
+      "file": "icons/msft-visio2026.svg",
+      "tags": [
+        "modernwork"
+      ]
+    },
+    {
+      "id": "msft-viva-amplify_202601",
+      "name": "Viva Amplify (202601)",
+      "file": "icons/msft-viva-amplify_202601.svg",
+      "tags": [
+        "modernwork"
+      ]
+    },
+    {
+      "id": "msft-viva-connections_202601",
+      "name": "Viva Connections (202601)",
+      "file": "icons/msft-viva-connections_202601.svg",
+      "tags": [
+        "modernwork"
+      ]
+    },
+    {
+      "id": "msft-viva-engage_202601",
+      "name": "Viva Engage (202601)",
+      "file": "icons/msft-viva-engage_202601.svg",
+      "tags": [
+        "modernwork"
+      ]
+    },
+    {
+      "id": "msft-viva-glint_202601",
+      "name": "Viva Glint (202601)",
+      "file": "icons/msft-viva-glint_202601.svg",
+      "tags": [
+        "modernwork"
+      ]
+    },
+    {
+      "id": "msft-viva-goals_2025",
+      "name": "Viva Goals (2025)",
+      "file": "icons/msft-viva-goals_2025.svg",
+      "tags": [
+        "modernwork"
+      ]
+    },
+    {
+      "id": "msft-viva-insights_202601",
+      "name": "Viva Insights (202601)",
+      "file": "icons/msft-viva-insights_202601.svg",
+      "tags": [
+        "modernwork"
+      ]
+    },
+    {
+      "id": "msft-viva-pulse_202601",
+      "name": "Viva Pulse (202601)",
+      "file": "icons/msft-viva-pulse_202601.svg",
+      "tags": [
+        "modernwork"
+      ]
+    },
+    {
+      "id": "msft-viva-sales_2023",
+      "name": "Viva Sales (2023)",
+      "file": "icons/msft-viva-sales_2023.svg",
+      "tags": [
+        "modernwork",
+        "legacy"
+      ]
+    },
+    {
+      "id": "msft-viva-topics_2025",
+      "name": "Viva Topics (2025)",
+      "file": "icons/msft-viva-topics_2025.svg",
+      "tags": [
+        "modernwork"
+      ]
+    },
+    {
+      "id": "mst-viva-learning_202601",
+      "name": "Viva Learning (202601)",
+      "file": "icons/mst-viva-learning_202601.svg",
+      "tags": [
+        "modernwork"
+      ]
+    },
+    {
+      "id": "powerplatform-aibuilder_202302",
+      "name": "Aibuilder (202302)",
+      "file": "icons/powerplatform-aibuilder_202302.svg",
+      "tags": [
+        "businessapps",
+        "legacy"
+      ]
+    },
+    {
+      "id": "powerplatform-aibuilder_202601",
+      "name": "Aibuilder (202601)",
+      "file": "icons/powerplatform-aibuilder_202601.svg",
+      "tags": [
+        "businessapps"
+      ]
+    },
+    {
+      "id": "powerplatform-copilotstudio_2024",
+      "name": "Copilotstudio (2024)",
+      "file": "icons/powerplatform-copilotstudio_2024.svg",
+      "tags": [
+        "businessapps",
+        "legacy"
+      ]
+    },
+    {
+      "id": "powerplatform-copilotstudio_202601",
+      "name": "Copilotstudio (202601)",
+      "file": "icons/powerplatform-copilotstudio_202601.svg",
+      "tags": [
+        "businessapps"
+      ]
+    },
+    {
+      "id": "powerplatform-poweapps_202601",
+      "name": "Poweapps (202601)",
+      "file": "icons/powerplatform-poweapps_202601.svg",
+      "tags": [
+        "businessapps"
+      ]
+    },
+    {
+      "id": "powerplatform-powerapps_202302",
+      "name": "Powerapps (202302)",
+      "file": "icons/powerplatform-powerapps_202302.svg",
+      "tags": [
+        "businessapps",
+        "legacy"
+      ]
+    },
+    {
+      "id": "powerplatform-powerautomate_202302",
+      "name": "Powerautomate (202302)",
+      "file": "icons/powerplatform-powerautomate_202302.svg",
+      "tags": [
+        "businessapps",
+        "legacy"
+      ]
+    },
+    {
+      "id": "powerplatform-powerautomate_202601",
+      "name": "Powerautomate (202601)",
+      "file": "icons/powerplatform-powerautomate_202601.svg",
+      "tags": [
+        "businessapps"
+      ]
+    },
+    {
+      "id": "powerplatform-powerbi_202302",
+      "name": "Powerbi (202302)",
+      "file": "icons/powerplatform-powerbi_202302.svg",
+      "tags": [
+        "businessapps"
+      ]
+    },
+    {
+      "id": "powerplatform-powerfx_202302",
+      "name": "Powerfx (202302)",
+      "file": "icons/powerplatform-powerfx_202302.svg",
+      "tags": [
+        "businessapps"
+      ]
+    },
+    {
+      "id": "powerplatform-powerpages_202302",
+      "name": "Powerpages (202302)",
+      "file": "icons/powerplatform-powerpages_202302.svg",
+      "tags": [
+        "businessapps",
+        "legacy"
+      ]
+    },
+    {
+      "id": "powerplatform-powerpages_202601",
+      "name": "Powerpages (202601)",
+      "file": "icons/powerplatform-powerpages_202601.svg",
+      "tags": [
+        "businessapps"
+      ]
+    },
+    {
+      "id": "powerplatform-powervirtualagents_202302",
+      "name": "Powervirtualagents (202302)",
+      "file": "icons/powerplatform-powervirtualagents_202302.svg",
+      "tags": [
+        "businessapps",
+        "legacy"
+      ]
+    },
+    {
+      "id": "powerplatform_202302",
+      "name": "Power Platform (202302)",
+      "file": "icons/powerplatform_202302.svg",
+      "tags": [
+        "businessapps",
+        "legacy"
+      ]
+    },
+    {
+      "id": "powerplatform_202601",
+      "name": "Power Platform (202601)",
+      "file": "icons/powerplatform_202601.svg",
+      "tags": [
+        "businessapps"
+      ]
+    },
+    {
+      "id": "copilot-in-excel",
+      "name": "Copilot in Excel",
+      "file": "icons/copilot-in-excel.png",
+      "tags": ["copilot"]
+    },
+    {
+      "id": "copilot-in-powerpoint",
+      "name": "Copilot in PowerPoint",
+      "file": "icons/copilot-in-powerpoint.png",
+      "tags": ["copilot"]
+    },
+    {
+      "id": "copilot-in-teams",
+      "name": "Copilot in Teams",
+      "file": "icons/copilot-in-teams.png",
+      "tags": ["copilot"]
+    },
+    {
+      "id": "copilot-in-word",
+      "name": "Copilot in Word",
+      "file": "icons/copilot-in-word.png",
+      "tags": ["copilot"]
+    },
+    {
+      "id": "copilot-m365",
+      "name": "Copilot M365",
+      "file": "icons/copilot-m365.png",
+      "tags": ["copilot"]
+    },
+    {
+      "id": "copilot-studio",
+      "name": "Copilot Studio",
+      "file": "icons/copilot-studio.png",
+      "tags": ["copilot"]
+    }
   ]
 }
