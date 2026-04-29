@@ -969,6 +969,75 @@
       background-repeat: no-repeat;
       background-attachment: fixed;
     }
+
+    /* Tile Library Popup */
+    #tile-library-overlay {
+      position: fixed; inset: 0;
+      background: transparent;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 300;
+    }
+    #tile-library-overlay.hidden { display: none !important; }
+    /* Blur + dim the landing page content behind the tile library popup */
+    #screen-start.tl-bg-blur {
+      filter: blur(4px) brightness(0.7);
+      transition: filter 0.25s ease;
+      pointer-events: none;
+    }
+    #tile-library-box {
+      background: white; border-radius: 12px;
+      width: min(94vw, 560px); max-height: 42vh;
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    #tile-library-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 1.2rem 0.5rem;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    #tile-library-header h2 { font-size: 1.1rem; color: #333; margin: 0; }
+    #btn-tile-library-close {
+      background: none; border: none; font-size: 1.4rem; cursor: pointer;
+      color: #666; line-height: 1; padding: 0.1rem 0.3rem; border-radius: 4px;
+    }
+    #btn-tile-library-close:hover { background: #f0f0f0; }
+    #tile-library-filters {
+      display: flex; gap: 0.4rem; flex-wrap: wrap;
+      padding: 0.6rem 1.2rem;
+      flex-shrink: 0;
+    }
+    .tl-filter-btn {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 20px; padding: 0.3rem 0.75rem;
+      font-size: 0.8rem; cursor: pointer;
+      transition: background 0.15s, color 0.15s; color: #444;
+    }
+    .tl-filter-btn.active {
+      background: var(--primary); color: var(--white); border-color: var(--primary);
+    }
+    #tile-library-scroll {
+      overflow-y: auto; flex: 1;
+      padding: 0.5rem 1.2rem 1rem;
+    }
+    #tile-library-table {
+      width: 100%; border-collapse: collapse;
+    }
+    #tile-library-table td {
+      padding: 0.4rem 0.5rem; vertical-align: middle; border: none;
+    }
+    .tl-tile {
+      width: 48px; height: 48px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.8);
+      overflow: hidden; flex-shrink: 0;
+    }
+    .tl-icon { width: 85%; height: 85%; object-fit: contain; display: block; }
+    .tl-name { font-size: 0.85rem; color: #333; }
+    .tl-row-hidden { display: none; }
   </style>
 </head>
 <body>
@@ -978,7 +1047,7 @@
   <!-- Section 1: title, subtitle, stats, LinkedIn share -->
   <div class="menu-section">
     <h1>LogoCrush 🎮</h1>
-    <p>The fan-made match-3 game for the Microsoft community, built by AI under peer-pressure from <a href="https://www.linkedin.com/in/andrasfordos" target="_blank" rel="noopener noreferrer" style="color:var(--primary);font-weight:600;">András Fördős</a></p>
+    <p>The fan-made match-3 game for the Microsoft community, built by AI under peer-pressure from <a href="https://www.linkedin.com/in/andrasfordos" target="_blank" rel="noopener noreferrer" style="color:var(--primary);font-weight:600;">András Fördős</a> - feedback is well-received at <a href="https://github.com/fordosa90/logocrush.github.io/issues" target="_blank" rel="noopener noreferrer" style="color:var(--primary);font-weight:600;">GitHub</a></p>
     <p class="disclaimer">All logos are the property of Microsoft Corporation.</p>
 
     <div class="pb-share-row">
@@ -1045,8 +1114,8 @@
               data-tooltip="Match 3500 logos to unlock">Clippy</button>
       <button class="selector-btn selector-locked has-tooltip" disabled
               data-tooltip="Good things come to those who are patient">Robo-raptor laser kittens</button>
-      <button class="selector-btn selector-locked has-tooltip" disabled
-              data-tooltip="Let's double click on that in fullness of time">Secret sauce</button>
+      <button id="btn-tile-library" class="selector-btn selector-locked has-tooltip" disabled
+              data-tooltip="Unlock after level 15 and 40.000 points">Check tile library</button>
     </div>
 
   </div>
@@ -1133,6 +1202,25 @@
     <div class="modal-title" id="modal-title"></div>
     <div class="modal-body" id="modal-body"></div>
     <div class="modal-buttons" id="modal-buttons"></div>
+  </div>
+</div>
+
+<!-- TILE LIBRARY OVERLAY -->
+<div id="tile-library-overlay" class="hidden">
+  <div id="tile-library-box">
+    <div id="tile-library-header">
+      <h2>Tile Library</h2>
+      <button id="btn-tile-library-close" aria-label="Close tile library">✕</button>
+    </div>
+    <div id="tile-library-filters">
+      <button class="tl-filter-btn active" data-tl-filter="all">All</button>
+      <button class="tl-filter-btn" data-tl-filter="businessapps">Business apps</button>
+      <button class="tl-filter-btn" data-tl-filter="modernwork">Modern work</button>
+      <button class="tl-filter-btn" data-tl-filter="azure">Azure</button>
+    </div>
+    <div id="tile-library-scroll">
+      <table id="tile-library-table"><tbody id="tile-library-tbody"></tbody></table>
+    </div>
   </div>
 </div>
 
@@ -2361,6 +2449,7 @@ function updatePersonalBests() {
   }
 
   updateClippyVisibility();
+  updateTileLibraryButton();
 }
 
 function loadPersonalBests() {
@@ -2372,6 +2461,7 @@ function loadPersonalBests() {
   applyTagUnlockRules();
   applyLegacyLockState();
   updateClippyVisibility();
+  updateTileLibraryButton();
 }
 
 function updateClippyVisibility() {
@@ -2397,6 +2487,91 @@ function updateClippyVisibility() {
     clippyBtn.style.cursor = '';
     clippyBtn.style.pointerEvents = '';
   }
+}
+
+// ─── Tile Library ──────────────────────────────────────────────────────────────
+const TILE_LIBRARY_UNLOCK_LEVEL = 15;
+const TILE_LIBRARY_UNLOCK_SCORE = 40000;
+
+function updateTileLibraryButton() {
+  const btn = document.getElementById('btn-tile-library');
+  if (!btn) return;
+  const hl = parseInt(localStorage.getItem(LS_HIGHESTLEVEL) || '1');
+  const hs = parseInt(localStorage.getItem(LS_HIGHSCORE) || '0');
+  const unlocked = hl >= TILE_LIBRARY_UNLOCK_LEVEL && hs >= TILE_LIBRARY_UNLOCK_SCORE;
+  if (unlocked) {
+    btn.classList.remove('selector-locked');
+    btn.removeAttribute('disabled');
+    btn.setAttribute('data-tooltip', 'Browse all tiles in the game');
+  } else {
+    btn.classList.add('selector-locked');
+    btn.setAttribute('disabled', '');
+    btn.setAttribute('data-tooltip', 'Unlock after level 15 and 40.000 points');
+  }
+}
+
+function buildTileLibraryTable() {
+  const tbody = document.getElementById('tile-library-tbody');
+  tbody.innerHTML = '';
+  for (const icon of allIcons) {
+    const tr = document.createElement('tr');
+    tr.dataset.tags = (icon.tags || []).join(',');
+    const tdImg = document.createElement('td');
+    const tileDiv = document.createElement('div');
+    tileDiv.className = 'tl-tile';
+    const img = document.createElement('img');
+    img.src = icon.file;
+    img.alt = icon.name;
+    img.className = 'tl-icon';
+    tileDiv.appendChild(img);
+    tdImg.appendChild(tileDiv);
+    const tdName = document.createElement('td');
+    tdName.className = 'tl-name';
+    tdName.textContent = icon.name;
+    tr.appendChild(tdImg);
+    tr.appendChild(tdName);
+    tbody.appendChild(tr);
+  }
+}
+
+function filterTileLibrary(filter) {
+  const rows = document.querySelectorAll('#tile-library-tbody tr');
+  rows.forEach(tr => {
+    if (filter === 'all') {
+      tr.classList.remove('tl-row-hidden');
+    } else {
+      const tags = tr.dataset.tags ? tr.dataset.tags.split(',') : [];
+      tr.classList.toggle('tl-row-hidden', !tags.includes(filter));
+    }
+  });
+  document.querySelectorAll('.tl-filter-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tlFilter === filter);
+  });
+}
+
+function openTileLibrary() {
+  buildTileLibraryTable();
+  filterTileLibrary('all');
+  document.getElementById('screen-start').classList.add('tl-bg-blur');
+  document.getElementById('tile-library-overlay').classList.remove('hidden');
+}
+
+function closeTileLibrary() {
+  document.getElementById('tile-library-overlay').classList.add('hidden');
+  document.getElementById('screen-start').classList.remove('tl-bg-blur');
+}
+
+function setupTileLibrary() {
+  document.getElementById('btn-tile-library').addEventListener('click', openTileLibrary);
+  document.getElementById('btn-tile-library-close').addEventListener('click', closeTileLibrary);
+  document.getElementById('tile-library-overlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('tile-library-overlay')) closeTileLibrary();
+  });
+  document.getElementById('tile-library-filters').addEventListener('click', e => {
+    const btn = e.target.closest('.tl-filter-btn');
+    if (!btn) return;
+    filterTileLibrary(btn.dataset.tlFilter);
+  });
 }
 
 // ─── Input handlers ───────────────────────────────────────────────────────────
@@ -2763,6 +2938,7 @@ async function init() {
   loadPersonalBests();
   setupGameModeSelector();
   setupModeSelector();
+  setupTileLibrary();
   restoreSavedTag();
   restoreSavedLegacy();
   applyTagUnlockRules();  // grey out locked tags based on saved stats
