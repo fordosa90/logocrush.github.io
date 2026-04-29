@@ -1036,7 +1036,9 @@
       overflow: hidden; flex-shrink: 0;
     }
     .tl-icon { width: 85%; height: 85%; object-fit: contain; display: block; }
+    .tl-icon-blurred { filter: blur(10px); }
     .tl-name { font-size: 0.85rem; color: #333; }
+    .tl-name-teaser { font-size: 0.85rem; color: #999; font-style: italic; }
     .tl-row-hidden { display: none; }
   </style>
 </head>
@@ -2513,7 +2515,12 @@ function updateTileLibraryButton() {
 function buildTileLibraryTable() {
   const tbody = document.getElementById('tile-library-tbody');
   tbody.innerHTML = '';
+  const copilotIcons = [];
   for (const icon of allIcons) {
+    if ((icon.tags || []).includes('copilot')) {
+      copilotIcons.push(icon);
+      continue;
+    }
     const tr = document.createElement('tr');
     tr.dataset.tags = (icon.tags || []).join(',');
     const tdImg = document.createElement('td');
@@ -2532,11 +2539,33 @@ function buildTileLibraryTable() {
     tr.appendChild(tdName);
     tbody.appendChild(tr);
   }
+  // Append a single blurred teaser row for copilot icons
+  if (copilotIcons.length > 0) {
+    const teaser = copilotIcons[Math.floor(Math.random() * copilotIcons.length)];
+    const tr = document.createElement('tr');
+    tr.className = 'tl-teaser-row';
+    const tdImg = document.createElement('td');
+    const tileDiv = document.createElement('div');
+    tileDiv.className = 'tl-tile';
+    const img = document.createElement('img');
+    img.src = teaser.file;
+    img.alt = '';
+    img.className = 'tl-icon tl-icon-blurred';
+    tileDiv.appendChild(img);
+    tdImg.appendChild(tileDiv);
+    const tdName = document.createElement('td');
+    tdName.className = 'tl-name-teaser';
+    tdName.textContent = '... And many more unlockable';
+    tr.appendChild(tdImg);
+    tr.appendChild(tdName);
+    tbody.appendChild(tr);
+  }
 }
 
 function filterTileLibrary(filter) {
   const rows = document.querySelectorAll('#tile-library-tbody tr');
   rows.forEach(tr => {
+    if (tr.classList.contains('tl-teaser-row')) return; // always visible
     if (filter === 'all') {
       tr.classList.remove('tl-row-hidden');
     } else {
