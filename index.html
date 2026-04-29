@@ -1026,7 +1026,16 @@
     #tile-library-table td {
       padding: 0.4rem 0.5rem; vertical-align: middle; border: none;
     }
-    .tl-icon { width: 40px; height: 40px; object-fit: contain; }
+    .tl-tile {
+      width: 48px; height: 48px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.8);
+      overflow: hidden; flex-shrink: 0;
+    }
+    .tl-icon { width: 85%; height: 85%; object-fit: contain; display: block; }
     .tl-name { font-size: 0.85rem; color: #333; }
     .tl-row-hidden { display: none; }
   </style>
@@ -2508,11 +2517,14 @@ function buildTileLibraryTable() {
     const tr = document.createElement('tr');
     tr.dataset.tags = (icon.tags || []).join(',');
     const tdImg = document.createElement('td');
+    const tileDiv = document.createElement('div');
+    tileDiv.className = 'tl-tile';
     const img = document.createElement('img');
     img.src = icon.file;
     img.alt = icon.name;
     img.className = 'tl-icon';
-    tdImg.appendChild(img);
+    tileDiv.appendChild(img);
+    tdImg.appendChild(tileDiv);
     const tdName = document.createElement('td');
     tdName.className = 'tl-name';
     tdName.textContent = icon.name;
