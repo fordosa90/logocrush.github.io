@@ -973,11 +973,17 @@
     /* Tile Library Popup */
     #tile-library-overlay {
       position: fixed; inset: 0;
-      background: rgba(0,0,0,0.5);
+      background: transparent;
       display: flex; align-items: center; justify-content: center;
       z-index: 300;
     }
     #tile-library-overlay.hidden { display: none !important; }
+    /* Blur + dim the landing page content behind the tile library popup */
+    #screen-start.tl-bg-blur {
+      filter: blur(4px) brightness(0.7);
+      transition: filter 0.25s ease;
+      pointer-events: none;
+    }
     #tile-library-box {
       background: white; border-radius: 12px;
       width: min(94vw, 560px); max-height: 85vh;
@@ -2534,11 +2540,13 @@ function filterTileLibrary(filter) {
 function openTileLibrary() {
   buildTileLibraryTable();
   filterTileLibrary('all');
+  document.getElementById('screen-start').classList.add('tl-bg-blur');
   document.getElementById('tile-library-overlay').classList.remove('hidden');
 }
 
 function closeTileLibrary() {
   document.getElementById('tile-library-overlay').classList.add('hidden');
+  document.getElementById('screen-start').classList.remove('tl-bg-blur');
 }
 
 function setupTileLibrary() {
