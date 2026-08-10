@@ -1100,6 +1100,8 @@
         <button data-tag="all" aria-pressed="true">All</button>
         <button data-tag="businessapps" aria-pressed="false" class="tag-locked has-tooltip" disabled
                 data-tooltip="Unlock when beating level 5">Business Applications</button>
+        <button data-tag="dataplatform" aria-pressed="false" class="tag-locked has-tooltip" disabled
+          data-tooltip="Unlock, once played 20 games">Data Platform</button>
         <button data-tag="azure" aria-pressed="false" class="tag-locked has-tooltip" disabled
                 data-tooltip="Unlock once achieved 20,000 points">Azure</button>
         <button data-tag="modernwork" aria-pressed="false" class="tag-locked has-tooltip" disabled
@@ -1217,6 +1219,7 @@
     <div id="tile-library-filters">
       <button class="tl-filter-btn active" data-tl-filter="all">All</button>
       <button class="tl-filter-btn" data-tl-filter="businessapps">Business apps</button>
+      <button class="tl-filter-btn" data-tl-filter="dataplatform">Data Platform</button>
       <button class="tl-filter-btn" data-tl-filter="modernwork">Modern work</button>
       <button class="tl-filter-btn" data-tl-filter="azure">Azure</button>
     </div>
@@ -1428,7 +1431,7 @@ const FALLBACK_ICONS = [
   {id:'msft-excel_2026',name:'Excel',file:'icons/msft-excel_2026.svg',tags:['modernwork']},
   {id:'powerplatform_202601',name:'Power Platform',file:'icons/powerplatform_202601.svg',tags:['businessapps']},
   {id:'dynamics365_2026',name:'Dynamics 365',file:'icons/dynamics365_2026.svg',tags:['businessapps']},
-  {id:'fabric_202401',name:'Microsoft Fabric',file:'icons/fabric_202401.svg',tags:[]},
+  {id:'fabric_202401',name:'Microsoft Fabric',file:'icons/fabric_202401.svg',tags:['dataplatform']},
 ];
 
 async function loadManifest() {
@@ -2708,6 +2711,11 @@ const TAG_UNLOCK_RULES = [
   },
   {
     tag: 'modernwork',
+    tooltip: 'Unlock, once played 20 games',
+    check: () => parseInt(localStorage.getItem(LS_TOTALGAMES) || '0') >= 20
+  },
+  {
+    tag: 'dataplatform',
     tooltip: 'Unlock, once played 20 games',
     check: () => parseInt(localStorage.getItem(LS_TOTALGAMES) || '0') >= 20
   },

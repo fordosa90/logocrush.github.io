@@ -259,9 +259,9 @@
       ]
     },
     {
-      "id": "azure-pureview_202405",
-      "name": "Azure Pureview",
-      "file": "icons/azure-pureview_202405.svg",
+      "id": "azure-purview_202405",
+      "name": "Azure Purview",
+      "file": "icons/azure-purview_202405.svg",
       "tags": [
         "azure"
       ]
@@ -363,9 +363,9 @@
       ]
     },
     {
-      "id": "dynamics365-businesscental_202601",
+      "id": "dynamics365-businesscentral_202601",
       "name": "Dynamics 365 Business Central",
-      "file": "icons/dynamics365-businesscental_202601.svg",
+      "file": "icons/dynamics365-businesscentral_202601.svg",
       "tags": [
         "businessapps"
       ]
@@ -659,55 +659,72 @@
       "id": "fabric-databases_202601",
       "name": "Fabric Databases",
       "file": "icons/fabric-databases_202601.svg",
-      "tags": []
+      "tags": [
+        "dataplatform"
+      ]
     },
     {
       "id": "fabric-datafactory_202401",
       "name": "Fabric Datafactory",
       "file": "icons/fabric-datafactory_202401.svg",
-      "tags": []
+      "tags": [
+        "dataplatform"
+      ]
     },
     {
       "id": "fabric-industrysolutions_202601",
       "name": "Fabric Industry Solutions",
       "file": "icons/fabric-industrysolutions_202601.svg",
-      "tags": []
+      "tags": [
+        "dataplatform"
+      ]
     },
     {
       "id": "fabric-onelake_202401",
       "name": "Fabric Onelake",
       "file": "icons/fabric-onelake_202401.svg",
-      "tags": []
+      "tags": [
+        "dataplatform"
+      ]
     },
     {
       "id": "fabric-purview_202601",
       "name": "Fabric Purview",
       "file": "icons/fabric-purview_202601.svg",
-      "tags": []
+      "tags": [
+        "dataplatform"
+      ]
     },
     {
       "id": "fabric-synapse-dataengineering_202401",
       "name": "Fabric Synapse Data Engineering",
       "file": "icons/fabric-synapse-dataengineering_202401.svg",
-      "tags": []
+      "tags": [
+        "dataplatform"
+      ]
     },
     {
       "id": "fabric-synapse-datascience_202401",
       "name": "Fabric Synapse Data Science",
       "file": "icons/fabric-synapse-datascience_202401.svg",
-      "tags": []
+      "tags": [
+        "dataplatform"
+      ]
     },
     {
       "id": "fabric-synapse-datawarehouse_202308",
       "name": "Fabric Synapse Data Warehouse",
       "file": "icons/fabric-synapse-datawarehouse_202308.svg",
-      "tags": []
+      "tags": [
+        "dataplatform"
+      ]
     },
     {
       "id": "fabric-synapse-realtimeanalytics_202308",
       "name": "Fabric Synapse Realtime Analytics (2023)",
       "file": "icons/fabric-synapse-realtimeanalytics_202308.svg",
       "tags": [
+        "dataplatform",
         "legacy"
       ]
     },
@@ -715,13 +732,17 @@
       "id": "fabric-synapse-realtimeanalytics_202601",
       "name": "Fabric Synapse Realtime Analytics",
       "file": "icons/fabric-synapse-realtimeanalytics_202601.svg",
-      "tags": []
+      "tags": [
+        "dataplatform"
+      ]
     },
     {
       "id": "fabric_202401",
       "name": "Microsoft Fabric",
       "file": "icons/fabric_202401.svg",
-      "tags": []
+      "tags": [
+        "dataplatform"
+      ]
     },
     {
       "id": "msft-365_202212",
@@ -1064,9 +1085,9 @@
       ]
     },
     {
-      "id": "mst-viva-learning_202601",
+      "id": "msft-viva-learning_202601",
       "name": "Viva Learning",
-      "file": "icons/mst-viva-learning_202601.svg",
+      "file": "icons/msft-viva-learning_202601.svg",
       "tags": [
         "modernwork"
       ]
@@ -1106,9 +1127,25 @@
       ]
     },
     {
-      "id": "powerplatform-poweapps_202601",
+      "id": "powerplatform-powerapps_202601",
       "name": "Power Platform Power Apps",
-      "file": "icons/powerplatform-poweapps_202601.svg",
+      "file": "icons/powerplatform-powerapps_202601.svg",
+      "tags": [
+        "businessapps"
+      ]
+    },
+    {
+      "id": "powerplatform-dataverse_202512",
+      "name": "Power Platform Dataverse",
+      "file": "icons/powerplatform-dataverse_202512.svg",
+      "tags": [
+        "businessapps"
+      ]
+    },
+    {
+      "id": "msft-agent365_202512",
+      "name": "Microsoft Agent 365",
+      "file": "icons/msft-agent365_202512.svg",
       "tags": [
         "businessapps"
       ]
