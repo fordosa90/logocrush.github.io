@@ -23,7 +23,7 @@ jobs:
           import json, os, sys, re
 
           ALLOWED_TAGS = {
-            "azure", "businessapps", "modernwork", "copilot", "legacy",
+            "azure", "businessapps", "modernwork", "copilot", "legacy", "dataplatform",
           }
           MAX_SVG_BYTES  = 15 * 1024   # 15 KB
           errors = []
